@@ -122,8 +122,8 @@
   #bStage.drag{cursor:grabbing;}
   #bWorld{position:absolute;left:0;top:0;transform-origin:0 0;}
   #bEdges{position:absolute;left:0;top:0;overflow:visible;transform-origin:0 0;pointer-events:none;}
-  #bBg{position:absolute;inset:-8%;z-index:0;background:#e9e6dc;background-size:cover;background-position:center;transition:background-image .9s ease, background-color .9s ease;will-change:transform;animation:kenburns 42s ease-in-out infinite alternate;}
-  @keyframes kenburns{0%{transform:scale(1.05) translate(0,0);}100%{transform:scale(1.16) translate(-1.6%,-1.2%);}}
+  #bBg{position:absolute;inset:-10%;z-index:0;background:#e9e6dc;background-size:cover;background-position:center;transition:background-image .9s ease, background-color .9s ease;will-change:transform;animation:kenburns 26s ease-in-out infinite alternate;}
+  @keyframes kenburns{0%{transform:scale(1.04) translate(1%,0.8%);}100%{transform:scale(1.22) translate(-2.4%,-1.8%);}}
   #bBg::after{content:'';position:absolute;inset:0;background:radial-gradient(125% 95% at 50% 38%, rgba(233,230,220,.10) 0%, rgba(233,230,220,.30) 55%, rgba(38,34,28,.42) 100%);}
   #bEdges{z-index:1;} #bWorld{z-index:2;}
   #bFx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;}
@@ -182,8 +182,8 @@
 
   /* nodes */
   .bnode{position:absolute;width:200px;min-height:66px;border-radius:11px;background:var(--paper);border:2px solid var(--harris);box-shadow:0 2px 7px rgba(0,0,0,.18);padding:8px 10px;cursor:pointer;z-index:2;}
-  .bnode.fresh{animation:bIn .9s cubic-bezier(.2,.85,.3,1) both;}
-  @keyframes bIn{0%{opacity:0;transform:translateX(-30px) translateY(6px) scale(.86);}60%{opacity:1;}100%{opacity:1;transform:none;}}
+  .bnode.fresh{animation:bIn 1s cubic-bezier(.2,.85,.3,1) both;}
+  @keyframes bIn{0%{opacity:0;transform:translateX(-54px) translateY(12px) scale(.78);}55%{opacity:1;}100%{opacity:1;transform:none;}}
   .bnode.maxfield{border-color:var(--maxfield);}
   .bnode.root{border-color:var(--root);background:#fffaf0;}
   .bnode.living{border-style:dashed;background:#eef0ea;}
@@ -588,7 +588,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     amCur=next; fadeVol(next,MVOL,1000);
     if(prev&&prev!==next){ fadeVol(prev,0,1000,function(){try{prev.pause();}catch(e){}}); }
   }
-  function stopMusic(){ if(amCur) fadeVol(amCur,0,400,function(){try{amCur.pause();}catch(e){}}); }
+  function stopMusic(){ [amA,amB].forEach(function(a){ if(a){ try{a.pause(); a.volume=0;}catch(e){} } }); }   // hard stop (no rAF-dependent fade)
   window.bMute=function(){
     muted=!muted;
     var b=document.getElementById('bMuteBtn'); if(b) b.innerHTML=muted?'&#128263;':'&#128266;';
@@ -642,15 +642,16 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   function fx(){ cv=document.getElementById('bFx'); if(!cv)return; cx=cv.getContext('2d'); cv.width=cv.offsetWidth; cv.height=cv.offsetHeight; }
   function burst(sx,sy,col,n){
     if(!cx||!cv||cv.width<2)fx(); if(!cx||RM)return;
-    for(var i=0;i<(n||26);i++){ var a=Math.random()*6.283,s=1+Math.random()*4.8; parts.push({x:sx,y:sy,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.2,life:1,c:col||'#c9962b'}); }
-    if(parts.length>620)parts=parts.slice(-620);
+    for(var i=0;i<(n||26);i++){ var a=Math.random()*6.283,s=1.5+Math.random()*6; parts.push({x:sx,y:sy,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.5,life:1,decay:0.011,r:2+Math.random()*2.6,c:col||'#f3c34b'}); }
+    if(parts.length>760)parts=parts.slice(-760);
     drawParts(); if(!raf)tick();   // paint immediately (don't wait on the first rAF)
   }
   function drawParts(){
     if(!cx)return;
     cx.clearRect(0,0,cv.width,cv.height);
-    for(var i=0;i<parts.length;i++){ var p=parts[i]; cx.globalAlpha=Math.max(0,p.life)*(p.mote?0.55:1); cx.fillStyle=p.c; cx.beginPath(); cx.arc(p.x,p.y,p.r||2.3,0,6.283); cx.fill(); }
-    cx.globalAlpha=1;
+    cx.shadowColor='rgba(255,205,110,0.8)';
+    for(var i=0;i<parts.length;i++){ var p=parts[i]; cx.globalAlpha=Math.max(0,p.life)*(p.mote?0.8:1); cx.shadowBlur=p.mote?8:4; cx.fillStyle=p.c; cx.beginPath(); cx.arc(p.x,p.y,p.r||2.3,0,6.283); cx.fill(); }
+    cx.globalAlpha=1; cx.shadowBlur=0;
   }
   function tick(){
     if(!cx){raf=null;return;}
@@ -662,13 +663,13 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   function nodeScreen(n){ return {x:(n._px+100)*bs.z+bs.x, y:(n._py+BH/2)*bs.z+bs.y}; }
   function burstAt(node,big){
     if(node._px==null)return; var s=nodeScreen(node);
-    burst(s.x,s.y, sideOf(cur)==='maxfield'?'#3a8f5a':'#c9962b', big?72:36);
+    burst(s.x,s.y, sideOf(cur)==='maxfield'?'#46c878':'#f3c34b', big?96:50);
   }
   var moteT=null;
-  function spawnMote(){ if(!cx||!cv||cv.width<2)fx(); if(!cx)return; var w=cv.width||0,h=cv.height||0; if(w<2)return;
-    parts.push({x:Math.random()*w, y:h+8, vx:(Math.random()-0.5)*0.25, vy:-(0.15+Math.random()*0.4), life:1, decay:0.0013+Math.random()*0.001, r:0.8+Math.random()*1.9, c:'rgba(255,243,210,0.85)', mote:true});
-    if(parts.length>620)parts=parts.slice(-620); if(!raf)tick(); }
-  function startMotes(){ if(RM||moteT)return; for(var i=0;i<10;i++)spawnMote(); moteT=setInterval(spawnMote,600); }
+  function spawnMote(seed){ if(!cx||!cv||cv.width<2)fx(); if(!cx)return; var w=cv.width||0,h=cv.height||0; if(w<2)return;
+    parts.push({x:Math.random()*w, y:seed?Math.random()*h:h+8, vx:(Math.random()-0.5)*0.3, vy:-(0.2+Math.random()*0.55), life:1, decay:0.0009+Math.random()*0.0008, r:1.4+Math.random()*2.8, c:'rgba(255,222,150,0.95)', mote:true});
+    if(parts.length>760)parts=parts.slice(-760); drawParts(); if(!raf)tick(); }
+  function startMotes(){ if(moteT)return; for(var i=0;i<24;i++)spawnMote(true); moteT=setInterval(spawnMote,380); }   // gentle embers run even under reduced-motion
   function stopMotes(){ if(moteT){clearInterval(moteT);moteT=null;} }
 
   /* ---- mode switch (with the stop-music fix) ---- */
@@ -687,7 +688,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
 
   /* ---- landing ---- */
   function showLanding(){
-    stopJourney(); stopMotes();
+    stopJourney(); stopMotes(); stopMusic(); amTrack=null; curTrack=null;   // selection screen = silent
     document.getElementById('bView').style.display='none';
     var L=document.getElementById('bLanding'); L.style.display='block';
     var P=loadPass(), traced=BL.filter(function(b){return P.lines[b.key];}).length;
