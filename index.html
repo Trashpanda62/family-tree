@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Family Tree</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bloodlines">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1a1610">
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
 <style>
   :root{--harris:#3a6ea5;--maxfield:#3a8f5a;--root:#b8860b;--ink:#2c2c2a;--paper:#f5f3ec;--gold:#c9962b;}
   *{box-sizing:border-box;}
@@ -1034,9 +1041,40 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   (function(){
     var st=stage(),down=false,lx,ly,moved=false;
     if(!st)return;
-    st.addEventListener('pointerdown',function(e){down=true;moved=false;lx=e.clientX;ly=e.clientY;});
-    window.addEventListener('pointermove',function(e){if(!down)return;if(Math.abs(e.clientX-lx)+Math.abs(e.clientY-ly)>3)moved=true;st.classList.add('drag');bs.x+=e.clientX-lx;bs.y+=e.clientY-ly;lx=e.clientX;ly=e.clientY;bapply();});
-    window.addEventListener('pointerup',function(){down=false;st.classList.remove('drag');});
+    // multi-pointer tracking for pinch-to-zoom
+    var pts={},pDist=null;
+    function ptDist(){var ids=Object.keys(pts);if(ids.length<2)return null;var a=pts[ids[0]],b=pts[ids[1]];return Math.hypot(b.x-a.x,b.y-a.y);}
+    function ptMid(){var ids=Object.keys(pts);if(ids.length<2)return null;var a=pts[ids[0]],b=pts[ids[1]];return{x:(a.x+b.x)/2,y:(a.y+b.y)/2};}
+    st.addEventListener('pointerdown',function(e){
+      pts[e.pointerId]={x:e.clientX,y:e.clientY};
+      if(Object.keys(pts).length===1){down=true;moved=false;lx=e.clientX;ly=e.clientY;}
+      else{down=false;pDist=ptDist();}  // two fingers: switch to pinch, stop pan
+    });
+    window.addEventListener('pointermove',function(e){
+      if(!pts[e.pointerId])return;
+      pts[e.pointerId]={x:e.clientX,y:e.clientY};
+      var ids=Object.keys(pts);
+      if(ids.length===2){
+        // pinch-to-zoom
+        var d=ptDist(),m=ptMid(); if(!m)return;
+        if(pDist!==null&&pDist>0){
+          var f=d/pDist;
+          var r=st.getBoundingClientRect(),cx=m.x-r.left,cy=m.y-r.top;
+          bs.x=cx-(cx-bs.x)*f;bs.y=cy-(cy-bs.y)*f;
+          bs.z=Math.max(.12,Math.min(2.4,bs.z*f));bapply();
+        }
+        pDist=d; lx=e.clientX;ly=e.clientY; return;
+      }
+      if(!down)return;
+      if(Math.abs(e.clientX-lx)+Math.abs(e.clientY-ly)>3)moved=true;
+      st.classList.add('drag');bs.x+=e.clientX-lx;bs.y+=e.clientY-ly;lx=e.clientX;ly=e.clientY;bapply();
+    });
+    window.addEventListener('pointerup',function(e){
+      delete pts[e.pointerId];
+      if(Object.keys(pts).length<2){pDist=null;}
+      if(Object.keys(pts).length===0){down=false;st.classList.remove('drag');}
+    });
+    window.addEventListener('pointercancel',function(e){ delete pts[e.pointerId]; if(!Object.keys(pts).length){down=false;pDist=null;st.classList.remove('drag');} });
     st.addEventListener('wheel',function(e){e.preventDefault();var f=e.deltaY<0?1.12:0.89;var r=st.getBoundingClientRect();var mx=e.clientX-r.left,my=e.clientY-r.top;bs.x=mx-(mx-bs.x)*f;bs.y=my-(my-bs.y)*f;bs.z=Math.max(.12,Math.min(2.4,bs.z*f));bapply();},{passive:false});
   })();
 
