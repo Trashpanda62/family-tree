@@ -61,6 +61,30 @@
   .doc.locked{opacity:.62;} .doc .go{margin-left:auto;font-size:11px;color:#3a6ea5;font-weight:600;} .doc .go.lk{color:#b09;font-weight:400;font-style:italic;}
   #card .cardface{float:right;width:66px;height:66px;border-radius:10px;object-fit:cover;margin:0 0 8px 12px;border:1px solid #d8d0bc;box-shadow:0 2px 6px rgba(0,0,0,.25);}
   #card .none{color:#8a857a;font-style:italic;font-size:14px;}
+  /* clickable document viewer */
+  #docview{position:fixed;inset:0;background:rgba(20,18,14,.62);display:none;align-items:center;justify-content:center;z-index:11;padding:16px;}
+  .docsheet{background:#fbf7ea;max-width:580px;width:96%;max-height:90vh;overflow:auto;border-radius:8px;box-shadow:0 14px 50px rgba(0,0,0,.5);font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;position:relative;border:1px solid #d8cba6;}
+  .docsheet .dx{position:absolute;top:7px;right:13px;font-size:25px;color:#fff;cursor:pointer;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,.6);z-index:2;}
+  .docsheet .band{padding:14px 20px;color:#fff;background:linear-gradient(135deg,#6b5a3e,#8a7448);}
+  .docsheet .band .ty{font-size:12px;text-transform:uppercase;letter-spacing:2px;opacity:.88;}
+  .docsheet .band .so{font-size:17px;font-weight:600;margin-top:3px;line-height:1.25;}
+  .docsheet .body{padding:16px 22px 6px;}
+  .docscan{padding:14px;background:#2c2820;text-align:center;}
+  .docscan img{max-width:100%;border:3px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.5);}
+  .docscan .cap{color:#cdbf9a;font-size:12px;margin-top:8px;font-style:italic;}
+  table.fld{width:100%;border-collapse:collapse;font-size:14.5px;}
+  table.fld td{padding:6px 4px;border-bottom:1px solid #ece2c8;vertical-align:top;}
+  table.fld td.k{color:#8a7748;width:42%;font-size:13px;}
+  table.fld td.v{color:#2c2c2a;font-weight:500;}
+  .hh{margin-top:14px;}
+  .hh h4{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#8a7748;}
+  table.hht{width:100%;border-collapse:collapse;font-size:13.5px;}
+  table.hht th{text-align:left;color:#a99;font-size:11px;text-transform:uppercase;border-bottom:1px solid #d8cba6;padding:3px 5px;}
+  table.hht td{padding:4px 5px;border-bottom:1px solid #f0e8d4;}
+  table.hht tr.me td{background:#fbf3d8;font-weight:600;}
+  .docfoot{padding:10px 22px 16px;font-size:12px;color:#9a8f78;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .docfoot a{color:#3a6ea5;text-decoration:none;font-weight:600;}
+  .docfoot .tag{font-style:italic;}
   #card .x{float:right;cursor:pointer;font-size:22px;color:#aaa;line-height:1;margin-left:10px;}
   #card .locked{margin-top:6px;color:#8a857a;font-size:13px;}
   #card .nav{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
@@ -81,6 +105,7 @@
 <div id="prog"><span id="progtxt"></span><div class="bar"><i id="progbar"></i></div></div>
 <div id="fact" onclick="factGo()"><span class="h">Did you know?</span><br><span id="facttxt"></span></div>
 <div id="modal" onclick="if(event.target.id==='modal')closeModal()"><div id="card"></div></div>
+<div id="docview" onclick="if(event.target.id==='docview')closeDoc()"></div>
 <div id="toast"></div>
 
 <script>
@@ -207,13 +232,50 @@ var COL_W=176, ROW_H=146;
       c.innerHTML='<span class="x" onclick="closeModal()">&times;</span><h2>'+esc(n.label)+'</h2><div class="meta">Living family member</div><div class="locked">Details for living relatives are kept private.</div><div class="nav">'+revealBtn+shownPar+'</div>';
     } else {
       var docs=(n.docs||[]);
-      var dh=docs.length?'<div class="dh">'+docs.length+' document'+(docs.length>1?'s':'')+' &mdash; tap to open</div><div class="dt">'+docs.map(function(x){var base=x.type.replace(/ \(estimated\)/,'');var est=/estimated/.test(x.type);var has=!!x.url;var inner='<span class="ic">'+(ICON[base]||ICON.Other)+'</span>'+esc(base)+(est?' <span class="est">(est.)</span>':'')+(has?'<span class="go">open &#8599;</span>':'<span class="go lk">on the tree</span>');return has?'<a class="doc open" href="'+x.url+'" target="_blank" rel="noopener">'+inner+'</a>':'<div class="doc locked">'+inner+'</div>';}).join('')+'</div>':'<div class="none">No documents found for this ancestor yet.</div>';
+      var dh=docs.length?'<div class="dh">'+docs.length+' document'+(docs.length>1?'s':'')+' &mdash; tap to open</div><div class="dt">'+docs.map(function(x){var base=x.type.replace(/ \(estimated\)/,'');var est=/estimated/.test(x.type);var url=x.url||'';var rk=(url.indexOf('/view/')>=0)?url.split('/view/')[1].replace(/\/+$/,''):'';var fag=/findagrave/.test(url);var clickable=!!rk||fag;var inner='<span class="ic">'+(ICON[base]||ICON.Other)+'</span>'+esc(base)+(est?' <span class="est">(est.)</span>':'')+(clickable?'<span class="go">open &#8599;</span>':'<span class="go lk">on the tree</span>');if(rk)return '<div class="doc open" onclick="openDoc(\''+rk+'\',\''+esc(base)+'\')">'+inner+'</div>';if(fag)return '<a class="doc open" href="'+url+'" target="_blank" rel="noopener">'+inner+'</a>';return '<div class="doc locked">'+inner+'</div>';}).join('')+'</div>':'<div class="none">No documents found for this ancestor yet.</div>';
       c.innerHTML='<span class="x" onclick="closeModal()">&times;</span>'+(n.face?'<img class="cardface" src="'+n.face+'" onerror="this.style.display=\'none\'">':'')+'<h2>'+esc(n.label)+'</h2><div class="meta">'+(n.span||'')+(n.place?' &middot; '+esc(n.place):'')+'</div><span class="rel">'+(n.branch==='maxfield'?'Maxfield line':(n.branch==='root'?'You':'Harris line'))+'</span>'+dh+'<div class="nav">'+revealBtn+shownPar+'</div>';
     }
     document.getElementById('modal').style.display='flex';
   };
   window.jump=function(id){closeModal();flyTo(id);setTimeout(function(){openCard(byId[id]);},420);};
   window.closeModal=function(){document.getElementById('modal').style.display='none';};
+
+  window.DOCDATA=null;
+  window.openDoc=function(key,typ){
+    var dv=document.getElementById('docview');dv.style.display='flex';
+    var render=function(){dv.innerHTML=docHtml(key,typ,window.DOCDATA&&window.DOCDATA[key]);dv.scrollTop=0;};
+    if(window.DOCDATA){render();return;}
+    dv.innerHTML='<div class="docsheet"><span class="dx" onclick="closeDoc()">&times;</span><div class="band"><div class="ty">'+esc(typ||'Document')+'</div><div class="so">Opening the archive&hellip;</div></div><div class="body" style="padding:34px;text-align:center;color:#9a8f78;">Loading record&hellip;</div></div>';
+    fetch('docs-content.json').then(function(r){return r.json();}).then(function(j){window.DOCDATA=j;render();}).catch(function(){dv.innerHTML='<div class="docsheet"><span class="dx" onclick="closeDoc()">&times;</span><div class="band"><div class="so">This record could not be loaded.</div></div></div>';});
+  };
+  window.closeDoc=function(){document.getElementById('docview').style.display='none';};
+  function docHtml(key,typ,d){
+    var anc='https://www.ancestry.com/discoveryui-content/view/'+key;
+    var close='<span class="dx" onclick="closeDoc()">&times;</span>';
+    if(!d){return '<div class="docsheet">'+close+'<div class="band"><div class="ty">'+esc(typ||'Record')+'</div><div class="so">Record on Ancestry</div></div><div class="body"><p style="color:#7a705c;">This document has not been added to the offline archive yet.</p></div><div class="docfoot"><span class="tag">Ancestry record</span><a href="'+anc+'" target="_blank" rel="noopener">View on Ancestry &#8599;</a></div></div>';}
+    var icon=ICON[d.type]||ICON.Other;
+    var band='<div class="band"><div class="ty">'+icon+' '+esc(d.type||'Record')+'</div><div class="so">'+esc(d.source||'Record')+'</div></div>';
+    var inner,foot;
+    if(d.scan){
+      inner='<div class="docscan"><img src="'+d.scan+'" alt="record scan" onerror="this.parentNode.style.display=\'none\'"><div class="cap">Original record image</div></div>'+fieldsHtml(d);
+      foot='<span class="tag">Original scan &middot; Ancestry</span><a href="'+anc+'" target="_blank" rel="noopener">View on Ancestry &#8599;</a>';
+    } else {
+      inner=fieldsHtml(d);
+      foot=(d.basic?'<span class="tag">Indexed record &middot; full details on Ancestry</span>':'<span class="tag">Recreated from the indexed record</span>')+'<a href="'+anc+'" target="_blank" rel="noopener">View on Ancestry &#8599;</a>';
+    }
+    return '<div class="docsheet">'+close+band+inner+'<div class="docfoot">'+foot+'</div></div>';
+  }
+  function fieldsHtml(d){
+    var f=d.fields||{},keys=Object.keys(f),me=(f.Name||'').toLowerCase();
+    var rows=keys.map(function(k){return '<tr><td class="k">'+esc(k)+'</td><td class="v">'+esc(f[k])+'</td></tr>';}).join('');
+    var tbl=rows?'<table class="fld">'+rows+'</table>':'';
+    var hh='';
+    if(d.household&&d.household.length){
+      var hr=d.household.map(function(row){var name=row[0]||'',age=row.length>2?row[1]:'',rel=row.length>2?row[2]:(row[1]||'');var cl=(name.toLowerCase()===me&&me)?' class="me"':'';return '<tr'+cl+'><td>'+esc(name)+'</td><td>'+esc(age)+'</td><td>'+esc(rel)+'</td></tr>';}).join('');
+      hh='<div class="hh"><h4>Household</h4><table class="hht"><tr><th>Name</th><th>Age</th><th>Relationship</th></tr>'+hr+'</table></div>';
+    }
+    return '<div class="body">'+(tbl||'<p style="color:#9a8f78;font-style:italic;">No transcribed details.</p>')+hh+'</div>';
+  }
 
   window.surprise=function(){var pool=nodes.filter(function(n){return !n.living;});if(!pool.length)return;var n=pool[Math.floor(Math.random()*pool.length)];revealPath(n.id);setTimeout(function(){flyTo(n.id);openCard(n);},120);};
   var si=document.getElementById('search');
