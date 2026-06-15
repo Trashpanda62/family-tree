@@ -10,6 +10,11 @@
 <meta name="apple-mobile-web-app-title" content="Bloodlines">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#1a1610">
+<meta property="og:title" content="Family Bloodlines — Trace your blood to the Source">
+<meta property="og:description" content="Follow your ancestors backward through time. Each tap reveals the generation before, as the world ages around you.">
+<meta property="og:image" content="icon-512.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
 <style>
   :root{--harris:#3a6ea5;--maxfield:#3a8f5a;--root:#b8860b;--ink:#2c2c2a;--paper:#f5f3ec;--gold:#c9962b;}
@@ -168,6 +173,10 @@
   .bfDocs .dt{display:flex;flex-wrap:wrap;gap:7px;}
   .bfDocs .doc{font-size:12.5px;padding:7px 10px;min-width:0;}
   .bfHint{margin-top:12px;font-size:12px;line-height:1.45;color:#6a6453;background:#f3eede;border:1px dashed #d9cdab;border-radius:9px;padding:9px 11px;}
+  .bfShareBtn{float:right;border:none;background:transparent;font-size:14px;cursor:pointer;padding:2px 4px;color:#a8956a;border-radius:6px;margin:-2px -4px 0 6px;}
+  .bfShareBtn:hover{background:#efe9da;color:#7a6030;}
+  #bShareToast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:rgba(30,26,18,.88);color:#f5e9c6;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;pointer-events:none;opacity:0;transition:opacity .2s;z-index:20;white-space:nowrap;}
+  #bShareToast.show{opacity:1;}
   .bfHist{margin-top:12px;}
   .bfHistH{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:#7a6030;font-weight:700;margin-bottom:7px;}
   .bfHistChips{display:flex;flex-wrap:wrap;gap:6px;}
@@ -303,6 +312,7 @@
   </div>
   <div id="bPayoff"></div>
   <div id="bPassport"></div>
+  <div id="bShareToast">&#128279; Link copied!</div>
 </div>
 
 <script>
@@ -718,8 +728,29 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   };
 
   /* ---- landing ---- */
+  /* ---- URL state & deep-link sharing ---- */
+  function bPushState(line,nodeId){
+    try{
+      var u=window.location.pathname+(line?'?line='+encodeURIComponent(line)+(nodeId?'&node='+encodeURIComponent(nodeId):''):'');
+      history.replaceState({line:line,node:nodeId},'',(line?u:window.location.pathname));
+    }catch(e){}
+  }
+  window.bShare=function(){
+    try{ navigator.clipboard.writeText(window.location.href); }catch(e){ return; }
+    var t=document.getElementById('bShareToast'); if(!t)return;
+    t.classList.add('show'); setTimeout(function(){ t.classList.remove('show'); },2000);
+  };
+  function parseStartState(){
+    var sp=new URLSearchParams(window.location.search);
+    var lk=sp.get('line'), nid=sp.get('node'); if(!lk)return;
+    var line=BL.filter(function(b){return b.key===lk;})[0]; if(!line)return;
+    setMode('blood'); openLine(lk);
+    if(nid){ bRevealAll(); setTimeout(function(){ bFocusId(nid); },200); }
+  }
+
   function showLanding(){
     stopJourney(); stopMotes(); stopMusic(); amTrack=null; curTrack=null;   // selection screen = silent
+    bPushState(null,null);
     document.getElementById('bView').style.display='none';
     var L=document.getElementById('bLanding'); L.style.display='block';
     var P=loadPass(), traced=BL.filter(function(b){return P.lines[b.key];}).length;
@@ -758,6 +789,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     cur._reached=false;
     shownB=new Set(); bornB=new Set();
     line.nodes.forEach(function(n){ if(n.gen<=2) shownB.add(n.id); });   // start: grandparent + 2 gens back
+    bPushState(key,null);
     document.getElementById('bLanding').style.display='none';
     document.getElementById('bView').style.display='block';
     fx();                               // size the FX canvas now the stage finally has layout (else bursts/motes draw into a 0px canvas)
@@ -812,8 +844,9 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     var genTxt=(n.gen===0?'the grandparent':(n.gen+' generation'+(n.gen>1?'s':'')+' back'));
     var narrText = isFounder?(h.founderStory||''):(note?note.note:'');
     var nk=n._narr;
+    bPushState(cur.key, n.id);
     var body='';
-    body+='<div class="bfHead">'+face+'<div class="bfId"><div class="bfNm">'+E(n.label)+(n.unverified?' <span class="unvb">unverified</span>':'')+'</div>'+
+    body+='<div class="bfHead">'+face+'<div class="bfId"><button class="bfShareBtn" onclick="bShare()" title="Copy link to this person">&#128279;</button><div class="bfNm">'+E(n.label)+(n.unverified?' <span class="unvb">unverified</span>':'')+'</div>'+
       '<div class="bfSpan">'+E(n.span||(n.living?'living family':''))+(place?' &middot; '+place:'')+'</div>'+
       '<div class="bfTags"><span class="bfTag '+sideOf(cur)+'">'+sideLabel(cur)+'</span><span class="bfTag">'+E(genTxt)+'</span>'+(eLabel?'<span class="bfTag">'+E(eLabel)+'</span>':'')+(reg?'<span class="bfTag">'+E(REGION_LABEL[reg])+'</span>':'')+'</div></div></div>';
     if(narrText){
@@ -1144,6 +1177,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
 
   window.addEventListener('resize',function(){ if(document.getElementById('bloodMode').style.display==='block'){ fx(); } });
   window.addEventListener('keydown',function(e){ if(document.getElementById('bloodMode').style.display!=='block')return; if(e.key==='Escape'){ bClosePayoff(); bClosePass(); } });
+  parseStartState();
 })();
 </script>
 </body>
