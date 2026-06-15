@@ -141,7 +141,8 @@
   #card .bdocs{margin-top:8px;font-size:12px;color:#8a7748;}
   @media (prefers-reduced-motion: reduce){ .bnode{animation:none;opacity:1;} }
   /* era background + effects */
-  #bBg{position:absolute;inset:0;z-index:0;transition:background 1.4s ease;background:#e9e6dc;}
+  #bBg{position:absolute;inset:0;z-index:0;background:#e9e6dc;background-size:cover;background-position:center;transition:background-image .9s ease, background-color .9s ease;}
+  #bBg::after{content:'';position:absolute;inset:0;background:radial-gradient(125% 95% at 50% 38%, rgba(233,230,220,.10) 0%, rgba(233,230,220,.30) 55%, rgba(38,34,28,.42) 100%);}
   #bEdges{z-index:1;} #bWorld{z-index:2;}
   #bFx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;}
   #bEraLabel{position:absolute;left:14px;bottom:12px;z-index:4;background:rgba(20,18,14,.42);color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;letter-spacing:.4px;pointer-events:none;backdrop-filter:blur(2px);}
@@ -406,28 +407,40 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   function setEra(y, soft){
     var k=eraKey(y), e=ERA[k];
     if(k===curEra) return; curEra=k;
-    var bg=document.getElementById('bBg'); if(bg) bg.style.background=e.g;
+    var bg=document.getElementById('bBg');
+    if(bg){ bg.style.background = (k==='unknown'?'':"url('bg/"+k+".jpg') center/cover no-repeat, ")+e.g; }
     var lab=document.getElementById('bEraLabel'); if(lab) lab.textContent=e.l;
-    if(!soft) ambientTo(e.hz);
+    if(!soft) playEra(k);
   }
 
-  /* ---- Web Audio (synth, no files) ---- */
-  var AC=null, muted=true, amOsc=null, amGain=null;
+  /* ---- short synth SFX (reveal/click feedback) ---- */
+  var AC=null, muted=true;
   function ac(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } if(AC&&AC.state==='suspended')AC.resume(); return AC; }
-  function ping(f,dur,type,vol){ if(muted)return; var c=ac(); if(!c)return; var o=c.createOscillator(),g=c.createGain(); o.type=type||'sine'; o.frequency.value=f; o.connect(g); g.connect(c.destination); var t=c.currentTime; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.12,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+(dur||0.4)); o.start(t); o.stop(t+(dur||0.45)); }
-  function sReveal(){ ping(523,0.28,'sine',0.13); ping(784,0.34,'sine',0.08); }
-  function sChord(){ [392,523,659,784].forEach(function(f,i){ setTimeout(function(){ping(f,0.6,'triangle',0.07);}, i*70); }); }
-  function sClick(){ ping(660,0.12,'sine',0.07); }
-  function ambientTo(hz){
-    var c=ac(); if(!c||muted){ return; }
-    if(!amOsc){ amOsc=c.createOscillator(); amGain=c.createGain(); amOsc.type='sine'; amGain.gain.value=0.0001; amOsc.connect(amGain); amGain.connect(c.destination); amOsc.start(); amGain.gain.exponentialRampToValueAtTime(0.03,c.currentTime+1.5); }
-    if(hz) amOsc.frequency.exponentialRampToValueAtTime(hz/2, c.currentTime+1.2);
+  function ping(f,dur,type,vol){ if(muted)return; var c=ac(); if(!c)return; var o=c.createOscillator(),g=c.createGain(); o.type=type||'sine'; o.frequency.value=f; o.connect(g); g.connect(c.destination); var t=c.currentTime; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol||0.1,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+(dur||0.4)); o.start(t); o.stop(t+(dur||0.45)); }
+  function sReveal(){ ping(523,0.26,'sine',0.08); ping(784,0.32,'sine',0.05); }
+  function sChord(){ /* the ElevenLabs era track now carries the mood */ }
+  function sClick(){ ping(660,0.1,'sine',0.05); }
+  /* ---- ElevenLabs era music: crossfade between two <audio> elements ---- */
+  var amA=null,amB=null,amCur=null,amEra=null,MVOL=0.5;
+  function mkAudio(){ var a=new Audio(); a.loop=true; a.preload='none'; a.volume=0; return a; }
+  function fadeVol(el,to,ms,done){ var from=el.volume,t0=null; function step(ts){ if(t0==null)t0=ts; var p=Math.min(1,(ts-t0)/ms); try{el.volume=Math.max(0,Math.min(1,from+(to-from)*p));}catch(e){} if(p<1)requestAnimationFrame(step); else if(done)done(); } requestAnimationFrame(step); }
+  function playEra(k){
+    if(!k||k==='unknown') return;
+    if(muted){ amEra=k; return; }          // remember; starts on unmute
+    if(k===amEra && amCur && !amCur.paused) return;
+    amEra=k;
+    if(!amA){ amA=mkAudio(); amB=mkAudio(); }
+    var next=(amCur===amA)?amB:amA, prev=amCur;
+    next.src='audio/'+k+'.mp3'; next.volume=0;
+    var pr=next.play(); if(pr&&pr.catch)pr.catch(function(){});
+    amCur=next; fadeVol(next,MVOL,1000);
+    if(prev&&prev!==next){ fadeVol(prev,0,1000,function(){try{prev.pause();}catch(e){}}); }
   }
   window.bMute=function(){
     muted=!muted;
     var b=document.getElementById('bMuteBtn'); if(b) b.innerHTML=muted?'&#128263;':'&#128266;';
-    if(muted){ if(amGain){try{amGain.gain.exponentialRampToValueAtTime(0.0001,ac().currentTime+0.4);}catch(e){}} }
-    else { ac(); if(cur){var e=ERA[curEra]||ERA.unknown; ambientTo(e.hz);} sClick(); }
+    if(muted){ if(amCur) fadeVol(amCur,0,400,function(){try{amCur.pause();}catch(e){}}); }
+    else { ac(); var k=amEra||curEra; amEra=null; playEra(k); sClick(); }
   };
 
   /* ---- particle FX ---- */
