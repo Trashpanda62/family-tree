@@ -274,11 +274,34 @@
 
   @media (prefers-reduced-motion: reduce){ .bnode,.bnode.fresh{animation:none;opacity:1;} .bedge.draw{animation:none;stroke-dashoffset:0;} #bFlash.go{animation:none;} #bBg{animation:none;} }
   @media (max-width:700px){
-    #bObj{top:88px;left:8px;right:8px;width:auto;transform:none;}
-    #bFocus{left:8px;right:58px;width:auto;top:auto;bottom:8px;max-height:46%;}  /* bottom sheet; right gutter clears #bCtl */
+    /* slim objective bar — flush top edge, no transform */
+    #bObj{top:46px;left:0;right:0;width:100%;border-radius:0;border-left:none;border-right:none;border-top:none;transform:none;padding:6px 12px;}
+    .bObjT{font-size:11.5px;} .bObjS{font-size:10px;gap:3px 8px;} .bBack{font-size:10.5px;padding:3px 7px;}
+    /* focus panel = bottom sheet */
+    #bFocus{
+      position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;max-width:100%;
+      max-height:75vh;min-height:0;
+      border-radius:18px 18px 0 0;border-left:none;border-right:none;border-bottom:none;
+      padding:0 14px env(safe-area-inset-bottom,16px);
+      transform:translateY(calc(100% - 56px));
+      transition:transform .28s cubic-bezier(.4,0,.2,1);
+      overflow:hidden;
+    }
+    #bFocus.bfOpen{transform:translateY(0);overflow-y:auto;}
+    /* drag handle pill */
+    .bfHandle{display:block;width:36px;height:4px;background:#d0c8b5;border-radius:2px;margin:8px auto 0;cursor:pointer;flex-shrink:0;}
+    /* peek strip (name + year) shown when collapsed */
+    .bfPeek{font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:6px 0 8px;cursor:pointer;border-bottom:1px solid #ece3cd;margin-bottom:2px;}
+    /* hide handle/peek on desktop (they're only injected on mobile anyway) */
+    /* nodes: slightly narrower */
+    .bnode{width:158px;min-height:54px;padding:7px 9px;}
+    .bnode .bnm{font-size:12px;} .bnode .bsub{font-size:10.5px;}
+    .bface{width:32px;height:32px;border-radius:6px;}
+    /* control buttons above the bottom sheet peek */
+    #bCtl{bottom:62px;right:8px;} #bCtl .btn{width:36px;height:36px;font-size:17px;} #bCtl #bMuteBtn{font-size:14px;}
     #bEra{display:none !important;}
-    #bCtl{bottom:10px;}
     .bIntro h1{font-size:24px;}
+    .bGrid{grid-template-columns:1fr 1fr;}
   }
 </style>
 </head>
@@ -305,7 +328,7 @@
     <div id="bFocus"></div>
     <div id="bEra"></div>
     <div id="bCtl">
-      <button class="btn" id="bNewBtn" onclick="bNewGame()" title="New game — choose another bloodline">&#128506;</button>
+      <button class="btn" id="bNewBtn" onclick="bNewGame()" title="Choose a bloodline">&#9776;</button>
       <button class="btn" id="bResetBtn" onclick="bReset()" title="Reset this line to the start">&#8634;</button>
       <button class="btn" id="bPlayBtn" onclick="bPlay()" title="Guided journey back to the Source">&#9654;</button>
       <button class="btn" onclick="bRevealAll()" title="Reveal the whole line, all the way back">&#9211;</button>
@@ -879,7 +902,14 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     if(CFORM && !n.living){
       body+='<div class="bfContrib"><a class="bfContribBtn" href="'+E(CFORM)+'" target="_blank" rel="noopener">&#128196; Contribute a document or story</a></div>';
     }
-    var el=document.getElementById('bFocus'); el.innerHTML=body; el.scrollTop=0;
+    var el=document.getElementById('bFocus');
+    var isMob=window.innerWidth<=700;
+    if(isMob){
+      var peekSpan=E(n.label)+(n.b?' &middot; '+(n.b<1500?'~':'')+n.b:'');
+      body='<div class="bfHandle" onclick="bToggleFocus()"></div><div class="bfPeek" onclick="bToggleFocus()">'+peekSpan+'</div>'+body;
+      el.classList.add('bfOpen');
+    }
+    el.innerHTML=body; el.scrollTop=0;
     paintListen();
     document.querySelectorAll('.bnode.focus').forEach(function(e){e.classList.remove('focus');});
     if(n._el) n._el.classList.add('focus');
@@ -888,6 +918,8 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     if(cur.ancCount && cur._source && n.id===cur._source.id) checkSource();  // arriving at the Source = the win
   };
   window.bRevealFocus=function(){ if(focus) revealParents(focus.id); };
+  function bCollapseFocus(){ var el=document.getElementById('bFocus'); if(el) el.classList.remove('bfOpen'); }
+  window.bToggleFocus=function(){ var el=document.getElementById('bFocus'); if(el) el.classList.toggle('bfOpen'); };
   // a tap = focus that person, auto-play their narration, and reveal their parents
   function tapNode(n){
     sClick();
@@ -1106,7 +1138,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
         pDist=d; lx=e.clientX;ly=e.clientY; return;
       }
       if(!down)return;
-      if(Math.abs(e.clientX-lx)+Math.abs(e.clientY-ly)>3)moved=true;
+      if(Math.abs(e.clientX-lx)+Math.abs(e.clientY-ly)>3){ if(!moved) bCollapseFocus(); moved=true; }
       st.classList.add('drag');bs.x+=e.clientX-lx;bs.y+=e.clientY-ly;lx=e.clientX;ly=e.clientY;bapply();
     });
     window.addEventListener('pointerup',function(e){
