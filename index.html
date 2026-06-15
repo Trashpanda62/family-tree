@@ -1122,6 +1122,13 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   var playing=false, playT=null;
   window.bPlay=function(){ if(playing){ stopJourney(); return; } if(!cur||!cur.ancCount) return; startJourney(); };
   function setPlayBtn(){ var b=document.getElementById('bPlayBtn'); if(b) b.innerHTML=playing?'&#10073;&#10073;':'&#9654;'; }
+  function bSpeakEvent(e){
+    if(!window.speechSynthesis || muted) return;
+    window.speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(e.t);
+    u.rate=0.88; u.pitch=0.92;
+    window.speechSynthesis.speak(u);
+  }
   function startJourney(){
     playing=true; setPlayBtn();
     if(muted){ window.bMute(); }              // journey wants sound
@@ -1134,14 +1141,23 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
       shownB.add(n.id); layoutB(); renderB();
       var par=byIdB[n.par]; if(par) burstAt(par); sReveal();
       setFocus(n);                             // scene + camera fly + panel + narration
-      var nk=n._narr; if(hasNarr(nk)) bListen(nk);
+      var nk=n._narr, hasClip=hasNarr(nk); if(hasClip) bListen(nk);
       renderObjective(); checkSource();
       if(cur._reached){ playing=false; setPlayBtn(); return; }
-      playT=setTimeout(step, hasNarr(n._narr)?5200:1700);
+      var wev=(livesThrough(n)||[])[0];
+      if(wev){
+        setTimeout(function(){ if(playing) bSpeakEvent(wev); }, hasClip?3200:600);
+      }
+      playT=setTimeout(step, hasClip?(wev?7000:5200):(wev?4500:1700));
     };
     playT=setTimeout(step, 500);
   }
-  function stopJourney(){ if(!playing && !playT) return; playing=false; if(playT){clearTimeout(playT);playT=null;} setPlayBtn(); }
+  function stopJourney(){
+    if(!playing && !playT) return;
+    playing=false; if(playT){clearTimeout(playT);playT=null;}
+    if(window.speechSynthesis) window.speechSynthesis.cancel();
+    setPlayBtn();
+  }
 
   /* ---- reset / new game ---- */
   window.bNewGame=function(){ sClick(); showBLanding(); };
