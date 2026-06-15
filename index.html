@@ -194,6 +194,8 @@
   .htIc{font-size:13px;flex-shrink:0;line-height:1;}
   .htyr{font-size:10.5px;font-weight:700;color:#8a6a1f;flex-shrink:0;min-width:46px;}
   .htT{font-size:12px;color:#3e3320;font-weight:600;line-height:1.25;}
+  .htAge{margin-left:auto;align-self:center;flex-shrink:0;font-size:9.5px;font-weight:700;color:#4e6a44;background:#e9f1df;border:1px solid #d3e0c4;border-radius:8px;padding:1px 7px;white-space:nowrap;}
+  .htLead{color:#5a4a16;}
   .htI{font-size:11.5px;color:#6a5c3a;line-height:1.45;max-height:0;overflow:hidden;opacity:0;transition:max-height .22s,opacity .22s,margin .22s;}
   .htItem.open .htI{max-height:170px;opacity:1;margin-top:6px;}
   .htItem.k-war{border-left-color:#b3543a;} .htItem.k-famine{border-left-color:#b08a2a;}
@@ -807,6 +809,32 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     out.sort(function(a,b){ return a.y-b.y; });      // display chronologically
     return out;
   }
+  /* how old the person was when an event happened (capped at their death age) */
+  function _ageSpan(n,e){
+    var born=n.b; if(!born) return null;
+    var y=e.y, y2=e.y2||e.y, dAge=(n.d?n.d-born:null);
+    var a1=y-born, a2=y2-born;
+    if(dAge!=null) a2=Math.min(a2,dAge);
+    return {a1:a1,a2:a2};
+  }
+  function ageLabel(n,e){               // compact pill text
+    var s=_ageSpan(n,e); if(!s) return '';
+    var a1=s.a1,a2=s.a2;
+    if(a2<0) return '';
+    if(a1<=0&&a2<=0) return 'born';
+    if(a1<=0) return 'birth–'+a2;
+    if(a1===a2) return (a1===0?'born':'age '+a1);
+    return 'ages '+a1+'–'+a2;
+  }
+  function ageLead(n,e){                // personalised sentence in the expanded card
+    var s=_ageSpan(n,e); if(!s) return '';
+    var a1=s.a1,a2=s.a2; if(a2<0) return '';
+    var nm=(n.label||'').split(/\s+/)[0]||'They';
+    if(a1<=0&&a2<=0) return 'Born the very year this happened.';
+    if(a1<=0) return nm+' lived through this from birth to age '+a2+'.';
+    if(a1===a2) return (a1===0?'Born the year this happened.':nm+' was '+a1+' when this happened.');
+    return nm+' was '+a1+'–'+a2+' through these years.';
+  }
 
   /* ---- particle FX (reveal bursts + ambient drifting motes) ---- */
   var cv,cx,parts=[],raf=null;
@@ -1067,9 +1095,10 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
       hist.forEach(function(e){
         var yr=e.y2&&e.y2!==e.y?((e.y<1500?'~':'')+e.y+'&ndash;'+e.y2):((e.y<1500?'~':'')+e.y);
         var ic=KICON[e.k]||'&#128220;';
+        var ag=ageLabel(n,e), lead=ageLead(n,e);
         body+='<div class="htItem k-'+E(e.k||'culture')+'" onclick="bToggleHt(this)">'+
-          '<div class="htRow"><span class="htIc">'+ic+'</span><span class="htyr">'+yr+'</span><span class="htT">'+E(e.t)+'</span></div>'+
-          '<div class="htI">'+E(e.i)+'</div></div>';
+          '<div class="htRow"><span class="htIc">'+ic+'</span><span class="htyr">'+yr+'</span><span class="htT">'+E(e.t)+'</span>'+(ag?'<span class="htAge">'+E(ag)+'</span>':'')+'</div>'+
+          '<div class="htI">'+(lead?'<b class="htLead">'+E(lead)+'</b> ':'')+E(e.i)+'</div></div>';
       });
       body+='</div></div>';
     }
