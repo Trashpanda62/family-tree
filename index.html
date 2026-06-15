@@ -842,8 +842,15 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     return '<div class="bfDocs"><div class="bfDocsH">&#128196; '+docs.length+' document'+(docs.length>1?'s':'')+' on record &mdash; tap to open</div><div class="dt">'+chips+'</div></div>';
   }
 
+  /* topic signature: first two significant words, to collapse near-duplicate
+     event titles (e.g. "The Black Death", "Black Death Sweeps Europe") ---- */
+  var HSTOP={the:1,of:1,at:1,'in':1,on:1,to:1,and:1,'for':1,a:1,an:1,his:1,her:1,'first':1,great:1,'new':1};
+  function histSig(t){
+    var w=String(t||'').toLowerCase().replace(/[^a-z ]/g,' ').split(/\s+/).filter(function(x){return x.length>2 && !HSTOP[x];});
+    return w.slice(0,2).join('')||String(t||'').toLowerCase().slice(0,8);
+  }
   /* ---- historical context: events a person lived through (region-scoped,
-     category-diverse, up to 6, no repeated titles) ---- */
+     category-diverse, up to 6, finest-locale-first, no repeated topic) ---- */
   function livesThrough(n){
     if(!n||!n.b||n.living||!HWLD||!HWLD.length) return [];
     var born=n.b, died=n.d||(born+78);
@@ -862,20 +869,21 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
       var span=(e.y+(e.y2||e.y))/2;
       e._s=Math.abs(span-mid);
       if(e.k==='royal'||e.k==='fact'||e.k==='famine'||e.k==='plague'||e.k==='disaster') e._s-=7; // vivid surfaces
-      if(e.r!=='*') e._s-=12;                      // prefer local over universal
+      if(e.r!=='*') e._s-=12;                      // prefer regional/local over universal
+      if(LOCALE_CHAIN[e.r]) e._s-=8;               // prefer the finest county/town locale
     });
     ev.sort(function(a,b){ return a._s-b._s; });
-    var out=[], cat={}, titles={};
-    for(var p=0;p<ev.length && out.length<6;p++){   // pass 1: variety (max 2 per category)
-      var e=ev[p], nt=e.t.toLowerCase();
-      if(titles[nt]) continue;
+    var out=[], cat={}, sigs={};
+    for(var p=0;p<ev.length && out.length<6;p++){   // pass 1: variety (max 2/cat, no repeated topic)
+      var e=ev[p], sg=histSig(e.t);
+      if(sigs[sg]) continue;                        // collapse same-topic dupes (e.g. 3x Black Death)
       if((cat[e.k]||0)>=2) continue;
-      cat[e.k]=(cat[e.k]||0)+1; titles[nt]=1; out.push(e);
+      cat[e.k]=(cat[e.k]||0)+1; sigs[sg]=1; out.push(e);
     }
     for(var q=0;q<ev.length && out.length<6;q++){    // pass 2: fill remaining slots
-      var e2=ev[q], nt2=e2.t.toLowerCase();
-      if(titles[nt2]||out.indexOf(e2)>=0) continue;
-      titles[nt2]=1; out.push(e2);
+      var e2=ev[q], sg2=histSig(e2.t);
+      if(sigs[sg2]||out.indexOf(e2)>=0) continue;
+      sigs[sg2]=1; out.push(e2);
     }
     out.sort(function(a,b){ return a.y-b.y; });      // display chronologically
     return out;
