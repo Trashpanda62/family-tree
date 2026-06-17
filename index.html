@@ -353,6 +353,50 @@
   .tlcoT{font-size:13px;font-weight:600;color:#46413a;line-height:1.35;}
   .tlcoI{font-size:12px;line-height:1.5;color:#4a463e;margin-top:3px;} .tlcoI b{color:#7a6030;}
   .tlcoSrc{font-size:10px;color:#9a916f;margin-top:4px;}
+  /* ===== the trail: two-pairs stop view (replaces the pan/zoom tree) ===== */
+  #bTrail{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:4;padding:84px 18px 76px;overflow:auto;pointer-events:none;}
+  #bTrail.go .trailInner{animation:trailIn .5s cubic-bezier(.2,.9,.3,1);}
+  @keyframes trailIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+  .trailInner{pointer-events:auto;width:min(940px,100%);margin:auto;}
+  .trailWith{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;margin-bottom:11px;}
+  .twLbl{font-size:11px;color:#f3ead2;text-transform:uppercase;letter-spacing:.09em;text-shadow:0 1px 5px rgba(0,0,0,.7);}
+  .twPerson{display:inline-flex;align-items:center;gap:8px;background:rgba(255,253,247,.95);border:1px solid #d8cba6;border-radius:30px;padding:4px 14px 4px 4px;cursor:pointer;font:inherit;box-shadow:0 2px 11px rgba(0,0,0,.24);}
+  .twPerson:hover{background:#fff;}
+  .twPerson img,.twPerson i{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#cdbf9e;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;color:#fff;font-size:13px;}
+  .twPerson b{font-size:13.5px;color:#43321a;font-weight:600;}
+  .twPerson em{font-style:normal;font-size:11px;color:#8a7748;margin-left:1px;}
+  .twAmp{color:#f3ead2;font-size:15px;text-shadow:0 1px 5px rgba(0,0,0,.7);}
+  .trailBack{background:rgba(0,0,0,.36);border:1px solid rgba(255,255,255,.32);color:#fff;border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;}
+  .trailBack:hover{background:rgba(0,0,0,.5);}
+  .forkPrompt{text-align:center;color:#fff;font-size:19px;font-weight:600;margin:2px 0 15px;text-shadow:0 2px 9px rgba(0,0,0,.7);}
+  .fork{display:grid;gap:18px;grid-template-columns:1fr 1fr;align-items:start;}
+  .fork.c1{grid-template-columns:minmax(0,540px);justify-content:center;}
+  .forkPair{background:rgba(255,253,247,.97);border:1px solid #ddd0ad;border-radius:16px;padding:12px 13px;box-shadow:0 10px 34px rgba(0,0,0,.3);}
+  .fpH{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:#8a6f30;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .fpSrc{color:#b8860b;text-transform:none;letter-spacing:0;font-weight:700;font-size:11px;}
+  .fpWall{font-size:13px;color:#8a8170;padding:16px 8px;text-align:center;line-height:1.5;}
+  .fpPeople{display:flex;flex-direction:column;gap:9px;}
+  .personBtn{position:relative;display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;background:#fffdf8;border:1.5px solid var(--harris);border-left-width:5px;border-radius:12px;padding:10px 12px 11px;cursor:pointer;font:inherit;color:var(--ink);transition:transform .12s,box-shadow .12s,background .12s;}
+  .personBtn.maxfield{border-color:var(--maxfield);}
+  .personBtn:hover{transform:translateY(-2px);box-shadow:0 7px 19px rgba(0,0,0,.19);background:#fff;}
+  .personBtn.notable{box-shadow:0 0 0 2px #e7c66b inset;}
+  .personBtn.unv{opacity:.85;border-style:dashed;}
+  .pFace,.pFaceEmpty{width:50px;height:50px;border-radius:10px;object-fit:cover;flex:0 0 auto;background:#e9e3d4;border:1px solid #d8d0bc;}
+  .pFaceEmpty{display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;background:linear-gradient(135deg,#b9a87f,#8a7748);}
+  .pInfo{min-width:0;flex:1;}
+  .pName{font-size:14.5px;font-weight:700;color:#3c2f1a;line-height:1.2;}
+  .pYrs{font-size:11.5px;color:#8a7748;margin-top:1px;}
+  .pHook{font-size:12px;color:#6a6253;margin-top:3px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .pBadges{margin-top:5px;display:flex;gap:5px;flex-wrap:wrap;}
+  .pBadge{font-size:11px;background:#f1ead8;border-radius:7px;padding:1px 6px;color:#7a6030;}
+  .pGo{position:absolute;right:11px;bottom:8px;font-size:10.5px;color:#b08a2a;font-weight:600;opacity:0;transition:opacity .12s;}
+  .personBtn:hover .pGo{opacity:1;}
+  .fpFollow{display:block;width:100%;margin-top:10px;border:none;background:var(--gold);color:#fff;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 3px 10px rgba(201,150,43,.45);}
+  .fpFollow.maxfield{background:var(--maxfield);box-shadow:0 3px 10px rgba(47,138,90,.4);}
+  .fpFollow:hover{filter:brightness(1.06);}
+  .bfClose{position:absolute;top:8px;right:9px;width:27px;height:27px;border:none;background:#efe7d4;color:#7a6030;border-radius:50%;font-size:14px;cursor:pointer;z-index:3;line-height:1;}
+  .bfClose:hover{background:#e3d8bf;}
+  @media (min-width:701px){ #bFocus.bfShow{left:50%;transform:translateX(-50%);width:min(392px,92%);z-index:9;} }
   @media (max-width:700px){
     /* slim objective bar — flush top edge, no transform */
     #bObj{top:46px;left:0;right:0;width:100%;border-radius:0;border-left:none;border-right:none;border-top:none;transform:none;padding:6px 12px;}
@@ -390,6 +434,8 @@
     .bMapTg{padding:7px 13px;font-size:12.5px;}
     .bfHistHint{display:none;}
     .bfTLtrack{height:158px;} .bfTLH .bfTLhint{display:none;}
+    .fork{grid-template-columns:1fr;gap:13px;} .fork.c1{grid-template-columns:1fr;}
+    #bTrail{padding:58px 11px 64px;} .forkPrompt{font-size:16px;margin-bottom:11px;} .trailWith{gap:7px;}
   }
 </style>
 </head>
@@ -411,7 +457,7 @@
 <div id="bloodMode">
   <div id="bLanding"></div>
   <div id="bView">
-    <div id="bStage"><div id="bBg"></div><svg id="bEdges"></svg><div id="bWorld"></div><canvas id="bFx"></canvas><div id="bFlash"></div><div id="bEraLabel"></div></div>
+    <div id="bStage"><div id="bBg"></div><canvas id="bFx"></canvas><div id="bFlash"></div><div id="bEraLabel"></div><div id="bTrail"></div></div>
     <div id="bObj"></div>
     <div id="bFocus"></div>
     <div id="bEra"></div>
@@ -419,11 +465,9 @@
       <button class="btn" id="bNewBtn" onclick="bNewGame()" title="Choose a bloodline">&#9776;</button>
       <button class="btn" id="bResetBtn" onclick="bReset()" title="Reset this line to the start">&#8634;</button>
       <button class="btn" id="bPlayBtn" onclick="bPlay()" title="Guided journey back to the Source">&#9654;</button>
-      <button class="btn" onclick="bRevealAll()" title="Reveal the whole line, all the way back">&#9211;</button>
+      <button class="btn" onclick="bJumpSource()" title="Leap to the Source">&#9650;</button>
       <button class="btn" id="bMapBtn" onclick="bOpenMap()" title="Ancestor map">&#128205;</button>
-      <button class="btn" id="bMuteBtn" onclick="bMute()" title="Sound on/off">&#128263;</button>
-      <button class="btn" onclick="bZoom(1.2)">+</button><button class="btn" onclick="bZoom(.83)">&minus;</button>
-      <button class="btn" onclick="bFit()" title="Fit to screen">&#9974;</button></div>
+      <button class="btn" id="bMuteBtn" onclick="bMute()" title="Sound on/off">&#128263;</button></div>
   </div>
   <div id="bPayoff"></div>
   <div id="bPassport"></div>
@@ -1253,20 +1297,129 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     while(sid && guard++<400){ sp.unshift(sid); sid=byIdB[sid]?byIdB[sid].par:null; }
     cur._sourcePath=sp;
     cur._reached=false;
-    shownB=new Set(); bornB=new Set();
-    line.nodes.forEach(function(n){ if(n.gen<=2) shownB.add(n.id); });   // start: grandparent + 2 gens back
+    shownB=new Set(); bornB=new Set(); oldestBelowMemo={}; _srcSubMemo={};
     bPushState(key,null);
     document.getElementById('bLanding').style.display='none';
     document.getElementById('bView').style.display='block';
-    fx();                               // size the FX canvas now the stage finally has layout (else bursts/motes draw into a 0px canvas)
-    var h=HI[key]||{};
-    renderEra(h);
-    layoutB(); renderB();
-    setFocus(f0, true);                 // panel starts on the founder
+    fx();                               // size the FX canvas now the stage finally has layout
+    var _ee=document.getElementById('bEra'); if(_ee){ _ee.style.display='none'; _ee.innerHTML=''; }  // era strip retired in trail mode
+    hideFocus();
+    trailStack=[]; trailCouple=[f0.id];   // start at the grandparent (the trailhead)
     curEra=null; curTrack=null; setScene(cur._founderYear, f0&&f0.place, true);
-    bFit(true); startMotes();
+    renderStop(true); startMotes();
     renderObjective();
   };
+
+  /* ===== THE TRAIL ===== walk back one couple at a time. Each stop shows the
+     couple you're traveling with + their TWO parent-pairs (his people / her
+     people); pick whose blood to follow deeper. Tap any face for their life
+     page. Replaces the pan/zoom tree. ===== */
+  var trailCouple=[], trailStack=[], oldestBelowMemo={}, _srcSubMemo={};
+  function nodeById(id){ return byIdB[id]; }
+  function sourceInSubtree(id){          // does this branch lead to the Source node?
+    if(!cur._source) return false;
+    if(_srcSubMemo[id]!=null) return _srcSubMemo[id];
+    _srcSubMemo[id]=false;               // cycle guard
+    var r=(id===cur._source.id) || (kidsOf[id]||[]).some(function(k){ return sourceInSubtree(k); });
+    _srcSubMemo[id]=r; return r;
+  }
+  function parentsOf(id){            // a couple = up to 2; if dup/step records exist, keep the 2 best-documented
+    var ps=(kidsOf[id]||[]).map(nodeById).filter(Boolean);
+    if(ps.length>2) ps=ps.slice().sort(function(a,b){ return ((b.b?1:0)-(a.b?1:0))||((a.b||9999)-(b.b||9999)); }).slice(0,2);
+    return ps;
+  }
+  function markShown(ids){ ids.forEach(function(id){ shownB.add(id); (kidsOf[id]||[]).forEach(function(p){ shownB.add(p); }); }); }
+  function oldestBelow(id){
+    if(oldestBelowMemo[id]!=null) return oldestBelowMemo[id];
+    oldestBelowMemo[id]=9999;                          // guard against cycles
+    var n=byIdB[id], best=(n&&n.b!=null)?n.b:9999;
+    (kidsOf[id]||[]).forEach(function(k){ var ob=oldestBelow(k); if(ob<best) best=ob; });
+    oldestBelowMemo[id]=best; return best;
+  }
+  function personHook(n){
+    if(n.living) return 'living family';
+    var notes=(HI[cur.key]||{}).personNotes||[];
+    var note=notes.filter(function(x){ return x.id===n.id||x.name===n.label; })[0];
+    if(note&&note.note){ var s=note.note.split(/\.\s/)[0]; return s.length>74?s.slice(0,72)+'…':s; }
+    var pf=PFACT[n.id]; if(pf&&pf.who) return pf.who;
+    var ev=n.events||[];
+    if(ev.some(function(e){return e.k==='military';})) return 'served in the military';
+    var im=ev.filter(function(e){return e.k==='immig';})[0]; if(im) return im.t.toLowerCase();
+    if(n.spouse) return 'm. '+n.spouse;
+    return firstPlace(n.place)||(ERA[eraKey(n.b)]||{}).l||'';
+  }
+  function personBadges(n){
+    var ev=n.events||[], b='';
+    if(ev.some(function(e){return e.k==='military';})) b+='<span class="pBadge">&#127894;&#65039;</span>';
+    if(ev.some(function(e){return e.k==='immig';})) b+='<span class="pBadge">&#9875;&#65039;</span>';
+    if(ev.some(function(e){return e.k==='fire';})) b+='<span class="pBadge">&#128293;</span>';
+    if(n.docs&&n.docs.length) b+='<span class="pBadge">&#128196; '+n.docs.length+'</span>';
+    return b?'<div class="pBadges">'+b+'</div>':'';
+  }
+  function personBtn(n, side){
+    var face=n.face?'<img class="pFace" src="'+E(n.face)+'" onerror="this.style.display=\'none\'">':'<div class="pFaceEmpty">'+E((n.first||n.label||'?').slice(0,1))+'</div>';
+    var yrs=n.living?'living family':E(n.span||(n.b?((n.b<1500?'~':'')+n.b):''));
+    var place=n.living?'':E(firstPlace(n.place));
+    return '<button class="personBtn '+side+(n.notable?' notable':'')+(n.unverified?' unv':'')+'" onclick="bOpenPerson(\''+n.id+'\')">'+
+      face+'<div class="pInfo"><div class="pName">'+E(n.label)+(n.unverified?' <span class="unvb">unverified</span>':'')+'</div>'+
+      '<div class="pYrs">'+yrs+(place?' &middot; '+place:'')+'</div>'+
+      '<div class="pHook">'+E(personHook(n))+'</div>'+personBadges(n)+'</div>'+
+      '<span class="pGo">their life &#8594;</span></button>';
+  }
+  function pairCard(ownerId){
+    var owner=byIdB[ownerId], par=parentsOf(ownerId), side=sideOf(cur);
+    var label=E(owner.first||owner.label)+'&rsquo;s parents';
+    if(!par.length){
+      return '<div class="forkPair wall"><div class="fpH">'+label+'</div><div class="fpWall">&#128679; The trail goes cold here &mdash; '+E(owner.first||'their')+'&rsquo;s parents aren&rsquo;t known yet.</div></div>';
+    }
+    var ob=Math.min.apply(null, par.map(function(p){ return oldestBelow(p.id); }));
+    var src=sourceInSubtree(ownerId)?'<span class="fpSrc">&#9733; toward the Source</span>':'';
+    return '<div class="forkPair"><div class="fpH">'+label+src+'</div><div class="fpPeople">'+
+      par.map(function(p){ return personBtn(p, side); }).join('')+'</div>'+
+      '<button class="fpFollow '+side+'" onclick="bTravel(\''+ownerId+'\')">follow this line back'+(ob<9999?' &middot; to '+(ob<1500?'~':'')+ob:'')+' &#8595;</button></div>';
+  }
+  window.renderStop=function(first){
+    var el=document.getElementById('bTrail'); if(!el||!cur) return;
+    var couple=trailCouple.map(nodeById).filter(Boolean); if(!couple.length) return;
+    var back=trailStack.length?'<button class="trailBack" onclick="bTrailBack()">&#8592; back toward today</button>':'';
+    var banner='<div class="trailWith">'+back+'<span class="twLbl">tracing the blood of</span> '+couple.map(function(n){
+      return '<button class="twPerson" onclick="bOpenPerson(\''+n.id+'\')">'+(n.face?'<img src="'+E(n.face)+'">':'<i>'+E((n.first||'?').slice(0,1))+'</i>')+'<b>'+E(n.label)+'</b>'+(n.b?'<em>'+(n.b<1500?'~':'')+n.b+'</em>':'')+'</button>';
+    }).join('<span class="twAmp">&amp;</span>')+'</div>';
+    var prompt=couple.length>1?'Whose people do you follow back?':'Travel back to '+E(couple[0].first||'their')+'&rsquo;s parents';
+    var cards=couple.map(function(n){ return pairCard(n.id); }).join('');
+    el.innerHTML='<div class="trailInner">'+banner+'<div class="forkPrompt">'+prompt+'</div><div class="fork c'+couple.length+'">'+cards+'</div></div>';
+    if(!RM){ el.classList.remove('go'); void el.offsetWidth; el.classList.add('go'); }
+    markShown(trailCouple);
+    renderObjective();
+  };
+  window.bTravel=function(ownerId){
+    var par=parentsOf(ownerId); if(!par.length) return;        // research wall: stay put
+    sReveal();
+    trailStack.push(trailCouple.slice());
+    trailCouple=parentsOf(ownerId).map(function(p){ return p.id; });
+    var yrs=par.map(function(p){ return p.b; }).filter(function(y){ return y!=null; });
+    if(!RM) flash();
+    if(yrs.length) setScene(Math.min.apply(null,yrs), par[0].place);
+    renderStop(); burstTrail();
+    if(cur._source && trailCouple.indexOf(cur._source.id)>=0) checkSource();
+    bPushState(cur.key, trailCouple[0]);
+  };
+  window.bTrailBack=function(){
+    if(!trailStack.length) return;
+    trailCouple=trailStack.pop(); sClick();
+    var yrs=trailCouple.map(function(id){ return (byIdB[id]||{}).b; }).filter(function(y){ return y!=null; });
+    if(yrs.length) setScene(Math.min.apply(null,yrs), (byIdB[trailCouple[0]]||{}).place);
+    renderStop();
+  };
+  window.bOpenPerson=function(id){ var n=byIdB[id]; if(!n) return; sClick(); showFocus(); setFocus(n, true); };
+  function burstTrail(){
+    var el=document.getElementById('bTrail'); if(!el) return; if(!cx) fx(); if(!cx) return;
+    var sr=stage().getBoundingClientRect(), fp=el.querySelector('.fork')||el;
+    var r=fp.getBoundingClientRect();
+    burst(r.left-sr.left+r.width/2, r.top-sr.top+Math.min(r.height*0.4,120), sideOf(cur)==='maxfield'?'#46c878':'#f3c34b', 64);
+  }
+  function showFocus(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='block'; el.classList.add('bfShow'); } }
+  window.hideFocus=function(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='none'; el.classList.remove('bfShow'); } stopNarr(); };
 
   /* ---- objective bar (the goal, always visible) ---- */
   function deepestShown(){
@@ -1311,7 +1464,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     var narrText = isFounder?(h.founderStory||''):(note?note.note:'');
     var nk=n._narr;
     bPushState(cur.key, n.id);
-    var body='';
+    var body='<button class="bfClose" onclick="hideFocus()" title="Close">&#10005;</button>';
     body+='<div class="bfHead">'+face+'<div class="bfId"><button class="bfShareBtn" onclick="bShare()" title="Copy link to this person">&#128279;</button><div class="bfNm">'+E(n.label)+(n.unverified?' <span class="unvb">unverified</span>':'')+'</div>'+
       '<div class="bfSpan">'+E(n.span||(n.living?'living family':''))+(place?' &middot; '+place:'')+'</div>'+
       '<div class="bfTags"><span class="bfTag '+sideOf(cur)+'">'+sideLabel(cur)+'</span><span class="bfTag">'+E(genTxt)+'</span>'+(eLabel?'<span class="bfTag">'+E(eLabel)+'</span>':'')+(reg?'<span class="bfTag">'+E(REGION_LABEL[reg])+'</span>':'')+'</div></div></div>';
@@ -1332,10 +1485,8 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     }
     body+=docChips(n);
     body+=lifeTimeline(n);
-    var hidden=(kidsOf[n.id]||[]).filter(function(k){return !shownB.has(k);});
-    if(hidden.length) body+='<button class="bfReveal" onclick="bRevealFocus()">&#8617; Reveal '+hidden.length+' ancestor'+(hidden.length>1?'s':'')+' further back</button>';
-    if(isFounder) body+='<div class="bfHint">&#128072; Tap any ancestor card and their parents appear &mdash; keep going to reach the Source. Or press &#9654; for a guided journey.</div>';
-    body+=journeyStrip(n);
+    var hasPar=(kidsOf[n.id]||[]).length>0;
+    if(hasPar && !n.living) body+='<button class="bfReveal" onclick="hideFocus();bTravel(\''+n.id+'\')">&#8595; Follow '+E(n.first||'their')+'&rsquo;s line further back</button>';
     if(CFORM && !n.living){
       body+='<div class="bfContrib"><a class="bfContribBtn" href="'+E(CFORM)+'" target="_blank" rel="noopener">&#128196; Contribute a document or story</a></div>';
     }
@@ -1384,14 +1535,16 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     if(!ks.length) return null;
     return ks.map(function(k){return byIdB[k];}).sort(function(a,b){return (a.b||9999)-(b.b||9999);})[0];
   }
-  window.bFocusId=function(id){ if(id&&byIdB[id]){ setFocus(byIdB[id]); sClick(); } };
+  window.bFocusId=function(id){ if(id&&byIdB[id]){ showFocus(); setFocus(byIdB[id],true); sClick(); } };
   window.bJumpSource=function(){
     if(!cur||!cur._source) return;
-    var path=[], curid=cur._source.id, guard=0;
-    while(curid && guard++<400){ path.push(curid); curid=byIdB[curid]?byIdB[curid].par:null; }
-    path.forEach(function(id){ shownB.add(id); });
-    layoutB(); renderB();
-    setFocus(cur._source); renderObjective(); checkSource();
+    var path=cur._sourcePath||[]; trailStack=[];
+    // the couple that contains the Source = the parents of the node one step nearer today
+    trailCouple=(path.length>=2 && parentsOf(path[path.length-2]).length)
+      ? parentsOf(path[path.length-2]).map(function(p){ return p.id; }) : [cur._source.id];
+    markShown(trailCouple);
+    if(cur._source.b!=null) setScene(cur._source.b, cur._source.place);
+    renderStop(); showFocus(); setFocus(cur._source, true); renderObjective(); checkSource();
   };
 
   /* ---- era timeline (collapsible cards, bottom) ---- */
@@ -1424,16 +1577,8 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   window.bRevealOne=function(id){ revealParents(id); };
   window.bRevealAll=function(){
     if(!cur) return; stopJourney();
-    // reveal the whole line in one render (the guided Journey is the staged version)
-    cur.nodes.forEach(function(n){ shownB.add(n.id); });
-    layoutB(); renderB();
-    var src=cur._source;
-    if(src&&src.b!=null) setScene(src.b, src.place); else { var d=deepestShown(); setScene(d.year); }
-    sReveal();
-    if(src) setFocus(src, true);
-    bFit();
-    if(src&&src._px!=null) setTimeout(function(){ burstAt(src,true); }, 260);
-    renderObjective(); checkSource();
+    cur.nodes.forEach(function(n){ shownB.add(n.id); });   // mark all (for the ancestor map)
+    bJumpSource();
   };
 
   /* ---- reach the Source = the win ---- */
@@ -1483,6 +1628,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   var bworld,bsvg;
   function renderB(){
     bworld=document.getElementById('bWorld'); bsvg=document.getElementById('bEdges');
+    if(!bworld||!bsvg) return;            // trail mode: no tree canvas
     var maxx=0,maxy=0;
     Object.keys(bpos).forEach(function(id){var p=bpos[id];maxx=Math.max(maxx,p.x);maxy=Math.max(maxy,p.y);});
     var W=(maxx+1)*COLW+60, H=(maxy+1)*(BH+VGAP)+80;
@@ -1542,6 +1688,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     flyTo(tx,ty,z);
   }
   window.bFit=function(instant){
+    if(!bworld) return;                   // trail mode: nothing to fit
     var st=stage(),r=st.getBoundingClientRect();
     var W=parseFloat(bworld.style.width)||1,H=parseFloat(bworld.style.height)||1;
     var z=Math.max(.16,Math.min(1,Math.min(r.width/W,r.height/H)*0.92));
@@ -1603,25 +1750,20 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   function startJourney(){
     playing=true; setPlayBtn();
     if(muted){ window.bMute(); }              // journey wants sound
-    var path=(cur._sourcePath||[]).slice(), i=0;
+    var path=(cur._sourcePath||[]).slice();   // founder -> ... -> Source
+    if(path.length<2){ playing=false; setPlayBtn(); return; }
+    hideFocus(); trailStack=[]; trailCouple=[path[0]]; renderStop();
+    var i=0;
     var step=function(){
       if(!playing) return;
-      while(i<path.length && shownB.has(path[i])) i++;   // skip the already-revealed spine
-      if(i>=path.length){ playing=false; setPlayBtn(); if(cur._source){ setFocus(cur._source); checkSource(); } return; }
-      var n=byIdB[path[i++]]; if(!n){ playing=false; setPlayBtn(); return; }
-      shownB.add(n.id); layoutB(); renderB();
-      var par=byIdB[n.par]; if(par) burstAt(par); sReveal();
-      setFocus(n);                             // scene + camera fly + panel + narration
-      var nk=n._narr, hasClip=hasNarr(nk); if(hasClip) bListen(nk);
-      renderObjective(); checkSource();
+      if(i>=path.length-1){ playing=false; setPlayBtn(); if(cur._source){ showFocus(); setFocus(cur._source,true); } checkSource(); return; }
+      bTravel(path[i]); i++;                   // travel into this spine node's parents (toward the Source)
       if(cur._reached){ playing=false; setPlayBtn(); return; }
-      var wev=(livesThrough(n)||[])[0];
-      if(wev){
-        setTimeout(function(){ if(playing) bSpeakEvent(wev); }, hasClip?3200:600);
-      }
-      playT=setTimeout(step, hasClip?(wev?7000:5200):(wev?4500:1700));
+      var n=byIdB[path[i]];
+      if(n){ var wev=(worldPins(n)||[])[0]; if(wev) setTimeout(function(){ if(playing) bSpeakEvent(wev); }, 700); }
+      playT=setTimeout(step, 2800);
     };
-    playT=setTimeout(step, 500);
+    playT=setTimeout(step, 600);
   }
   function stopJourney(){
     if(!playing && !playT) return;
@@ -1634,13 +1776,12 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   window.bNewGame=function(){ sClick(); showBLanding(); };
   window.bReset=function(){
     if(!cur) return; stopJourney(); stopNarr(); sClick();
-    shownB=new Set(); bornB=new Set();
-    cur.nodes.forEach(function(n){ if(n.gen<=2) shownB.add(n.id); });
+    shownB=new Set(); bornB=new Set(); oldestBelowMemo={}; _srcSubMemo={};
     cur._reached=false;
     var f0=cur.nodes.filter(function(n){return n.gen===0;})[0]||cur.nodes[0];
-    layoutB(); renderB(); setFocus(f0,true);
+    trailStack=[]; trailCouple=[f0.id]; hideFocus();
     curEra=null; curTrack=null; setScene(cur._founderYear, f0&&f0.place, true);
-    bFit(true); renderObjective();
+    renderStop(true); renderObjective();
   };
 
   /* ---- Family Passport ---- */
