@@ -384,6 +384,29 @@
   #bClipView .bClipCap{margin-top:11px;color:#e9dcb8;font-size:13px;line-height:1.5;max-width:760px;margin-left:auto;margin-right:auto;}
   #bClipView .bClipX{position:absolute;top:14px;right:18px;width:38px;height:38px;border:none;border-radius:50%;background:rgba(255,255,255,.14);color:#f3ead2;font-size:22px;line-height:1;cursor:pointer;}
   #bClipView .bClipX:hover{background:rgba(255,255,255,.28);}
+  /* ---- full-screen life page: timeline DOCKED at the bottom, info fills the rest ---- */
+  #bFocus.bfShow.hasDock{--dockH:250px;}
+  #bFocus.bfShow.hasDock .hudScroll{bottom:var(--dockH);}
+  #bFocus.bfShow .hudDock{position:absolute;left:0;right:0;bottom:0;height:var(--dockH,250px);z-index:7;box-sizing:border-box;padding:6px 16px 4px;display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(15,12,8,0) 0%,rgba(13,10,6,.86) 26%,rgba(11,9,5,.96) 100%);border-top:1px solid rgba(231,198,107,.18);}
+  #bFocus.bfShow .hudDock .bfTL{margin:0 auto;width:100%;max-width:1100px;height:100%;display:flex;flex-direction:column;min-height:0;}
+  #bFocus.bfShow .hudDock .bfTLcallout{order:1;margin:0 0 5px;max-height:74px;overflow:auto;min-height:0;}
+  #bFocus.bfShow .hudDock .bfTLH{order:2;margin:0 0 2px;color:#cbbf9c;}
+  #bFocus.bfShow .hudDock .bfTLH .bfTLlegend{float:right;display:inline-flex;gap:12px;margin:0;color:#a99e7c;}
+  #bFocus.bfShow .hudDock .bfTLtrack{order:3;flex:1;min-height:0;height:auto;margin:0;}
+  #bFocus.bfShow .hudDock .bfTLaxis{top:auto;bottom:26px;background:#7a715a;}
+  #bFocus.bfShow .hudDock .tlTick{top:auto;bottom:28px;height:7px;}
+  #bFocus.bfShow .hudDock .tlTick em{top:auto;bottom:-21px;color:#a99e7c;}
+  #bFocus.bfShow .hudDock .tlPin{transform:translateX(-50%);}
+  #bFocus.bfShow .hudDock .tlPin.up{top:auto;bottom:28px;justify-content:flex-end;}
+  #bFocus.bfShow .hudDock .tlSpanBar{top:auto;bottom:26px;}
+  /* the full account behind one dropdown (the fire) */
+  .hudSecGroup{margin-top:15px;background:rgba(28,24,17,.5);border:1px solid rgba(231,198,107,.22);border-radius:12px;overflow:hidden;}
+  .hudSecGroup>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;padding:13px 15px;user-select:none;}
+  .hudSecGroup>summary::-webkit-details-marker{display:none;}
+  .hudSecGroupT{font-size:15px;font-weight:700;color:#f0e2bf;}
+  .hudSecGroupChev{margin-left:auto;color:#b9a87f;transition:transform .2s;}
+  .hudSecGroup[open]>summary .hudSecGroupChev{transform:rotate(180deg);}
+  .hudSecGroup .hudSections{margin-top:0;padding:0 12px 12px;}
   /* ===== the trail: two-pairs stop view (replaces the pan/zoom tree) ===== */
   #bTrail{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:4;padding:84px 18px 76px;overflow:auto;pointer-events:none;}
   #bTrail.go .trailInner{animation:trailIn .5s cubic-bezier(.2,.9,.3,1);}
@@ -538,6 +561,13 @@
     #bTrail{padding:58px 11px 64px;} .forkPrompt{font-size:16px;margin-bottom:11px;} .trailWith{gap:7px;}
     #bRibbon{height:46px;} .roadEnd{font-size:9.5px;} .wagonSvg{width:34px;height:23px;}
     #bEraLabel{bottom:54px;}
+    #bFocus.bfShow.hasDock{--dockH:248px;}
+    #bFocus.bfShow .hudDock{padding:5px 9px 4px;}
+    #bFocus.bfShow .hudDock .bfTLcallout{max-height:60px;}
+    #bFocus.bfShow .hudDock .bfTLtrack{overflow:hidden;}   /* fit the whole life, never scroll */
+    #bFocus.bfShow .hudDock .tlPin{width:30px;}
+    #bFocus.bfShow .hudDock .tlPin .tlYr{font-size:8px;}
+    #bFocus.bfShow .hudDock .tlPin .tlIc{font-size:13px;}
   }
 </style>
 </head>
@@ -1203,48 +1233,38 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     var end=n.d||Math.max.apply(null,ys.concat([b+1]));
     if(end<=b) end=b+1;
     var span=end-b;
-    var W=Math.max(560,Math.min(3400,Math.max(Math.round(span*20),clusters.length*70)));
-    function pxOf(y){ return Math.max(0,Math.min(1,(y-b)/span))*(W-64)+32; }
-    // light de-collide between CLUSTERS only (rare; keeps two near-adjacent years legible)
-    var MINGAP=52;
-    function decollide(lane){
-      var last=-1e9;
-      clusters.forEach(function(c){ if(c._lane!==lane) return; var x=pxOf(c.y); if(x<last+MINGAP) x=last+MINGAP; c._px=x; last=x; });
-    }
-    decollide('p'); decollide('w');
-    W=Math.max(W, Math.max.apply(null, clusters.map(function(c){ return c._px; }))+50);
+    // percent-based positioning -> the whole life fits the screen width, NO scrolling
+    function pctOf(y){ return Math.max(0,Math.min(1,(y-b)/span))*96+2; }
     var ticks='', step=span>140?40:20;
-    for(var ty=Math.ceil(b/step)*step; ty<end; ty+=step){ ticks+='<span class="tlTick" style="left:'+pxOf(ty).toFixed(0)+'px"><em>'+ty+'</em></span>'; }
+    for(var ty=Math.ceil(b/step)*step; ty<end; ty+=step){ ticks+='<span class="tlTick" style="left:'+pctOf(ty).toFixed(2)+'%"><em>'+ty+'</em></span>'; }
     var spans='';
     clusters.forEach(function(c){ if(c._lane!=='w') return;
-      c.evs.forEach(function(e){ if(e.y2&&e.y2>e.y){ var x1=c._px,x2=pxOf(Math.min(e.y2,end));
-        spans+='<span class="tlSpanBar" style="left:'+x1.toFixed(0)+'px;width:'+Math.max(3,x2-x1).toFixed(0)+'px;background:'+(TLCOL[_tlCls(e)]||'#3a7a9a')+'"></span>'; } });
+      c.evs.forEach(function(e){ if(e.y2&&e.y2>e.y){ var x1=pctOf(c.y),x2=pctOf(Math.min(e.y2,end));
+        spans+='<span class="tlSpanBar" style="left:'+x1.toFixed(2)+'%;width:'+Math.max(0.5,x2-x1).toFixed(2)+'%;background:'+(TLCOL[_tlCls(e)]||'#3a7a9a')+'"></span>'; } });
     });
-    var li=0, ri=0;
+    // ALL pins ABOVE the axis (none below); stagger heights across chronological order so neighbours don't collide
     var pins=clusters.map(function(c,i){
-      var e=c._main, up=c._lane==='p';
-      var ic=up?(PICON[e.k]||'&#128205;'):(KICON[e.k]||'&#128220;');
-      var slot=up?(li++):(ri++);
-      var h=66+(slot%3)*24;
+      var e=c._main;
+      var ic=(c._lane==='p')?(PICON[e.k]||'&#128205;'):(KICON[e.k]||'&#128220;');
+      var h=48+(i%4)*22;
       var yr=(c.y<1500?'~':'')+c.y;
       var nb=c.evs.length>1?'<span class="tlCount">'+c.evs.length+'</span>':'';
       var dc=c.evs.some(function(x){return x.doc;})?'<span class="tlDocDot" title="document on record">&#128196;</span>':'';
       var icHtml='<span class="tlIc">'+ic+nb+dc+'</span>';
-      var inner=up?('<span class="tlYr">'+yr+'</span>'+icHtml+'<span class="tlStem"></span><span class="tlDot"></span>')
-                  :('<span class="tlDot"></span><span class="tlStem"></span>'+icHtml+'<span class="tlYr">'+yr+'</span>');
-      return '<button class="tlPin '+(up?'up':'down')+' '+_tlCls(e)+'" data-i="'+i+'" style="left:'+c._px.toFixed(0)+'px;height:'+h+'px" onclick="bTlPin('+i+')" title="'+E(e.t)+'">'+inner+'</button>';
+      var inner='<span class="tlYr">'+yr+'</span>'+icHtml+'<span class="tlStem"></span><span class="tlDot"></span>';
+      return '<button class="tlPin up '+_tlCls(e)+'" data-i="'+i+'" style="left:'+pctOf(c.y).toFixed(2)+'%;height:'+h+'px" onclick="bTlPin('+i+')" title="'+E(e.t)+'">'+inner+'</button>';
     }).join('');
     var pref=['fire','split','military','immig','marriage','move'];   // open on the most dramatic life event
     _tlDefaultI=-1;
     for(var pi=0;pi<pref.length&&_tlDefaultI<0;pi++){ _tlDefaultI=clusters.findIndex(function(c){ return c._lane==='p'&&c.evs.some(function(e){return e.k===pref[pi];}); }); }
     if(_tlDefaultI<0) _tlDefaultI=clusters.findIndex(function(c){ return c._lane==='p'&&c._main.k!=='birth'; });
     if(_tlDefaultI<0) _tlDefaultI=0;
-    return '<div class="bfTL"><div class="bfTLH">&#129534; Their life &amp; times<span class="bfTLhint">drag to explore &middot; tap a pin</span></div>'+
-      '<div class="bfTLlegend"><span class="lgp"><i></i>their life</span><span class="lgw"><i></i>the world</span></div>'+
-      '<div class="bfTLwrap"><button class="tlArrow l" onclick="bTlScroll(-1)" aria-label="scroll left">&#8249;</button>'+
-      '<div class="bfTLscroll"><div class="bfTLtrack" style="min-width:'+W+'px"><div class="bfTLaxis"></div>'+ticks+spans+pins+'</div></div>'+
-      '<button class="tlArrow r" onclick="bTlScroll(1)" aria-label="scroll right">&#8250;</button></div>'+
-      '<div class="bfTLcallout" id="bTlCallout"></div></div>';
+    return '<div class="bfTL">'+
+      '<div class="bfTLcallout" id="bTlCallout"></div>'+
+      '<div class="bfTLH">&#129534; Their life &amp; times'+
+        '<span class="bfTLlegend"><span class="lgp"><i></i>their life</span><span class="lgw"><i></i>the world</span></span></div>'+
+      '<div class="bfTLtrack">'+ticks+spans+pins+'<div class="bfTLaxis"></div></div>'+
+    '</div>';
   }
   function renderTlCallout(c){
     var el=document.getElementById('bTlCallout'); if(!el||!c) return;
@@ -1296,8 +1316,6 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     var pin=document.querySelector('#bFocus .tlPin[data-i="'+_tlDefaultI+'"]');
     if(pin) pin.classList.add('sel');
     renderTlCallout(_tl[_tlDefaultI]);
-    _wireTlScroll();
-    setTimeout(_tlScrollToSel, 50);
   }
 
   /* ---- particle FX (reveal bursts + ambient drifting motes) ---- */
@@ -1713,9 +1731,13 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     if(n.spouse) b+='<div class="hudMini">&#128141; married '+E(n.spouse)+'</div>';
     var pf=PFACT[n.id];
     if(pf&&pf.bio) b+='<div class="hudSec"><div class="hudSecH"><span class="hudSecIc">&#128220;</span>In the histories'+(pf.who?' &middot; '+E(pf.who):'')+'</div><div class="hudSecBody">'+_paras(pf.bio)+'</div></div>';
-    if(st&&st.sections) b+='<div class="hudSections">'+st.sections.map(function(s){
-      return '<div class="hudSec'+(s.tone==='grave'?' grave':'')+'"><div class="hudSecH">'+(s.icon?'<span class="hudSecIc">'+s.icon+'</span>':'')+E(s.title)+'</div><div class="hudSecBody">'+_paras(s.body)+'</div></div>';
-    }).join('')+'</div>';
+    if(st&&st.sections&&st.sections.length){   // the full account collapsed behind one dropdown (labeled by the first/headline section)
+      var s0=st.sections[0], grpLabel=st.sectionsLabel||s0.title, grpIcon=s0.icon||'&#128220;';
+      b+='<details class="hudSecGroup"><summary class="hudSecGroupH"><span class="hudSecIc">'+grpIcon+'</span><span class="hudSecGroupT">'+E(grpLabel)+'</span><span class="hudSecGroupChev">&#9662;</span></summary>'+
+        '<div class="hudSections">'+st.sections.map(function(s){
+          return '<div class="hudSec'+(s.tone==='grave'?' grave':'')+'"><div class="hudSecH">'+(s.icon?'<span class="hudSecIc">'+s.icon+'</span>':'')+E(s.title)+'</div><div class="hudSecBody">'+_paras(s.body)+'</div></div>';
+        }).join('')+'</div></details>';
+    }
     var recs=(st&&st.records)||[], dch=docChips(n);
     if(dch||recs.length){
       b+='<div class="hudBlock"><div class="hudBlockH">&#128193; Documents &amp; records on file</div>'+dch;
@@ -1725,12 +1747,14 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
       }).join('')+'</div>';
       b+='</div>';
     }
-    b+=lifeTimeline(n);
     var hasPar=(kidsOf[n.id]||[]).length>0;
     if(hasPar && !n.living) b+='<button class="bfReveal" onclick="hideFocus();bTravel(\''+n.id+'\')">&#8595; Follow '+E(n.first||'their')+'&rsquo;s line further back</button>';
     if(CFORM && !n.living) b+='<div class="bfContrib"><a class="bfContribBtn" href="'+E(CFORM)+'" target="_blank" rel="noopener">&#128196; Contribute a document or story</a></div>';
-    b+='</div></div>';
+    b+='</div></div>';                              // close hudInner + hudScroll
+    var tlHtml=lifeTimeline(n);                     // timeline is DOCKED at the bottom, not in the scroll flow
+    if(tlHtml) b+='<div class="hudDock">'+tlHtml+'</div>';
     var el=document.getElementById('bFocus');
+    el.classList.toggle('hasDock', !!tlHtml);
     el.innerHTML=b; el.scrollTop=0;
     var sc=el.querySelector('.hudScroll'); if(sc) sc.scrollTop=0;
     paintListen();
