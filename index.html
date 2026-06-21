@@ -213,6 +213,9 @@
   .bListen:hover{background:#fff7e6;} .bListen.on{background:var(--gold);color:#fff;}
   .bfReveal{display:block;width:100%;margin-top:13px;border:none;background:var(--gold);color:#fff;border-radius:9px;padding:9px 12px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 7px rgba(201,150,43,.4);}
   .bfReveal:hover{background:#b5841f;}
+  .bfBegin{display:block;width:100%;margin:10px 0 6px;border:none;background:var(--gold);color:#fff;border-radius:9px;padding:10px 14px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(201,150,43,.45);letter-spacing:.02em;}
+  .bfBegin:hover{background:#b5841f;}
+  .fpSideLbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;opacity:.75;}
   .bJourney{display:flex;align-items:center;gap:6px;margin-top:13px;padding-top:11px;border-top:1px solid #ece3cd;}
   .bjBtn{flex:0 0 auto;border:1px solid #e2dcc9;background:#fff;border-radius:8px;padding:5px 9px;font-size:11.5px;font-weight:600;color:#5a554c;cursor:pointer;}
   .bjBtn:hover:not([disabled]){background:#fbf7ea;} .bjBtn[disabled]{opacity:.4;cursor:default;}
@@ -449,16 +452,6 @@
   .fork{display:grid;gap:18px;grid-template-columns:1fr 1fr;align-items:start;}
   .fork.c1{grid-template-columns:minmax(0,540px);justify-content:center;}
   .forkPair{background:rgba(255,253,247,.97);border:1px solid #ddd0ad;border-radius:16px;padding:12px 13px;box-shadow:0 10px 34px rgba(0,0,0,.3);transition:box-shadow .16s,border-color .16s,opacity .16s;}
-  /* highlighted side = the line the wagon follows (item 3) */
-  .forkPair.selected{border-color:var(--harris);box-shadow:0 0 0 3px var(--harris),0 12px 34px rgba(0,0,0,.36);}
-  .forkPair.maxfield.selected{border-color:var(--maxfield);box-shadow:0 0 0 3px var(--maxfield),0 12px 34px rgba(0,0,0,.36);}
-  .fork.c2 .forkPair:not(.selected){opacity:.74;}
-  .fpPick{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--harris);background:rgba(58,110,165,.1);color:var(--harris);font:inherit;font-size:10.5px;font-weight:700;border-radius:20px;padding:4px 11px;margin-bottom:9px;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;transition:background .14s,color .14s;}
-  .fpPick.maxfield{border-color:var(--maxfield);background:rgba(47,138,90,.1);color:var(--maxfield);}
-  .fpPick .fpPickDot{width:11px;height:11px;border-radius:50%;border:2px solid currentColor;background:transparent;flex:none;}
-  .forkPair.selected .fpPick{background:var(--harris);color:#fff;}
-  .forkPair.maxfield.selected .fpPick{background:var(--maxfield);color:#fff;}
-  .forkPair.selected .fpPick .fpPickDot{background:#fff;box-shadow:0 0 0 2px currentColor inset;}
   .fpH{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:#8a6f30;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .fpSrc{color:#b8860b;text-transform:none;letter-spacing:0;font-weight:700;font-size:11px;}
   .fpWall{font-size:13px;color:#8a8170;padding:16px 8px;text-align:center;line-height:1.5;}
@@ -494,20 +487,14 @@
   .roadDot.src.done{color:#ffd633;text-shadow:0 0 9px rgba(255,214,51,.9);}
   .roadEnd{position:absolute;top:7px;font-size:11px;color:#f3ead2;text-shadow:0 1px 4px rgba(0,0,0,.85);white-space:nowrap;}
   .roadEnd.l{left:4.5%;} .roadEnd.r{right:4.5%;}
-  .wagon{position:absolute;top:54%;left:6%;transform:translate(-50%,-60%);transition:left .64s cubic-bezier(.45,.05,.3,1);pointer-events:auto;cursor:grab;touch-action:none;z-index:6;}
-  .wagon::before{content:'';position:absolute;inset:-14px -10px;}   /* enlarge the drag/touch target */
-  .wagon.grab{cursor:grabbing;}
-  .wagon.grab .wagonSvg{filter:drop-shadow(0 3px 6px rgba(0,0,0,.7)) brightness(1.08);scale:1.12;}
-  .roadHint{position:absolute;left:50%;top:1px;transform:translateX(-50%);font-size:10px;color:#f3ead2;opacity:.72;text-shadow:0 1px 3px rgba(0,0,0,.85);pointer-events:none;white-space:nowrap;animation:roadHintPulse 2.6s ease-in-out infinite;}
-  @keyframes roadHintPulse{0%,100%{opacity:.42;}50%{opacity:.85;}}
-  .roadHint.gone{opacity:0;animation:none;transition:opacity .4s;}
+  .wagon{position:absolute;top:54%;left:6%;transform:translate(-50%,-60%);transition:left .64s cubic-bezier(.45,.05,.3,1);pointer-events:none;z-index:6;}
   .wagon.rolling{animation:wagonBob .64s ease;}
   @keyframes wagonBob{0%,100%{transform:translate(-50%,-60%) rotate(0);}22%{transform:translate(-50%,-70%) rotate(-3deg);}55%{transform:translate(-50%,-54%) rotate(2deg);}}
   .wagonSvg{display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));}
   /* ===== full-screen dossier HUD (the life page) ===== */
   #bFocus.bfShow{position:absolute;inset:0;left:0;top:0;right:0;bottom:0;width:100%;max-width:100%;height:100%;max-height:100%;transform:none;border:none;border-radius:0;box-shadow:none;padding:0;overflow:hidden;background:#17140f;z-index:20;}
   .hudBg{position:absolute;inset:0;background-size:cover;background-position:center;}
-  .hudScrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,17,12,.6) 0%,rgba(20,17,12,.74) 45%,rgba(15,12,8,.93) 100%);}
+  .hudScrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,17,12,.6) 0%,rgba(20,17,12,.74) 45%,rgba(15,12,8,.93) 100%);cursor:pointer;}
   #bFocus .bfClose{position:absolute;top:12px;right:14px;width:34px;height:34px;border:none;background:rgba(20,17,12,.6);color:#f3ead2;border-radius:50%;font-size:15px;cursor:pointer;z-index:4;}
   #bFocus .bfClose:hover{background:rgba(20,17,12,.9);}
   .hudScroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
@@ -607,28 +594,12 @@
     /* slim objective bar — flush top edge, no transform */
     #bObj{top:46px;left:0;right:0;width:100%;border-radius:0;border-left:none;border-right:none;border-top:none;transform:none;padding:6px 12px;}
     .bObjT{font-size:11.5px;} .bObjS{font-size:10px;gap:3px 8px;} .bBack{font-size:10.5px;padding:3px 7px;}
-    /* focus panel = bottom sheet */
-    #bFocus{
-      position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;max-width:100%;
-      max-height:75vh;min-height:0;
-      border-radius:18px 18px 0 0;border-left:none;border-right:none;border-bottom:none;
-      padding:0 14px env(safe-area-inset-bottom,16px);
-      transform:translateY(calc(100% - 56px));
-      transition:transform .28s cubic-bezier(.4,0,.2,1);
-      overflow:hidden;
-    }
-    #bFocus.bfOpen{transform:translateY(0);overflow-y:auto;}
-    /* drag handle pill */
-    .bfHandle{display:block;width:36px;height:4px;background:#d0c8b5;border-radius:2px;margin:8px auto 0;cursor:pointer;flex-shrink:0;}
-    /* peek strip (name + year) shown when collapsed */
-    .bfPeek{font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:6px 0 8px;cursor:pointer;border-bottom:1px solid #ece3cd;margin-bottom:2px;}
-    /* hide handle/peek on desktop (they're only injected on mobile anyway) */
     /* nodes: slightly narrower */
     .bnode{width:158px;min-height:54px;padding:7px 9px;}
     .bnode .bnm{font-size:12px;} .bnode .bsub{font-size:10.5px;}
     .bface{width:32px;height:32px;border-radius:6px;}
     /* control buttons above the bottom sheet peek */
-    #bCtl{bottom:62px;right:8px;gap:5px;} #bCtl .btn{width:52px;height:42px;} #bCtl .btn .ci{font-size:16px;} #bCtl .btn .cl{font-size:8.5px;}
+    #bCtl{bottom:62px;right:8px;gap:5px;} #bCtl .btn{width:52px;height:44px;} #bCtl .btn .ci{font-size:16px;} #bCtl .btn .cl{font-size:8.5px;}
     #bEra{display:none !important;}
     .bIntro h1{font-size:24px;}
     .bGrid{grid-template-columns:1fr 1fr;}
@@ -647,7 +618,7 @@
     #bFocus.bfShow.hasDock{--dockH:266px;}
     #bFocus.bfShow .hudDock{padding:5px 9px 4px;}
     #bFocus.bfShow .hudDock .bfTLcallout{max-height:122px;}
-    #bFocus.bfShow .hudDock .bfTLtrack{overflow:hidden;}   /* fit the whole life, never scroll */
+    #bFocus.bfShow .hudDock .bfTLtrack{overflow-x:auto;overflow-y:hidden;}
     #bFocus.bfShow .hudDock .tlPin{padding:7px;}
     #bFocus.bfShow .hudDock .tlPin .tlYr{font-size:8px;}
     #bFocus.bfShow .hudDock .tlPin .tlIc{font-size:13px;}
@@ -683,7 +654,6 @@
     <div id="bEra"></div>
     <div id="bRibbon"></div>
     <div id="bCtl">
-      <button class="btn" id="bNewBtn" onclick="bNewGame()" title="Choose a different bloodline"><span class="ci">&#129516;</span><span class="cl">Lines</span></button>
       <button class="btn" id="bResetBtn" onclick="bReset()" title="Restart this line from today"><span class="ci">&#8634;</span><span class="cl">Restart</span></button>
       <button class="btn" id="bPlayBtn" onclick="bPlay()" title="Auto-journey back to the Source"><span class="ci">&#9654;</span><span class="cl">Journey</span></button>
       <button class="btn" id="bSrcBtn" onclick="bJumpSource()" title="Jump to the oldest known ancestor"><span class="ci">&#11088;</span><span class="cl">Source</span></button>
@@ -910,6 +880,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   var COLW=250, BH=66, VGAP=22;
   var RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   function E(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function EQ(s){return E(s).replace(/'/g,'&#39;');}
   function sideOf(b){return /maternal/i.test(b.side)?'maxfield':'harris';}
   function sideLabel(b){return /maternal/i.test(b.side)?"Maternal line":"Paternal line";}
   function firstPlace(p){return p?String(p).split(',')[0].trim():'';}
@@ -1233,7 +1204,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
       '<input type="file" id="bcFile" accept="image/*,application/pdf">'+
       '<label class="bcL" for="bcWho">Your name (optional)</label>'+
       '<input type="text" id="bcWho" placeholder="so the family can thank you">'+
-      '<div class="bcRow"><button class="bcCancel" onclick="bCloseContrib()">Cancel</button><button class="bcSend" id="bcSend" onclick="bSendContrib(\''+id+'\')">Submit for review</button></div>'+
+      '<div class="bcRow"><button class="bcCancel" onclick="bCloseContrib()">Cancel</button><button class="bcSend" id="bcSend" onclick="bSendContrib(\''+EQ(id)+'\')">Submit for review</button></div>'+
       '<div class="bcStatus" id="bcStatus"></div>'+
     '</div>';
     ov.style.display='flex';
@@ -1253,7 +1224,8 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     if(btn){ btn.disabled=true; btn.textContent='Submitting…'; }
     function post(payload){
       fetch(CONTRIB,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)}).then(function(){
-        status('✓ Sent for review — thank you!','ok'); if(btn) btn.textContent='Submitted'; setTimeout(bCloseContrib,1700);
+        status('✓ Submitted — the family will review it. (Browser security prevents confirming delivery; if you don\'t hear back in a week, try again.)','ok');
+        if(btn) btn.textContent='Submitted'; setTimeout(bCloseContrib,3500);
       }).catch(function(){
         status('Could not submit — please try again later.','err'); if(btn){ btn.disabled=false; btn.textContent='Submit for review'; }
       });
@@ -1683,8 +1655,9 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
 
   function parseStartState(){
     var sp=new URLSearchParams(window.location.search);
-    var lk=sp.get('line'), nid=sp.get('node'); if(!lk)return;
-    var line=BL.filter(function(b){return b.key===lk;})[0]; if(!line)return;
+    var lk=sp.get('line'), nid=sp.get('node');
+    if(!lk){ setMode('blood'); return; }
+    var line=BL.filter(function(b){return b.key===lk;})[0]; if(!line){ setMode('blood'); return; }
     setMode('blood'); openLine(lk);
     if(nid){ bRevealAll(); setTimeout(function(){ bFocusId(nid); },200); }
   }
@@ -1749,8 +1722,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
      people); pick whose blood to follow deeper. Tap any face for their life
      page. Replaces the pan/zoom tree. ===== */
   var trailCouple=[], trailStack=[], oldestBelowMemo={}, _srcSubMemo={};
-  var trailSel=null;                       // the highlighted side (paternal=left by default) — drag follows this (item 3)
-  var _wDown=false, _wMoved=false, _wPct=0, _wHinted=false;
+  var trailSel=null;                       // the active side (paternal=left by default) — road-dot scrub follows this
   function nodeById(id){ return byIdB[id]; }
   function sourceInSubtree(id){          // does this branch lead to the Source node?
     if(!cur._source) return false;
@@ -1798,25 +1770,24 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     var face=n.face?'<img class="pFace" src="'+E(n.face)+'" onerror="this.style.display=\'none\'">':'<div class="pFaceEmpty">'+E((n.first||n.label||'?').slice(0,1))+'</div>';
     var yrs=n.living?'living family':E(n.span||(n.b?((n.b<1500?'~':'')+n.b):''));
     var place=n.living?'':E(firstPlace(n.place));
-    return '<button class="personBtn '+side+(n.notable?' notable':'')+(n.unverified?' unv':'')+'" onclick="bOpenPerson(\''+n.id+'\')">'+
+    return '<button class="personBtn '+side+(n.notable?' notable':'')+(n.unverified?' unv':'')+'" onclick="bOpenPerson(\''+EQ(n.id)+'\')">'+
       face+'<div class="pInfo"><div class="pName">'+E(n.label)+(n.unverified?' <span class="unvb">unverified</span>':'')+'</div>'+
       '<div class="pYrs">'+yrs+(place?' &middot; '+place:'')+'</div>'+
       '<div class="pHook">'+E(personHook(n))+'</div>'+personBadges(n)+'</div>'+
       '<span class="pGo">their life &#8594;</span></button>';
   }
-  function pairCard(ownerId, sel){
+  function pairCard(ownerId){
     var owner=byIdB[ownerId], par=parentsOf(ownerId), side=sideOf(cur);
     var sideName=(owner.sex==='M'?'Paternal':(owner.sex==='F'?'Maternal':'This'));
-    var pick='<button class="fpPick '+side+'" onclick="event.stopPropagation();bSelectSide(\''+ownerId+'\')"><span class="fpPickDot"></span>'+sideName+' line'+(sel?' &middot; following':'')+'</button>';
     var label=E(owner.first||owner.label)+'&rsquo;s parents';
     if(!par.length){
-      return '<div class="forkPair wall '+side+(sel?' selected':'')+'" data-own="'+ownerId+'">'+pick+'<div class="fpH">'+label+'</div><div class="fpWall">&#128679; The trail goes cold here &mdash; '+E(owner.first||'their')+'&rsquo;s parents aren&rsquo;t known yet.</div></div>';
+      return '<div class="forkPair wall '+side+'" data-own="'+ownerId+'"><div class="fpH"><span class="fpSideLbl">'+sideName+' line</span> &middot; '+label+'</div><div class="fpWall">&#128679; The trail goes cold here &mdash; '+E(owner.first||'their')+'&rsquo;s parents aren&rsquo;t known yet.</div></div>';
     }
     var ob=Math.min.apply(null, par.map(function(p){ return oldestBelow(p.id); }));
     var src=sourceInSubtree(ownerId)?'<span class="fpSrc">&#9733; toward the Source</span>':'';
-    return '<div class="forkPair '+side+(sel?' selected':'')+'" data-own="'+ownerId+'">'+pick+'<div class="fpH">'+label+src+'</div><div class="fpPeople">'+
+    return '<div class="forkPair '+side+'" data-own="'+ownerId+'"><div class="fpH"><span class="fpSideLbl">'+sideName+' line</span> &middot; '+label+src+'</div><div class="fpPeople">'+
       par.map(function(p){ return personBtn(p, side); }).join('')+'</div>'+
-      '<button class="fpFollow '+side+'" onclick="bTravel(\''+ownerId+'\')">follow this line back'+(ob<9999?' &middot; to '+(ob<1500?'~':'')+ob:'')+' &#8595;</button></div>';
+      '<button class="fpFollow '+side+'" onclick="bTravel(\''+EQ(ownerId)+'\')">follow this line back'+(ob<9999?' &middot; to '+(ob<1500?'~':'')+ob:'')+' &#8595;</button></div>';
   }
   window.renderStop=function(first){
     var el=document.getElementById('bTrail'); if(!el||!cur) return;
@@ -1827,8 +1798,8 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     var banner='<div class="trailWith">'+back+'<span class="twLbl">tracing the blood of</span> '+couple.map(function(n){
       return '<button class="twPerson" onclick="bOpenPerson(\''+n.id+'\')">'+(n.face?'<img src="'+E(n.face)+'">':'<i>'+E((n.first||'?').slice(0,1))+'</i>')+'<b>'+E(n.label)+'</b>'+(n.b?'<em>'+(n.b<1500?'~':'')+n.b+'</em>':'')+'</button>';
     }).join('<span class="twAmp">&amp;</span>')+'</div>';
-    var prompt=couple.length>1?'Pick a side, then drag the wagon back through time':'Drag the wagon back to '+E(couple[0].first||'their')+'&rsquo;s parents';
-    var cards=couple.map(function(n){ return pairCard(n.id, n.id===trailSel); }).join('');
+    var prompt=couple.length>1?'Tap a parent pair to follow their line back':'Follow '+E(couple[0].first||'their')+'&rsquo;s line back';
+    var cards=couple.map(function(n){ return pairCard(n.id); }).join('');
     el.innerHTML='<div class="trailInner">'+banner+'<div class="forkPrompt">'+prompt+'</div><div class="fork c'+couple.length+'">'+cards+'</div></div>';
     if(!RM){ el.classList.remove('go'); void el.offsetWidth; el.classList.add('go'); }
     markShown(trailCouple);
@@ -1854,12 +1825,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     if(yrs.length) setScene(Math.min.apply(null,yrs), (byIdB[trailCouple[0]]||{}).place);
     renderStop();
   };
-  /* item 3: pick which parent line the wagon follows (paternal=left by default) */
-  window.bSelectSide=function(ownerId){
-    if(trailCouple.indexOf(ownerId)<0) return;
-    trailSel=ownerId; sClick(); renderStop();
-  };
-  /* item 3: walk the highlighted line to a target generation (drag the wagon / tap a road dot).
+  /* walk the highlighted line to a target generation (tap a road dot).
      Forward = trail-back toward today; backward = follow the selected parent line deeper. */
   function bWalkTo(targetGen){
     var guard=0;
@@ -1872,29 +1838,6 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     updateRibbon();
   }
   window.bWalkTo=bWalkTo;
-  /* drag the wagon along the road to scrub through the generations */
-  function _roadEl(){ return document.querySelector('#bRibbon .road'); }
-  function wagonDown(e){
-    if(!cur || !cur.ancCount) return;
-    var w=document.getElementById('bWagon'); if(!w) return;
-    _wDown=true; _wMoved=false; w.classList.add('grab'); w.style.transition='none';
-    try{ w.setPointerCapture(e.pointerId); }catch(_){}
-    e.preventDefault(); e.stopPropagation();
-  }
-  function wagonMove(e){
-    if(!_wDown) return; var road=_roadEl(); if(!road) return;
-    var r=road.getBoundingClientRect(); if(!r.width) return;
-    var xpct=Math.max(6,Math.min(94,(e.clientX-r.left)/r.width*100));
-    _wPct=xpct; _wMoved=true; var w=document.getElementById('bWagon'); if(w) w.style.left=xpct+'%';
-  }
-  function wagonUp(){
-    if(!_wDown) return; _wDown=false;
-    var w=document.getElementById('bWagon'); if(w){ w.classList.remove('grab'); w.style.transition=''; }
-    if(!_wMoved){ updateRibbon(); return; }            // a tap, not a drag -> snap back
-    _wHinted=true; var hint=document.querySelector('#bRibbon .roadHint'); if(hint) hint.classList.add('gone');
-    var mg=Math.max(1,(cur&&cur.maxGen)||1), tg=Math.round((_wPct-6)/88*mg);
-    bWalkTo(Math.max(0,Math.min(mg,tg)));
-  }
   window.bOpenPerson=function(id){ var n=byIdB[id]; if(!n) return; sClick(); showFocus(); setFocus(n, true); };
   function burstTrail(){
     var el=document.getElementById('bTrail'); if(!el) return; if(!cx) fx(); if(!cx) return;
@@ -1928,9 +1871,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     el.innerHTML='<div class="road"><div class="roadLine"></div>'+dots+
       '<span class="roadEnd l">&#127968; today</span>'+
       '<span class="roadEnd r">&#9733; '+(s?E(s.first||s.label)+(s.b?' &middot; '+(s.b<1500?'~':'')+s.b:''):'the Source')+'</span>'+
-      (_wHinted?'':'<div class="roadHint">&#8596; drag the wagon to travel</div>')+
-      '<div class="wagon" id="bWagon" title="Drag to travel through the generations">'+WAGON_SVG+'</div></div>';
-    var w=document.getElementById('bWagon'); if(w) w.onpointerdown=wagonDown;   // item 3: draggable
+      '<div class="wagon" id="bWagon">'+WAGON_SVG+'</div></div>';
     updateRibbon(true);
   }
   function updateRibbon(instant){
@@ -2021,7 +1962,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     var bg=(st&&st.bg)?('bg/'+st.bg):(ek!=='unknown'?('bg/'+ek+'.jpg'):'');
     bPushState(cur.key, n.id);
     var face=n.face?'<img class="hudFace" src="'+E(n.face)+'" onerror="this.style.display=\'none\'">':'<div class="hudFace empty">'+E((n.first||n.label||'?').slice(0,1))+'</div>';
-    var b='<div class="hudBg"'+(bg?' style="background-image:url(\''+E(bg)+'\')"':'')+'></div><div class="hudScrim"></div>';
+    var b='<div class="hudBg"'+(bg?' style="background-image:url(\''+E(bg)+'\')"':'')+'></div><div class="hudScrim" onclick="hideFocus()"></div>';
     b+='<button class="bfClose" onclick="hideFocus()" title="Close">&#10005;</button>';
     b+=docRail(n, st);                              // documents/records -> left-rail menu (item 1)
     b+='<div class="hudScroll"><div class="hudInner">';
@@ -2032,6 +1973,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
       (hasNarr(nk)?'<div class="hudListen">'+listenBtn(nk)+'</div>':'')+
       '<button class="hudShareBtn" onclick="bShare()" title="Copy link to this person">&#128279; share</button>'+
       '</div></div>';
+    if(isFounder) b+='<button class="bfBegin" onclick="hideFocus()">Start the journey &#8594;</button>';
     if(st&&st.bgCaption) b+='<div class="hudBgCap">&#128247; '+E(st.bgCaption)+'</div>';
     if(st&&st.lead) b+='<div class="hudLead">'+E(st.lead)+'</div>';
     if(st&&st.bio) b+='<div class="hudBio">'+_paras(st.bio)+'</div>';
@@ -2051,10 +1993,10 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     }
     // documents & records now live in the left rail (docRail, item 1) — not inline
     var hasPar=(kidsOf[n.id]||[]).length>0;
-    if(hasPar && !n.living) b+='<button class="bfReveal" onclick="hideFocus();bTravel(\''+n.id+'\')">&#8595; Follow '+E(n.first||'their')+'&rsquo;s line further back</button>';
+    if(hasPar && !n.living) b+='<button class="bfReveal" onclick="hideFocus();bTravel(\''+EQ(n.id)+'\')">&#8595; Follow '+E(n.first||'their')+'&rsquo;s line further back</button>';
     if(!n.living && (CONTRIB||CFORM)){                     // item 6: add info/documents from inside the game
       b+='<div class="bfContrib">';
-      if(CONTRIB) b+='<button class="bfContribBtn" onclick="bAddInfo(\''+n.id+'\')">&#10133; Add info or a document about '+E(n.first||'them')+'</button>';
+      if(CONTRIB) b+='<button class="bfContribBtn" onclick="bAddInfo(\''+EQ(n.id)+'\')">&#10133; Add info or a document about '+E(n.first||'them')+'</button>';
       else b+='<a class="bfContribBtn" href="'+E(CFORM)+'" target="_blank" rel="noopener">&#128196; Contribute a document or story</a>';
       b+='</div>';
     }
@@ -2072,8 +2014,6 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     if(cur.ancCount && cur._source && n.id===cur._source.id) checkSource();
   };
   window.bRevealFocus=function(){ if(focus) revealParents(focus.id); };
-  function bCollapseFocus(){ var el=document.getElementById('bFocus'); if(el) el.classList.remove('bfOpen'); }
-  window.bToggleFocus=function(){ var el=document.getElementById('bFocus'); if(el) el.classList.toggle('bfOpen'); };
   window.bToggleHt=function(el){ if(el) el.classList.toggle('open'); };
   // a tap = focus that person, auto-play their narration, and reveal their parents
   function tapNode(n){
@@ -2375,11 +2315,8 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   };
   window.bClosePass=function(){ document.getElementById('bPassport').style.display='none'; };
 
-  window.addEventListener('pointermove',wagonMove);            // item 3: wagon drag (move/up wired once)
-  window.addEventListener('pointerup',wagonUp);
-  window.addEventListener('pointercancel',wagonUp);
   window.addEventListener('resize',function(){ if(document.getElementById('bloodMode').style.display==='block'){ fx(); } });
-  window.addEventListener('keydown',function(e){ if(document.getElementById('bloodMode').style.display!=='block')return; if(e.key==='Escape'){ bClosePayoff(); bClosePass(); bCloseClip(); } });
+  window.addEventListener('keydown',function(e){ if(document.getElementById('bloodMode').style.display!=='block')return; if(e.key==='Escape'){ var f=document.getElementById('bFocus'); if(f&&f.classList.contains('bfShow')){ hideFocus(); }else{ bClosePayoff(); bClosePass(); bCloseClip(); } } });
   parseStartState();
 })();
 </script>
