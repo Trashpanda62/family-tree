@@ -1,12 +1,13 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'bloodlines-v1';
+const CACHE = 'familytree-v2';
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//];
 
-function isAsset(url) {
-  const rel = new URL(url).pathname.replace(/^\/family-tree\//, '');
-  return ASSET_GLOBS.some(function(re) { return re.test(rel); });
-}
+function rel(url) { return new URL(url).pathname.replace(/^\/family-tree\//, ''); }
+function isAsset(url) { return ASSET_GLOBS.some(function(re) { return re.test(rel(url)); }); }
+// data/*.js + docs-content.json: stale-while-revalidate — instant from cache, refreshed in the
+// background so a deploy's new stories/portraits appear on the next load (no version-bump churn).
+function isData(url) { var r = rel(url); return /^data\//.test(r) || r === 'docs-content.json'; }
 
 self.addEventListener('install', function(e) {
   e.waitUntil(
@@ -27,6 +28,20 @@ self.addEventListener('activate', function(e) {
 self.addEventListener('fetch', function(e) {
   const req = e.request;
   if (req.method !== 'GET') return;
+
+  if (isData(req.url)) {
+    // stale-while-revalidate
+    e.respondWith(caches.open(CACHE).then(function(c) {
+      return c.match(req).then(function(hit) {
+        var net = fetch(req).then(function(resp) {
+          if (resp && resp.status === 200) c.put(req, resp.clone());
+          return resp;
+        }).catch(function() { return hit; });
+        return hit || net;
+      });
+    }));
+    return;
+  }
 
   if (isAsset(req.url)) {
     // cache-first: serve bg/audio/narration/docs from cache, populate on miss

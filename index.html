@@ -63,7 +63,7 @@
   #prog b{color:var(--gold);}
   #fact{position:fixed;right:12px;bottom:12px;max-width:330px;background:rgba(255,250,240,.96);border:1px solid #e7dcc2;border-radius:10px;padding:9px 13px;font-size:12.5px;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:6;cursor:pointer;line-height:1.35;}
   #fact b{color:var(--maxfield);} #fact .h{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#b9a;}
-  #modal{position:fixed;inset:0;background:rgba(20,18,14,.5);display:none;align-items:center;justify-content:center;z-index:9;}
+  #modal{position:fixed;inset:0;background:rgba(20,18,14,.5);display:none;align-items:center;justify-content:center;z-index:15;}
   #card{background:var(--paper);max-width:430px;width:92%;border-radius:16px;padding:22px 24px;box-shadow:0 12px 40px rgba(0,0,0,.4);max-height:88vh;overflow:auto;}
   #card h2{margin:.1em 0 .15em;font-size:22px;}
   #card .meta{color:#6b6860;font-size:14px;margin-bottom:8px;}
@@ -127,6 +127,31 @@
   #homeAboutPanel{display:none;max-width:560px;margin:16px auto 0;text-align:left;background:rgba(255,252,245,.96);border:1px solid #e0d7c2;border-radius:14px;padding:16px 20px;font-size:13.5px;color:#5a5346;line-height:1.6;}
   #homeAboutPanel.show{display:block;}
   @media(max-width:600px){.homeCards{flex-direction:column;}.homeWrap{padding:40px 16px 32px;}.homeBrand{font-size:25px;}}
+  /* live search results dropdown (Explore) */
+  #searchWrap{position:relative;flex:1;min-width:130px;max-width:300px;pointer-events:auto;}
+  #searchWrap #search{width:100%;max-width:none;box-sizing:border-box;padding-right:30px;}
+  #searchClear{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:none;color:#9a8f7a;font-size:18px;cursor:pointer;display:none;line-height:1;}
+  #searchWrap.has #searchClear{display:block;}
+  #searchResults{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #e3d8bf;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);max-height:300px;overflow:auto;display:none;z-index:16;}
+  #searchResults.show{display:block;}
+  .srItem{display:flex;align-items:center;gap:9px;padding:8px 11px;cursor:pointer;border-bottom:1px solid #f0ebe0;font-size:13px;color:#3a342b;}
+  .srItem:last-child{border-bottom:none;} .srItem:hover,.srItem.sel{background:#f6efdf;}
+  .srItem .srYrs{margin-left:auto;color:#8a8270;font-size:11.5px;white-space:nowrap;}
+  .srNone{padding:10px 12px;color:#8a8270;font-size:12.5px;}
+  /* Explore mobile layout — fixes the bottom-right collision of #ctl/#fact/#prog */
+  @media(max-width:600px){
+    #top{gap:6px;}
+    #searchWrap{flex:1 1 100%;order:5;max-width:none;}
+    #search{font-size:16px;}            /* 16px stops iOS from zooming on focus */
+    #title{font-size:12px;padding:6px 10px;} .msw{padding:7px 10px;font-size:12px;}
+    #ctl{flex-direction:row;flex-wrap:nowrap;justify-content:flex-end;left:auto;right:8px;bottom:52px;gap:5px;max-width:none;}
+    #ctl .btn{padding:6px 8px;}
+    #prog{left:8px;right:8px;bottom:8px;min-width:0;font-size:11px;}   /* progress bar pinned to the very bottom */
+    #fact{display:none;}                 /* secondary; freed for the controls on phones */
+  }
+  /* instant boot indicator (hidden once the app initialises) */
+  #boot{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:#e9e6dc;color:#6b6456;font-size:15px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;}
+  body.ready #boot{display:none;}
   #top.slim #search,#top.slim #surpriseBtn{display:none!important;}
   #top.slim{z-index:21;}
   #title[role=button]{cursor:pointer;} #title[role=button]:hover{box-shadow:0 2px 10px rgba(0,0,0,.22);}
@@ -543,6 +568,10 @@
   .fpH{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:#8a6f30;font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .fpSrc{color:#b8860b;text-transform:none;letter-spacing:0;font-weight:700;font-size:11px;}
   .fpWall{font-size:13px;color:#8a8170;padding:16px 8px;text-align:center;line-height:1.5;}
+  .fpWallWhy{display:block;font-size:11.5px;color:#9a9180;margin-top:8px;font-style:italic;line-height:1.45;}
+  .fpWallBack{margin-top:12px;background:rgba(255,255,255,.06);border:1px solid rgba(180,170,150,.3);color:#cfc5b0;border-radius:9px;padding:7px 14px;font:inherit;font-size:12.5px;cursor:pointer;}
+  .fpWallBack:hover{background:rgba(255,255,255,.12);}
+  .rgUnv{display:block;margin-top:4px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#9a8f72;}
   .fpPeople{display:flex;flex-direction:column;gap:9px;}
   .personBtn{position:relative;display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;background:#fffdf8;border:1.5px solid var(--harris);border-left-width:5px;border-radius:12px;padding:10px 12px 11px;cursor:pointer;font:inherit;color:var(--ink);transition:transform .12s,box-shadow .12s,background .12s;}
   .personBtn.maxfield{border-color:var(--maxfield);}
@@ -866,10 +895,11 @@
 <script src="data/contrib.js"></script>
 </head>
 <body>
+<div id="boot">&#127795; Loading the family tree&hellip;</div>
 <div id="top">
   <div id="title" onclick="showHome&&showHome()" title="Home" role="button" tabindex="0">&#127795; Family Tree</div>
   <div id="modeSw"><button id="mAnc" class="msw on" onclick="setMode('anc')" title="Browse the whole family tree — pan, zoom and search">&#128269; Explore</button><button id="mBlood" class="msw" onclick="setMode('blood')" title="Travel back through time, one bloodline at a time">&#129656; Bloodlines</button></div>
-  <input id="search" placeholder="Search an ancestor by name…" autocomplete="off">
+  <div id="searchWrap"><input id="search" placeholder="Search an ancestor by name…" autocomplete="off" aria-label="Search ancestors by name"><button id="searchClear" onclick="clearSearch()" aria-label="Clear search" title="Clear">&times;</button><div id="searchResults"></div></div>
   <button class="btn" id="surpriseBtn" onclick="surprise()">&#127922; Surprise</button>
 </div>
 <div id="home"><div class="homeWrap">
@@ -891,10 +921,10 @@
     <b>This is our family&rsquo;s history</b> &mdash; built from census records, certificates, gravestones, newspapers and family memory.
     Two ways in: <b>Explore</b> shows the whole tree at a glance; <b>Bloodlines</b> walks a single line back through time, telling each ancestor&rsquo;s story.
     Living relatives are shown by name only, for privacy. Deep ancestors past the 1500s come from shared family-tree research and old royal &amp; legendary lines &mdash;
-    those are marked <i>unverified</i>: the romance of the tree, not proven fact. Everything runs right here in your browser; nothing is uploaded.
+    those are marked <i>lore</i>: the romance of the tree, not proven fact. Everything runs right here in your browser; nothing is uploaded.
   </div>
 </div></div>
-<div id="ctl"><button class="btn" onclick="showAll()" title="Show all cards">&#127183;</button><button class="btn" onclick="resetTree()" title="Reset to the beginning">&#8634;</button><button class="btn" onclick="zoom(1.25)">+</button><button class="btn" onclick="zoom(.8)">&minus;</button><button class="btn" onclick="fitAll()" title="Fit the whole tree on screen">&#9974;</button><button class="btn" onclick="home()" title="Back to the start">&#8962;</button></div>
+<div id="ctl"><button class="btn" onclick="showAll()" title="Show all cards" aria-label="Show all ancestors">&#127183;</button><button class="btn" onclick="resetTree()" title="Reset to the beginning" aria-label="Reset the tree">&#8634;</button><button class="btn" onclick="zoom(1.25)" aria-label="Zoom in">+</button><button class="btn" onclick="zoom(.8)" aria-label="Zoom out">&minus;</button><button class="btn" onclick="fitAll()" title="Fit the whole tree on screen" aria-label="Fit the whole tree on screen">&#9974;</button><button class="btn" onclick="home()" title="Back to the start" aria-label="Back to the start">&#8962;</button></div>
 <div id="stage"><svg id="edges"></svg><div id="world"></div></div>
 <div id="prog"><span id="progtxt"></span><div class="bar"><i id="progbar"></i></div></div>
 <div id="fact" onclick="factGo()"><span class="h">Did you know?</span><br><span id="facttxt"></span></div>
@@ -1072,9 +1102,10 @@ var HISTORY=window.HISTORY||[];
       c.innerHTML='<span class="x" onclick="closeModal()">&times;</span>'+(n.face?'<img class="cardface" src="'+n.face+'" onerror="this.style.display=\'none\'">':'')+'<h2>'+esc(n.label)+'</h2><div class="meta">'+(n.span||'')+(n.place?' &middot; '+esc(n.place):'')+'</div><span class="rel">'+(n.branch==='maxfield'?'Maxfield line':(n.branch==='root'?'You':'Harris line'))+'</span>'+dh+'<div class="nav">'+revealBtn+shownPar+'</div>';
     }
     document.getElementById('modal').style.display='flex';
+    try{ history.replaceState({},'',location.pathname+'?mode=anc&person='+encodeURIComponent(n.id)); }catch(e){}
   };
   window.jump=function(id){closeModal();flyTo(id);setTimeout(function(){openCard(byId[id]);},420);};
-  window.closeModal=function(){document.getElementById('modal').style.display='none';};
+  window.closeModal=function(){document.getElementById('modal').style.display='none';try{history.replaceState({},'',location.pathname+'?mode=anc');}catch(e){}};
 
   window.DOCDATA=null;
   window.openDoc=function(key,typ){
@@ -1120,8 +1151,30 @@ var HISTORY=window.HISTORY||[];
   }
 
   window.surprise=function(){var pool=nodes.filter(function(n){return !n.living;});if(!pool.length)return;var n=pool[Math.floor(Math.random()*pool.length)];revealPath(n.id);setTimeout(function(){flyTo(n.id);openCard(n);},120);};
-  var si=document.getElementById('search');
-  si.addEventListener('keydown',function(e){if(e.key!=='Enter')return;var q=si.value.trim().toLowerCase();if(!q)return;var hit=nodes.filter(function(n){return !n.living&&n.label&&n.label.toLowerCase().indexOf(q)>=0;});if(!hit.length){toast('No ancestor found for &ldquo;'+esc(si.value)+'&rdquo;');return;}revealPath(hit[0].id);setTimeout(function(){flyTo(hit[0].id);openCard(hit[0]);},120);});
+  var si=document.getElementById('search'), sr=document.getElementById('searchResults'), sw=document.getElementById('searchWrap');
+  var srHits=[], srSel=-1;
+  function renderSR(){
+    var q=si.value.trim().toLowerCase();
+    if(sw) sw.classList.toggle('has',!!q);
+    if(!q){ if(sr){sr.classList.remove('show');sr.innerHTML='';} srHits=[]; srSel=-1; return; }
+    srHits=nodes.filter(function(n){return !n.living&&n.label&&n.label.toLowerCase().indexOf(q)>=0;}).slice(0,8);
+    srSel=-1;
+    if(!srHits.length){ sr.innerHTML='<div class="srNone">No ancestor found</div>'; sr.classList.add('show'); return; }
+    sr.innerHTML=srHits.map(function(n,i){ var yr=(n.span||'').replace(/\?/g,'').replace(/^–|–$/,'');
+      return '<div class="srItem" data-i="'+i+'" onmousedown="event.preventDefault()" onclick="srPick('+i+')"><span>'+esc(n.label)+'</span><span class="srYrs">'+esc(yr)+'</span></div>'; }).join('');
+    sr.classList.add('show');
+  }
+  window.srPick=function(i){ var n=srHits[i]; if(!n)return; sr.classList.remove('show'); revealPath(n.id); setTimeout(function(){flyTo(n.id);openCard(n);},120); };
+  window.clearSearch=function(){ si.value=''; renderSR(); si.focus(); };
+  si.addEventListener('input',renderSR);
+  si.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){ e.preventDefault(); if(srSel>=0)srPick(srSel); else if(srHits.length)srPick(0); else { var q=si.value.trim(); if(q)toast('No ancestor found for &ldquo;'+esc(q)+'&rdquo;'); } return; }
+    if(e.key==='Escape'){ sr.classList.remove('show'); si.blur(); return; }
+    if((e.key==='ArrowDown'||e.key==='ArrowUp')&&srHits.length){ e.preventDefault(); srSel+=(e.key==='ArrowDown'?1:-1); if(srSel<0)srSel=srHits.length-1; if(srSel>=srHits.length)srSel=0; [].forEach.call(sr.children,function(c,j){c.classList.toggle('sel',j===srSel);}); }
+  });
+  document.addEventListener('click',function(e){ if(sw&&!sw.contains(e.target)) sr.classList.remove('show'); });
+  // deep-link target: reveal + fly + open a person in Explore (used by ?mode=anc&person=ID)
+  window.exploreGoTo=function(id){ var n=byId[id]; if(!n)return; revealPath(id); setTimeout(function(){flyTo(id);openCard(n);},150); };
 
   var facts=(DATA.meta&&DATA.meta.facts)||[],fi=0;
   function showFact(){if(!facts.length){document.getElementById('fact').style.display='none';return;}var f=facts[fi%facts.length];document.getElementById('facttxt').innerHTML=f.text;document.getElementById('fact')._id=f.id||'';}
@@ -1866,7 +1919,7 @@ var HISTORY=window.HISTORY||[];
   function spawnMote(seed){ if(!cx||!cv||cv.width<2)fx(); if(!cx)return; var w=cv.width||0,h=cv.height||0; if(w<2)return;
     parts.push({x:Math.random()*w, y:seed?Math.random()*h:h+8, vx:(Math.random()-0.5)*0.3, vy:-(0.2+Math.random()*0.55), life:1, decay:0.0009+Math.random()*0.0008, r:1.4+Math.random()*2.8, c:'rgba(255,222,150,0.95)', mote:true});
     if(parts.length>760)parts=parts.slice(-760); drawParts(); if(!raf)tick(); }
-  function startMotes(){ if(moteT)return; for(var i=0;i<24;i++)spawnMote(true); moteT=setInterval(spawnMote,380); }   // gentle embers run even under reduced-motion
+  function startMotes(){ if(moteT||RM)return; for(var i=0;i<24;i++)spawnMote(true); moteT=setInterval(spawnMote,380); }   // embers; suppressed under prefers-reduced-motion (a11y)
   function stopMotes(){ if(moteT){clearInterval(moteT);moteT=null;} }
 
   /* ---- mode switch (with the stop-music fix) ---- */
@@ -2207,8 +2260,9 @@ var HISTORY=window.HISTORY||[];
   };
 
   function parseStartState(){
+    try{ document.body.classList.add('ready'); }catch(e){}   // dismiss the boot loader — app is initialised
     var sp=new URLSearchParams(window.location.search);
-    var lk=sp.get('line'), nid=sp.get('node'), mode=sp.get('mode');
+    var lk=sp.get('line'), nid=sp.get('node'), mode=sp.get('mode'), person=sp.get('person');
     if(lk){
       var line=BL.filter(function(b){return b.key===lk;})[0];
       if(!line){ showHome(); return; }                 // bad link -> Home (was: silent blood landing)
@@ -2216,7 +2270,7 @@ var HISTORY=window.HISTORY||[];
       if(nid){ bRevealAll(); setTimeout(function(){ bFocusId(nid); },200); }
       return;
     }
-    if(mode==='anc'){ setMode('anc'); return; }
+    if(mode==='anc'){ setMode('anc'); if(person&&window.exploreGoTo) setTimeout(function(){ exploreGoTo(person); },250); return; }
     if(mode==='blood'){ setMode('blood'); return; }
     showHome();                                          // default: the Home screen (was: setMode('blood'))
   }
@@ -2360,7 +2414,7 @@ var HISTORY=window.HISTORY||[];
     var yrs=n.living?'living family':E(n.span||(n.b?((n.b<1500?'~':'')+n.b):''));
     var place=n.living?'':E(firstPlace(n.place));
     return '<button class="personBtn '+side+(n.notable?' notable':'')+(n.unverified?' unv':'')+'" onclick="bOpenPerson(\''+EQ(n.id)+'\')">'+
-      face+'<div class="pInfo"><div class="pName">'+E(n.label)+(n.unverified?' <span class="unvb">unverified</span>':'')+'</div>'+
+      face+'<div class="pInfo"><div class="pName">'+E(n.label)+(n.unverified?' <span class="unvb">lore</span>':'')+'</div>'+
       '<div class="pYrs">'+yrs+(place?' &middot; '+place:'')+'</div>'+
       '<div class="pHook">'+E(personHook(n))+'</div>'+personBadges(n)+'</div>'+
       '<span class="pGo">their life &#8594;</span></button>';
@@ -2370,7 +2424,10 @@ var HISTORY=window.HISTORY||[];
     var sideName=(owner.sex==='M'?'Paternal':(owner.sex==='F'?'Maternal':'This'));
     var label=E(owner.first||owner.label)+'&rsquo;s parents';
     if(!par.length){
-      return '<div class="forkPair wall '+side+'" data-own="'+ownerId+'"><div class="fpH"><span class="fpSideLbl">'+sideName+' line</span> &middot; '+label+'</div><div class="fpWall">&#128679; The trail goes cold here &mdash; '+E(owner.first||'their')+'&rsquo;s parents aren&rsquo;t known yet.</div></div>';
+      return '<div class="forkPair wall '+side+'" data-own="'+ownerId+'"><div class="fpH"><span class="fpSideLbl">'+sideName+' line</span> &middot; '+label+'</div>'+
+        '<div class="fpWall">&#128679; The trail goes cold here &mdash; '+E(owner.first||'their')+'&rsquo;s parents aren&rsquo;t known yet.'+
+        '<span class="fpWallWhy">Most lines end where the records do: an immigrant ancestor whose homeland records are lost, a courthouse fire, or a time before births were registered.</span>'+
+        (trailStack.length?'<button class="fpWallBack" onclick="bTrailBack()">&#8592; back toward today</button>':'')+'</div></div>';
     }
     if(par.some(function(p){return p.unverified;})){          // crossed into royalty/legend -> the multi-house page, not couple-cards
       var ra=royalAncestorsFrom(ownerId), deep=ra.slice().sort(function(a,b){return (a.b||9999)-(b.b||9999);})[0]||{};
@@ -2379,7 +2436,7 @@ var HISTORY=window.HISTORY||[];
         '<button class="royalGate" onclick="bOpenRoyal(\''+EQ(ownerId)+'\')">'+
           '<span class="rgCrest">&#9876;&#65039;</span>'+
           '<span class="rgInfo"><b>Your blood runs into royalty &amp; legend</b>'+
-          '<span class="rgSub">'+ra.length+' kings, queens, dukes &amp; legends across <b>'+nH+'</b> royal '+(nH===1?'house':'houses')+(deep.label?' &mdash; back to <b>'+E(deep.label)+'</b>'+(deep.b?' ('+(deep.b<1500?'~':'')+deep.b+')':''):'')+'</span></span>'+
+          '<span class="rgSub">'+ra.length+' kings, queens, dukes &amp; legends across <b>'+nH+'</b> royal '+(nH===1?'house':'houses')+(deep.label?' &mdash; back to <b>'+E(deep.label)+'</b>'+(deep.b?' ('+(deep.b<1500?'~':'')+deep.b+')':''):'')+'<span class="rgUnv">family-tree lore</span></span></span>'+
           '<span class="rgGo">Enter the line &#8594;</span></button></div>';
     }
     var ob=Math.min.apply(null, par.map(function(p){ return oldestBelow(p.id); }));
@@ -2586,7 +2643,7 @@ var HISTORY=window.HISTORY||[];
     b+=docRail(n, st);                              // documents/records -> left-rail menu (item 1)
     b+='<div class="hudScroll"><div class="hudInner">';
     b+='<div class="hudHero">'+face+'<div class="hudId">'+
-      '<div class="hudNm">'+E(n.label)+(n.unverified?' <span class="unvb">unverified</span>':'')+'</div>'+
+      '<div class="hudNm">'+E(n.label)+(n.unverified?' <span class="unvb">lore</span>':'')+'</div>'+
       '<div class="hudSpan">'+E(n.span||(n.living?'living family':''))+(place?' &middot; '+place:'')+'</div>'+
       '<div class="hudTags"><span class="bfTag '+sideOf(cur)+'">'+sideLabel(cur)+'</span><span class="bfTag">'+E(genTxt)+'</span>'+(eLabel?'<span class="bfTag">'+E(eLabel)+'</span>':'')+(reg?'<span class="bfTag">'+E(REGION_LABEL[reg])+'</span>':'')+'</div>'+
       (hasNarr(nk)?'<div class="hudListen">'+listenBtn(nk)+'</div>':'')+
@@ -2598,7 +2655,7 @@ var HISTORY=window.HISTORY||[];
     if(st&&st.bio) b+='<div class="hudBio">'+_paras(st.bio)+'</div>';
     else if(narrText) b+='<div class="hudBio">'+_paras(narrText)+'</div>';
     else if(n.living) b+='<div class="hudBio"><p>Living family &mdash; shown with the family&rsquo;s blessing. The journey continues through the ancestors behind them.</p></div>';
-    if(n.unverified && !narrText && !st) b+='<div class="hudNote unv">This deep link comes from speculative family-tree data (royal / legendary lines) and is <b>not verified</b>.</div>';
+    if(n.unverified && !narrText && !st) b+='<div class="hudNote unv">This deep ancestor comes from royal &amp; legendary family-tree <b>lore</b> &mdash; a traditional descent passed down, not proven record.</div>';
     b+=spouseBlock(n);
     // the surname's own origin — shown on the founder's page (the head of the line that carries the name)
     var _so=(n.gen===0 && cur && SURNORIG)?SURNORIG[(cur.surname||'').toLowerCase()]:null;
@@ -2833,7 +2890,7 @@ var HISTORY=window.HISTORY||[];
       (isSource?'<div class="rcSrcBanner">&#127942; The Source &mdash; the oldest ancestor this line can name</div>':'')+
       '<div class="rcRow">'+face+
         '<div class="rcBody">'+
-          '<div class="rcName">'+E(n.label)+(leg?' <span class="rcLeg">legendary</span>':(n.unverified?' <span class="rcUnv">unverified</span>':''))+'</div>'+
+          '<div class="rcName">'+E(n.label)+(leg?' <span class="rcLeg">legendary</span>':(n.unverified?' <span class="rcUnv">lore</span>':''))+'</div>'+
           (yrs||place?'<div class="rcMeta">'+yrs+(place?' &middot; '+E(place):'')+(leg?' &middot; <i>dates traditional</i>':'')+'</div>':'')+
           (lead?'<div class="rcLead">'+E(lead)+'</div>':'')+
           (snip?'<div class="rcBio">'+snip+'</div>':'')+
@@ -2988,7 +3045,7 @@ var HISTORY=window.HISTORY||[];
       el.style.left=n._px+'px';el.style.top=n._py+'px';
       if(fresh) el.style.animationDelay=(Math.min(n.gen,6)*0.06)+'s';
       var face=n.face?'<img class="bface" src="'+E(n.face)+'" onerror="this.style.display=\'none\'">':'';
-      el.innerHTML=face+'<div class="bnm">'+E(n.label)+(n.unverified?' <span class="unvb">unverified</span>':'')+'</div>'+
+      el.innerHTML=face+'<div class="bnm">'+E(n.label)+(n.unverified?' <span class="unvb">lore</span>':'')+'</div>'+
         '<div class="bsub">'+E(n.span||(n.living?'living family':''))+(n.place&&!n.living?' &middot; '+E(firstPlace(n.place)):'')+'</div>'+
         (hiddenPar?'<span class="bpip" onclick="event.stopPropagation();bRevealOne(\''+n.id+'\')">&#8617; further back</span>':'');
       el.onclick=function(){ tapNode(n); };
