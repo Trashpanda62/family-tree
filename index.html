@@ -553,6 +553,12 @@
   .wagon.rolling{animation:wagonBob .64s ease;}
   @keyframes wagonBob{0%,100%{transform:translate(-50%,-60%) rotate(0);}22%{transform:translate(-50%,-70%) rotate(-3deg);}55%{transform:translate(-50%,-54%) rotate(2deg);}}
   .wagonSvg{display:block;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));}
+  /* caption naming the line the wagon follows (2026-06-22) + 'into legend' terminus */
+  .roadCap{position:absolute;top:1px;left:50%;transform:translateX(-50%);max-width:58%;font-size:10px;color:#d4c8aa;
+    text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.8);pointer-events:none;z-index:7;}
+  .roadCap b{color:#f3ead2;}
+  .roadEnd.r.legend{cursor:pointer;color:#f0cda0;pointer-events:auto;}
+  .roadEnd.r.legend:hover{color:#ffe6c0;text-decoration:underline;}
   /* ===== full-screen dossier HUD (the life page) ===== */
   #bFocus.bfShow{position:absolute;inset:0;left:0;top:0;right:0;bottom:0;width:100%;max-width:100%;height:100%;max-height:100%;transform:none;border:none;border-radius:0;box-shadow:none;padding:0;overflow:hidden;background:#17140f;z-index:20;}
   .hudBg{position:absolute;inset:0;background-size:cover;background-position:center;}
@@ -675,7 +681,8 @@
     .bfTLtrack{height:240px;} .tlArrow{width:34px;height:34px;font-size:20px;}
     .fork{grid-template-columns:1fr;gap:13px;} .fork.c1{grid-template-columns:1fr;}
     #bTrail{padding:58px 11px 64px;} .forkPrompt{font-size:16px;margin-bottom:11px;} .trailWith{gap:7px;}
-    #bRibbon{height:46px;} .roadEnd{font-size:9.5px;} .wagonSvg{width:34px;height:23px;}
+    #bRibbon{height:46px;} .roadEnd{font-size:9.5px;} .wagonSvg{width:34px;height:23px;} .roadCap{display:none;}
+    .rhcT{max-width:140px;overflow:hidden;text-overflow:ellipsis;}
     #bEraLabel{bottom:54px;}
     #bFocus.bfShow.hasDock{--dockH:266px;}
     #bFocus.bfShow .hudDock{padding:5px 9px 4px;}
@@ -752,6 +759,28 @@
   .rcMore{margin-top:8px;background:none;border:none;color:#e0b85a;font-size:12px;font-weight:700;cursor:pointer;padding:0;}
   .royalSheet.maxfield .rcMore{color:#6fd49a;} .rcMore:hover{text-decoration:underline;}
   .royalFoot{text-align:center;font-size:13px;color:#d6c596;padding:26px 10px 10px;font-style:italic;}
+  /* ---- multi-house royal page (2026-06-22): houses as distinct sections + chip legend ---- */
+  .rtCaveat{display:block;margin-top:5px;font-size:11px;font-style:italic;color:#9a8f72;}
+  .rhChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px;}
+  .rhChip{display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:11.5px;color:#e7dcc2;cursor:pointer;
+    background:rgba(214,180,100,.1);border:1px solid rgba(214,180,100,.3);border-radius:20px;padding:4px 6px 4px 10px;transition:background .12s,border-color .12s;}
+  .rhChip:hover{background:rgba(214,180,100,.22);border-color:#caa23c;}
+  .royalSheet.maxfield .rhChip{color:#cdeede;background:rgba(120,200,150,.1);border-color:rgba(120,200,150,.3);}
+  .rhcIc{font-size:14px;line-height:1;} .rhcT{white-space:nowrap;}
+  .rhcN{font-weight:800;font-size:10.5px;color:#1c1812;background:#e0b85a;border-radius:11px;padding:1px 7px;min-width:14px;text-align:center;}
+  .royalSheet.maxfield .rhcN{background:#6fd49a;}
+  .royalIntro{text-align:center;font-size:12.5px;font-style:italic;color:#bfb593;padding:12px 10px 2px;}
+  .rsHt{flex:1;min-width:0;}
+  .rsHmeta{font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:none;color:#b9ad90;white-space:nowrap;}
+  .royalSheet.maxfield .rsHmeta{color:#9bc7ad;}
+  .royalCard.compact .rcRow{padding:8px 12px;} .royalCard.compact .rcFace{width:40px;height:40px;font-size:18px;}
+  .royalCard.compact .rcName{font-size:13.5px;} .royalCard.compact .rcMore{font-size:11px;margin-top:5px;}
+  .royalCard.compact::before{top:15px;width:9px;height:9px;}
+  /* landing 'into royalty' chip + objective teaser + payoff door + period star */
+  .bcRoyal{display:block;margin-top:4px;font-size:10.5px;font-weight:700;color:#a06bc0;}
+  .bObjRoyal{display:inline-block;font-size:11px;font-weight:700;color:#a06bc0;background:rgba(160,107,192,.14);border-radius:8px;padding:1px 7px;margin-left:4px;white-space:nowrap;}
+  .bPayRoyal{font-size:12.5px;line-height:1.5;color:#e7d2f0;background:rgba(120,80,160,.16);border:1px solid rgba(150,110,180,.34);border-radius:10px;padding:9px 12px;margin:8px 0;}
+  .bpStar{color:#e0b85a;margin-right:3px;font-size:12px;}
 
   /* ---- Deep Roots: the deep-time epilogue, rendered above the Source ---- */
   .deepRoots{margin:0 0 10px;}
@@ -2011,12 +2040,28 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     var place=E(firstPlace(n.place));
     var age=''; if(year!=null && n.b){ var a=year-n.b; if(a>=0) age='<span class="bpAge">age '+a+' in '+year+'</span>'; }
     var rg=BP_REGCOL[bRegionOf(n)]||{}, reg='<span class="bpReg"><i style="background:'+(rg.c||'#9a8f7a')+'"></i>'+E(rg.l||'Elsewhere')+'</span>';
-    return '<button class="bpCard '+x.side+'" style="border-left-color:'+col+'" onclick="bPeriodGoto(\''+EQ(x.line.key)+'\',\''+EQ(n.id)+'\')">'+
-      face+'<span class="bpInfo"><span class="bpName">'+E(n.label)+'</span>'+
+    var star=n.notable?'<span class="bpStar" title="A standout ancestor — a direct grandparent of yours or a documented founder">&#9733;</span>':'';
+    return '<button class="bpCard '+x.side+(n.notable?' notable':'')+'" style="border-left-color:'+col+'" onclick="bPeriodGoto(\''+EQ(x.line.key)+'\',\''+EQ(n.id)+'\')">'+
+      face+'<span class="bpInfo"><span class="bpName">'+star+E(n.label)+'</span>'+
       '<span class="bpMeta">'+yrs+(place?' &middot; '+place:'')+'</span>'+
       '<span class="bpLineNm">'+E(x.line.surname)+' line &middot; '+sideLabel(x.line)+'</span>'+
       '<span class="bpTags2">'+reg+age+'</span></span>'+
       '<span class="bpGo">&#8594;</span></button>';
+  }
+  /* notability score: surfaces the people most worth reading first (item 2026-06-22,
+     Steve: "the time period page should sort the most notable people to the top").
+     Direct-line ancestors + founders rank highest, then those with a real written
+     life story, a portrait, documents, and a full life of events. */
+  function bNotabScore(n){
+    var s=0;
+    if(n.notable) s+=100;
+    var st=PSTORY[n.id];
+    if(st){ s+=(st._auto?12:60); if(st.sections&&st.sections.length) s+=30; if(st.eventTimeline) s+=20; }
+    if(PFACT[n.id]) s+=18;
+    if(n.face) s+=34;
+    if(n.docs&&n.docs.length) s+=Math.min(24,n.docs.length*4);
+    if(n.events&&n.events.length) s+=Math.min(16,n.events.length*2);
+    return s;
   }
   function bRenderPeriod(){
     var all=bAllNodes(), single=(bPeriod.mode==='year'), y0=bPeriod.y0, y1=bPeriod.y1, side=bPeriod.side, region=bPeriod.region;
@@ -2025,7 +2070,10 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     // region counts over the current window+side (drives the legend); filter list by region
     var rc={}; bySide.forEach(function(x){ var rk=bRegionOf(x.n); rc[rk]=(rc[rk]||0)+1; });
     bBuildRegions(rc);
-    var list=bySide.filter(function(x){return region==='all'||bRegionOf(x.n)===region;}).sort(function(a,b){ return (a.n.b||0)-(b.n.b||0); });
+    // most NOTABLE first (story/portrait/records), then chronological within equal rank
+    var list=bySide.filter(function(x){return region==='all'||bRegionOf(x.n)===region;})
+      .map(function(x){ x._ns=bNotabScore(x.n); return x; })
+      .sort(function(a,b){ return (b._ns-a._ns) || ((a.n.b||0)-(b.n.b||0)); });
     // dynamic header
     var ttl=document.getElementById('bpTitle');
     if(ttl){
@@ -2075,6 +2123,7 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
 
   function showLanding(){
     stopJourney(); stopMotes(); stopMusic(); amTrack=null; curTrack=null;   // selection screen = silent
+    setChrome(false);                                                        // restore the mode-switch bar
     bPushState(null,null);
     document.getElementById('bView').style.display='none';
     var L=document.getElementById('bLanding'); L.style.display='block';
@@ -2085,12 +2134,15 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
       '<div class="bMeta2"><span class="bSeal">&#127942; '+traced+' of '+withAnc+' bloodlines traced to the Source</span> <button class="bPassBtn" onclick="bPassport()">&#128214; Family Passport</button> <button class="bPassBtn" onclick="bOpenMap(\'all\')">&#128205; World Map</button> <button class="bPassBtn" onclick="bOpenPeriod()">&#9203; Time Period</button></div></div>'+
       '<div class="bGrid">'+BL.map(function(b){
         var empty=!b.ancCount, sealed=P.lines[b.key];
-        var reach=empty?'ancestry not yet traced':('reaches back '+b.maxGen+' generation'+(b.maxGen>1?'s':'')+(b.oldestYear?' to '+(b.oldestYear<1500?'~':'')+b.oldestYear:''));
+        lineDocStats(b);
+        var dmg=b._docMaxGen2||b.maxGen, doy=b._docOldestYear;
+        var reach=empty?'ancestry not yet traced':('reaches back '+dmg+' generation'+(dmg>1?'s':'')+(doy?' to '+(doy<1500?'~':'')+doy:''));
+        var royal=(!empty&&b._entersRoyal)?'<span class="bcRoyal">&#9876;&#65039; into royalty &amp; legend &middot; '+b._royalHouses+' house'+(b._royalHouses>1?'s':'')+'</span>':'';
         return '<button class="bCard '+sideOf(b)+(empty?' empty':'')+(sealed?' sealed':'')+'" onclick="openLine(\''+b.key+'\')">'+
           (sealed?'<span class="bCardSeal" title="Traced to the Source">&#127942;</span>':'')+
           '<div class="bcS">'+E(b.surname)+' line &middot; '+sideLabel(b)+'</div>'+
           '<div class="bcF">'+E(b.founder)+'</div>'+
-          '<div class="bcMeta"><span>'+E(b.era||'')+'</span><span>'+E(reach)+'</span></div>'+
+          '<div class="bcMeta"><span>'+E(b.era||'')+'</span><span>'+E(reach)+'</span></div>'+royal+
         '</button>';
       }).join('')+'</div>';
   }
@@ -2106,11 +2158,36 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     // founder year + the Source (oldest) node id
     var f0=line.nodes.filter(function(n){return n.gen===0;})[0]||line.nodes[0];
     cur._founderYear=f0&&f0.b||null;
-    cur._source=line.nodes.slice().sort(function(a,b){ return (b.gen-a.gen)||((a.b||9999)-(b.b||9999)); })[0];
-    // spine: root -> ... -> source, for the guided journey (cinematic descent)
-    var sp=[], sid=cur._source?cur._source.id:null, guard=0;
-    while(sid && guard++<400){ sp.unshift(sid); sid=byIdB[sid]?byIdB[sid].par:null; }
-    cur._sourcePath=sp;
+    cur._legendOldest=line.nodes.slice().sort(function(a,b){ return (b.gen-a.gen)||((a.b||9999)-(b.b||9999)); })[0];  // absolute oldest incl. legend (Royal page)
+    // The documented SPINE (2026-06-22): from the founder, follow the branch that
+    // reaches the deepest *documented* (verified, post-1550) ancestor. This is the
+    // single line the bottom road + the quest actually trace, so "where the wagon
+    // takes you" is always one coherent, real line. The speculative pre-1550
+    // royal/legendary tail is held separately (the Royal & Legend page).
+    // We STEP only through documented nodes (the road stays honest), but choose the
+    // documented parent whose branch reaches deepest OVERALL — so the spine heads
+    // toward the richest ancestry (and, on royal lines, ends at the documented bridge
+    // that opens into royalty & legend), not a shallow dead-end of equal documented depth.
+    var _td={};
+    function _totalDepth(id){
+      if(_td[id]!=null) return _td[id];
+      _td[id]=(byIdB[id]||{}).gen||0;
+      (kidsOf[id]||[]).forEach(function(k){ var p=byIdB[k]; if(p){ var x=_totalDepth(k); if(x>_td[id])_td[id]=x; } });
+      return _td[id];
+    }
+    var spine=[], sid=f0.id, sg=0;
+    while(sid && sg++<400){
+      spine.push(sid);
+      var dps=(kidsOf[sid]||[]).map(function(k){return byIdB[k];}).filter(function(p){return p && !p.unverified;});
+      if(!dps.length) break;
+      dps.sort(function(a,b){ return (_totalDepth(b.id)-_totalDepth(a.id)) || ((a.b||9999)-(b.b||9999)); });
+      sid=dps[0].id;
+    }
+    cur._docSpine=spine;
+    cur._source=byIdB[spine[spine.length-1]]||f0;        // the Source you can document (deepest verified ancestor)
+    cur._docMaxGen=cur._source?cur._source.gen:0;
+    cur._sourcePath=spine.slice();                       // founder -> documented Source (drives Play + bWalkTo)
+    cur._docAnc=line.nodes.filter(function(n){ return !n.living && !n.unverified && n.gen>=1; }).length;
     cur._reached=false;
     shownB=new Set(); bornB=new Set(); oldestBelowMemo={}; _srcSubMemo={};
     bPushState(key,null);
@@ -2194,13 +2271,14 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     if(!par.length){
       return '<div class="forkPair wall '+side+'" data-own="'+ownerId+'"><div class="fpH"><span class="fpSideLbl">'+sideName+' line</span> &middot; '+label+'</div><div class="fpWall">&#128679; The trail goes cold here &mdash; '+E(owner.first||'their')+'&rsquo;s parents aren&rsquo;t known yet.</div></div>';
     }
-    if(par.some(function(p){return p.unverified;})){          // crossed into royalty/legend -> ONE page, not couple-cards
-      var deep=royalDeepest(ownerId), nR=royalChain(ownerId).filter(function(p){return p.unverified;}).length;
+    if(par.some(function(p){return p.unverified;})){          // crossed into royalty/legend -> the multi-house page, not couple-cards
+      var ra=royalAncestorsFrom(ownerId), deep=ra.slice().sort(function(a,b){return (a.b||9999)-(b.b||9999);})[0]||{};
+      var hk={}; ra.forEach(function(n){ hk[royalHouse(n).k]=1; }); var nH=Object.keys(hk).length;
       return '<div class="forkPair royalGateWrap '+side+'" data-own="'+ownerId+'"><div class="fpH"><span class="fpSideLbl">'+sideName+' line</span> &middot; '+label+'</div>'+
         '<button class="royalGate" onclick="bOpenRoyal(\''+EQ(ownerId)+'\')">'+
           '<span class="rgCrest">&#9876;&#65039;</span>'+
           '<span class="rgInfo"><b>Your blood runs into royalty &amp; legend</b>'+
-          '<span class="rgSub">'+nR+' kings, dukes &amp; legends trace back to <b>'+E(deep.label)+'</b>'+(deep.b?' &middot; '+(deep.b<1500?'~':'')+deep.b:'')+'</span></span>'+
+          '<span class="rgSub">'+ra.length+' kings, queens, dukes &amp; legends across <b>'+nH+'</b> royal '+(nH===1?'house':'houses')+(deep.label?' &mdash; back to <b>'+E(deep.label)+'</b>'+(deep.b?' ('+(deep.b<1500?'~':'')+deep.b+')':''):'')+'</span></span>'+
           '<span class="rgGo">Enter the line &#8594;</span></button></div>';
     }
     var ob=Math.min.apply(null, par.map(function(p){ return oldestBelow(p.id); }));
@@ -2245,17 +2323,24 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     if(yrs.length) setScene(Math.min.apply(null,yrs), (byIdB[trailCouple[0]]||{}).place);
     renderStop();
   };
-  /* walk the highlighted line to a target generation (tap a road dot).
-     Forward = trail-back toward today; backward = follow the selected parent line deeper. */
+  /* tap/drag the wagon to a generation: fast-travel along the ONE documented spine
+     (cur._docSpine) — the deepest line we can actually document — so the road always
+     follows a single coherent, real line, never a blind paternal guess. The branching
+     "whose people to follow" exploration still lives in the cards above. (2026-06-22) */
   function bWalkTo(targetGen){
-    var guard=0;
-    while(curGen()<targetGen && guard++<60){
-      var own=(trailCouple.indexOf(trailSel)>=0?trailSel:trailCouple[0]);
-      if(!own || !parentsOf(own).length) break;     // research wall: stop cleanly
-      bTravel(own);                                  // advances to that owner's parents; renderStop re-defaults to paternal
-    }
-    while(curGen()>targetGen && trailStack.length && guard++<60){ bTrailBack(); }
-    updateRibbon();
+    var spine=cur&&cur._docSpine||[]; if(spine.length<1) return;
+    targetGen=Math.max(0, Math.min(targetGen|0, (cur._docMaxGen||0)));
+    if(targetGen>spine.length-1) targetGen=spine.length-1;
+    var cg=curGen();
+    trailStack=[]; for(var g=0; g<targetGen; g++) trailStack.push([spine[g]]);
+    trailCouple=[spine[targetGen]]; trailSel=spine[targetGen];
+    markShown(spine.slice(0,targetGen+1));
+    var nd=byIdB[spine[targetGen]];
+    if(nd && nd.b!=null) setScene(nd.b, nd.place);
+    if(targetGen>cg){ sReveal(); if(!RM) flash(); } else sClick();
+    renderStop(); updateRibbon();
+    if(cur._source && trailCouple.indexOf(cur._source.id)>=0) checkSource();
+    bPushState(cur.key, trailCouple[0]);
   }
   window.bWalkTo=bWalkTo;
   window.bOpenPerson=function(id){ var n=byIdB[id]; if(!n) return; sClick(); showFocus(); setFocus(n, true); };
@@ -2265,8 +2350,12 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     var r=fp.getBoundingClientRect();
     burst(r.left-sr.left+r.width/2, r.top-sr.top+Math.min(r.height*0.4,120), sideOf(cur)==='maxfield'?'#46c878':'#f3c34b', 64);
   }
-  function showFocus(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='block'; el.classList.add('bfShow'); } }
-  window.hideFocus=function(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='none'; el.classList.remove('bfShow'); } stopNarr(); };
+  /* the shared mode-switch bar (#top, z6) sits in a higher root stacking context than
+     #bloodMode (z2), so it paints OVER our fullscreen overlays. Hide it while a life
+     page or the royal sheet is open. (2026-06-22) */
+  function setChrome(hidden){ var t=document.getElementById('top'); if(t) t.style.visibility=hidden?'hidden':''; }
+  function showFocus(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='block'; el.classList.add('bfShow'); } setChrome(true); }
+  window.hideFocus=function(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='none'; el.classList.remove('bfShow'); } if(!(document.getElementById('bRoyal')||{}).classList||!document.getElementById('bRoyal').classList.contains('open')) setChrome(false); stopNarr(); };
 
   /* ---- the trail ribbon: a road along the bottom; a covered wagon rolls from
      'today' toward the Source as you travel back, milestone dot per generation ---- */
@@ -2282,22 +2371,26 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     var el=document.getElementById('bRibbon'); if(!el||!cur) return;
     if(!cur.ancCount){ el.innerHTML=''; el.style.display='none'; return; }
     el.style.display='block';
-    var mg=Math.max(1,cur.maxGen||1), dots='';
+    var mg=Math.max(1,cur._docMaxGen||cur.maxGen||1), dots='', spine=cur._docSpine||[];
     for(var g=0; g<=mg; g++){
       var lx=(6+(g/mg)*88).toFixed(2);
-      dots+='<span class="roadDot'+(g===mg?' src':'')+'" data-g="'+g+'" style="left:'+lx+'%" onclick="bWalkTo('+g+')" title="travel to generation '+g+'">'+(g===mg?'&#9733;':'')+'</span>';
+      var sn=byIdB[spine[g]], tip=sn?((sn.first||sn.label)+(sn.b?' · '+(sn.b<1500?'~':'')+sn.b:'')):('generation '+g);
+      dots+='<span class="roadDot'+(g===mg?' src':'')+'" data-g="'+g+'" style="left:'+lx+'%" onclick="bWalkTo('+g+')" title="'+E(tip)+'">'+(g===mg?'&#9733;':'')+'</span>';
     }
-    var s=cur._source;
-    el.innerHTML='<div class="road"><div class="roadLine"></div>'+dots+
-      '<span class="roadEnd l">&#127968; today</span>'+
-      '<span class="roadEnd r">&#9733; '+(s?E(s.first||s.label)+(s.b?' &middot; '+(s.b<1500?'~':'')+s.b:''):'the Source')+'</span>'+
+    var s=cur._source, entersRoyal=s && parentsOf(s.id).some(function(p){return p.unverified;});
+    var endR=entersRoyal
+      ? '<span class="roadEnd r legend" onclick="bOpenRoyal(\''+EQ(s.id)+'\')" title="Beyond here the line runs into royalty &amp; legend">&#9876;&#65039; into royalty &amp; legend</span>'
+      : '<span class="roadEnd r">&#9733; '+(s?E(s.first||s.label)+(s.b?' &middot; '+(s.b<1500?'~':'')+s.b:''):'the Source')+'</span>';
+    el.innerHTML='<div class="roadCap">&#128506;&#65039; The road back &mdash; your deepest <b>documented</b> line. Drag the wagon to travel the generations.</div>'+
+      '<div class="road"><div class="roadLine"></div>'+dots+
+      '<span class="roadEnd l">&#127968; today</span>'+endR+
       '<div class="wagon" id="bWagon">'+WAGON_SVG+'</div></div>';
     updateRibbon(true);
   }
   function updateRibbon(instant){
     var el=document.getElementById('bRibbon'); if(!el||!cur) return;
     var w=document.getElementById('bWagon'); if(!w) return;
-    var mg=Math.max(1,cur.maxGen||1), g=curGen(), lx=(6+(g/mg)*88).toFixed(2);
+    var mg=Math.max(1,cur._docMaxGen||cur.maxGen||1), g=Math.min(curGen(),mg), lx=(6+(g/mg)*88).toFixed(2);
     if(instant){ w.style.transition='none'; w.style.left=lx+'%'; void w.offsetWidth; w.style.transition=''; }
     else { w.style.left=lx+'%'; w.classList.add('rolling'); setTimeout(function(){ if(w) w.classList.remove('rolling'); }, 680); }
     el.querySelectorAll('.roadDot').forEach(function(d){ d.classList.toggle('done', (+d.getAttribute('data-g'))<=g); });
@@ -2316,16 +2409,18 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
       el.innerHTML=back+'<div class="bObjT"><b>'+E(cur.surname)+'</b> &mdash; a research wall. '+E(cur.founder)+'’s ancestors are still waiting to be discovered.</div>';
       return;
     }
-    var revealed=cur.nodes.filter(function(n){return shownB.has(n.id)&&n.gen>=1;}).length;
-    var pct=Math.round(100*revealed/Math.max(1,cur.ancCount));
+    var revealed=cur.nodes.filter(function(n){return shownB.has(n.id)&&n.gen>=1&&!n.unverified;}).length;
+    var denom=Math.max(1,cur._docAnc||cur.ancCount);
+    var pct=Math.round(100*Math.min(revealed,denom)/denom);
     var d=deepestShown();
     var yrsBack=(cur._founderYear&&d.year)?(cur._founderYear-d.year):null;
     var src=cur._source, srcYr=src&&src.b;
-    var done=cur._reached;
+    var entersRoyal=src && parentsOf(src.id).some(function(p){return p.unverified;});
+    var done=cur._reached, dmg=cur._docMaxGen||cur.maxGen;
     el.innerHTML=back+
-      '<div class="bObjT">'+(done?'&#127942; <b>Quest complete!</b> You traced the ':'&#127757; <b>Your quest:</b> trace the ')+'<b>'+E(cur.surname)+'</b> bloodline to its Source &mdash; <b>'+E(src?src.label:'?')+'</b>'+(srcYr?' ('+(srcYr<1500?'~':'')+srcYr+')':'')+'</div>'+
+      '<div class="bObjT">'+(done?'&#127942; <b>Quest complete!</b> You traced the ':'&#127757; <b>Your quest:</b> trace the ')+'<b>'+E(cur.surname)+'</b> bloodline back to its documented Source &mdash; <b>'+E(src?src.label:'?')+'</b>'+(srcYr?' ('+(srcYr<1500?'~':'')+srcYr+')':'')+(entersRoyal?' <span class="bObjRoyal">&#9876;&#65039; then into royalty &amp; legend</span>':'')+'</div>'+
       '<div class="bBar"><i style="width:'+pct+'%"></i></div>'+
-      '<div class="bObjS"><span>'+revealed+' / '+cur.ancCount+' ancestors</span><span>'+d.gen+' / '+cur.maxGen+' generations back</span>'+(yrsBack&&yrsBack>0?'<span>~'+yrsBack+' years</span>':'')+(done?'<span class="bObjDone">Source reached</span>':'')+'</div>';
+      '<div class="bObjS"><span>'+revealed+' / '+denom+' ancestors</span><span>'+Math.min(d.gen,dmg)+' / '+dmg+' generations back</span>'+(yrsBack&&yrsBack>0?'<span>~'+yrsBack+' years</span>':'')+(done?'<span class="bObjDone">Source reached</span>':'')+'</div>';
   }
 
   /* ---- Focus Panel (the centerpiece): always describes ONE person ---- */
@@ -2543,15 +2638,16 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
   function showPayoff(s){
     var yrs=(cur._founderYear&&s.b)?(cur._founderYear-s.b):null;
     var P=loadPass(), withAnc=BL.filter(function(b){return b.ancCount;}).length, traced=BL.filter(function(b){return P.lines[b.key];}).length;
+    var entersRoyal=s && parentsOf(s.id).some(function(p){return p.unverified;}), dmg=cur._docMaxGen||cur.maxGen;
     var ov=document.getElementById('bPayoff');
     ov.innerHTML='<div class="bPayCard '+sideOf(cur)+'">'+
       '<div class="bPaySeal">&#127942;</div>'+
       '<div class="bPayTtl">You reached the Source</div>'+
       '<div class="bPayName">'+E(s.label)+(s.b?' &middot; '+(s.b<1500?'~':'')+s.b:'')+(s.place?'<div class="bPayPlace">'+E(firstPlace(s.place))+'</div>':'')+'</div>'+
-      '<div class="bPayLine">You traced the <b>'+E(cur.surname)+'</b> bloodline back <b>'+cur.maxGen+' generations</b>'+(yrs&&yrs>0?' and <b>~'+yrs+' years</b>':'')+'.</div>'+
-      (s.unverified?'<div class="bPayNote">This deepest link is unverified family-tree lore &mdash; the romance of the tree, not its proven history.</div>':'')+
+      '<div class="bPayLine">You traced the <b>'+E(cur.surname)+'</b> bloodline back <b>'+dmg+' generations</b>'+(yrs&&yrs>0?' and <b>~'+yrs+' years</b>':'')+' &mdash; as far as the records go.</div>'+
+      (entersRoyal?'<div class="bPayRoyal">&#9876;&#65039; Beyond '+E(s.first||'here')+', the line runs on into <b>royalty &amp; legend</b> &mdash; kings, dukes and the old gods. That part isn&rsquo;t proven, but it&rsquo;s yours to wander.</div>':'')+
       '<div class="bPayMeta">&#127942; '+traced+' of '+withAnc+' bloodlines traced to the Source</div>'+
-      '<div class="bPayBtns"><button class="bPayB pri" onclick="bClosePayoff()">Keep exploring</button><button class="bPayB" onclick="bClosePayoff();showBLanding()">New game &mdash; choose a line</button></div>'+
+      '<div class="bPayBtns">'+(entersRoyal?'<button class="bPayB pri" onclick="bClosePayoff();bOpenRoyal(\''+EQ(s.id)+'\')">&#9876;&#65039; Into royalty &amp; legend</button><button class="bPayB" onclick="bClosePayoff()">Keep exploring</button>':'<button class="bPayB pri" onclick="bClosePayoff()">Keep exploring</button>')+'<button class="bPayB" onclick="bClosePayoff();showBLanding()">New game &mdash; choose a line</button></div>'+
       '</div>';
     ov.style.display='flex'; ov.classList.add('go');
   }
@@ -2562,37 +2658,65 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
      the whole descent from the Source (the old gods / the first kings) DOWN to where
      it rejoins the documented family, grouped by dynasty, each ancestor with all that
      is known of them. ===== */
-  function royalChain(startId){          // startId (documented bridge) ... deepest (the Source)
-    var chain=[], id=startId, seen={}, guard=0;
-    while(id && !seen[id] && guard++<400){
-      seen[id]=1; var n=byIdB[id]; if(!n) break; chain.push(n);
-      var ps=parentsOf(id); if(!ps.length) break;
-      ps.sort(function(a,b){ return oldestBelow(a.id)-oldestBelow(b.id); });  // follow the line that reaches deepest
-      id=ps[0].id;
+  /* Every unverified (pre-1550 royal/legendary) ancestor reachable ABOVE a documented
+     bridge person — the FULL branching pedigree, not one collapsed chain. (2026-06-22:
+     Steve was right — a descendant runs into MANY royal houses — English, French,
+     Spanish, Norse — not a single line to one Source.) */
+  function royalAncestorsFrom(startId){
+    var seen={}, out=[], q=[startId], guard=0;
+    while(q.length && guard++<8000){
+      var c=q.pop();
+      (parentsOf(c)||[]).forEach(function(p){
+        if(seen[p.id]) return; seen[p.id]=1; q.push(p.id);
+        if(p.unverified) out.push(p);
+      });
     }
-    return chain;
+    return out;
   }
-  function royalDeepest(startId){ var c=royalChain(startId); return c[c.length-1]; }
-  function royalLegendary(n){ return /asgard|mytholog|valhalla|norse myth/.test((n.place||'').toLowerCase()) || (n.b&&n.b<500); }
+  function royalOldestFrom(startId){
+    return royalAncestorsFrom(startId).slice().sort(function(a,b){ return (a.b||9999)-(b.b||9999); })[0]||null;
+  }
+  function royalLegendary(n){ return /asgard|mytholog|valhalla|vanaheim|vanaland|norse myth/.test((n.place||'').toLowerCase()) || (n.b&&n.b<500); }
   function royalInitial(n){ return E((n.first||n.label||'?').slice(0,1)); }
-  function dynastyOf(n){
-    var p=(n.place||'').toLowerCase(), nm=(n.label||'').toLowerCase(), y=n.b||9999;
-    if(/asgard|mytholog|valhalla|norse myth/.test(p)) return {k:'gods',t:'The Norse Gods & Legends',ic:'&#9889;'};
-    if(y<950 && /(uppsala|upsal|uppsul|svitjod|svithiod|noatun|sweden|yngling)/.test(p+' '+nm)) return {k:'uppsala',t:'Legendary Kings of Uppsala — the Ynglings',ic:'&#128481;&#65039;'};
-    if(/\brollo\b|duke of normandy|normandy|normand/.test(nm+' '+p)) return {k:'normandy',t:'The Dukes of Normandy',ic:'&#9884;&#65039;'};
-    if(y<980 && /norway|norge|trondelag|\bmaer\b|raumsdal|hordaland|vestfold|oppland|\bjarl\b|sea.?king/.test(p+' '+nm)) return {k:'norse',t:'The Norse Jarls & Sea-Kings',ic:'&#9875;&#65039;'};
-    if(/plantagenet|angevin/.test(nm)) return {k:'planta',t:'The House of Plantagenet',ic:'&#128081;'};
-    if(/capet/.test(nm)) return {k:'capet',t:'The Capetian Kings of France',ic:'&#128081;'};
-    if(/carolingian|charlemagne|charles the|\bpepin\b|\bpippin\b|charles martel/.test(nm)) return {k:'caro',t:'The Carolingians',ic:'&#128081;'};
-    if(/merov|clovis|childeric/.test(nm)) return {k:'merov',t:'The Merovingian Kings',ic:'&#128081;'};
-    if(/wessex|aethel|\baelf|alfred the great|cerdic|ecgberht/.test(nm)) return {k:'wessex',t:'The House of Wessex',ic:'&#128081;'};
-    if(y<500) return {k:'legend',t:'The Legendary Age',ic:'&#127755;'};
-    if(y<900) return {k:'dark',t:'The Dark Ages',ic:'&#127984;'};
-    if(y<1200) return {k:'high',t:'Kings, Dukes & Earls of the High Middle Ages',ic:'&#128737;&#65039;'};
-    if(y<1400) return {k:'late',t:'Lords & Ladies of the Late Middle Ages',ic:'&#127984;'};
-    return {k:'gentry',t:'The Old Gentry',ic:'&#127963;&#65039;'};
+  /* classify a royal/legendary ancestor into a real HOUSE (region + era + name), so the
+     page can show "the Dukes of Normandy", "the House of Wessex", "the Ynglings" etc.
+     as distinct sections instead of one undifferentiated chain to Buri. */
+  function royalHouse(n){
+    var p=(n.place||'').toLowerCase(), nm=(n.label||'').toLowerCase(), s=p+' '+nm, y=n.b||9999;
+    function H(k,t,ic){ return {k:k,t:t,ic:ic}; }
+    if(/asgard|valhalla|vanaheim|vanaland|mytholog|norse myth/.test(p)) return H('gods','The Norse Gods &mdash; legend','&#9889;');
+    if(/yngling|yngvi|fjolnir|\bfreyr\b/.test(nm) || (y<760 && /uppsala|upsal|svithiod|svitjod|kvenland|\bsweden\b|vanheim/.test(s))) return H('yngling','The Ynglings &mdash; legendary kings of Uppsala','&#128481;&#65039;');
+    if(y<1000 && /norway|norge|raumsdal|telemark|trondelag|\bmaer\b|vestfold|hordaland|oppland|finland|\bjarl\b|sea.?king|noatun/.test(s)) return H('norse','Norse kings, jarls &amp; sea-kings','&#9875;&#65039;');
+    if(/wessex|\baethel|\baelf|cerdic|alfred the great|ecgberht|\begbert\b|baeldaeg|\bwoden\b|gewis/.test(nm) || /wessex/.test(p)) return H('wessex','The House of Wessex &mdash; Anglo-Saxon England','&#128081;');
+    if(/\brollo\b|normandy|normand|bayeux|falaise|hauteville/.test(s)) return H('normandy','The Dukes of Normandy','&#9876;&#65039;');
+    if(/capet|carolingian|charlemagne|charles martel|\bpepin\b|\bpippin\b|merov|clovis|childeric|charles the|vermandois/.test(nm) || (/\bfrance\b|\bfrench\b|\bparis\b|aquitaine|\banjou\b|poitou|\bblois\b|toulouse|burgundy|\bvalois\b/.test(p) && y<1300)) return H('france','The royal houses of France','&#9884;&#65039;');
+    if(/navarre|pamplona|castile|castila|castilla|\bleon\b|aragon|asturias|\bspain\b|barcelona|galicia/.test(s)) return H('iberia','The kings of Navarre, Castile &amp; Le&oacute;n','&#127984;');
+    if(/constantinop|byzan|\bnicaea\b|nikaia/.test(s)) return H('byz','The Byzantine emperors','&#129413;');
+    if(/hungar|\barpad\b/.test(s)) return H('hungary','The &Aacute;rp&aacute;d kings of Hungary','&#128081;');
+    if(/hainaut|flanders|brabant|\bholland\b|belgium|boulogne|louvain|guelders/.test(s)) return H('lowc','The counts of Flanders, Hainaut &amp; Boulogne','&#128737;&#65039;');
+    if(/ireland|leinster|ulster|munster|connacht|connaught|\btara\b|\bniall\b/.test(s)) return H('ireland','The high kings of Ireland','&#9752;&#65039;');
+    if(/scotland|\balban\b|dunkeld|\bmoray\b|atholl|strathclyde|pictland/.test(s)) return H('scotland','The kings &amp; mormaers of Scotland','&#127963;&#65039;');
+    if(/\bwales\b|gwynedd|\bpowys\b|deheubarth|\bwelsh\b/.test(s)) return H('wales','The princes of Wales','&#128009;');
+    if(/saxony|swabia|franconia|rhineland|bavaria|\bgermany\b|\bfrisia\b|thuringia|\bhesse\b|zahringen/.test(p) && y<1300) return H('germanic','The German &amp; Frankish nobility','&#129413;');
+    if(/\bitaly\b|lombard|tuscany|spoleto|\brome\b|\broma\b|\bsicily\b|salerno/.test(p) && y<1300) return H('italy','The Italian &amp; Lombard nobility','&#127963;&#65039;');
+    if(y<500) return H('legend','The legendary age','&#127755;');
+    if(y<900) return H('dark','The dark ages','&#127984;');
+    if(y<1200) return H('emed','Early-medieval lords &amp; ladies','&#128737;&#65039;');
+    if(y<1400) return H('lmed','Late-medieval lords &amp; ladies','&#127984;');
+    return H('gentry','The old gentry','&#127963;&#65039;');
   }
-  function royalCardHTML(n, isSource){
+  /* documented-only reach stats per bloodline (landing-card honesty + the gate). cached on b. */
+  function lineDocStats(b){
+    if(b._statsDone) return b;
+    var nodes=b.nodes||[], dmax=0, doldY=null, doldN='';
+    nodes.forEach(function(n){ if(!n.living && !n.unverified){ if(n.gen>dmax)dmax=n.gen; if(n.b && (doldY==null||n.b<doldY)){doldY=n.b;doldN=n.label;} } });
+    var unv=nodes.filter(function(n){return n.unverified;}), hs={};
+    unv.forEach(function(n){ hs[royalHouse(n).k]=1; });
+    b._docMaxGen2=dmax; b._docOldest=doldN||b.oldest; b._docOldestYear=(doldY!=null?doldY:b.oldestYear);
+    b._royalCount=unv.length; b._royalHouses=Object.keys(hs).length; b._entersRoyal=unv.length>0;
+    b._statsDone=1; return b;
+  }
+  function royalCardHTML(n, isSource, compact){
     var st=PSTORY[n.id]||null, pf=PFACT[n.id]||null, leg=royalLegendary(n);
     var face=n.face?'<img class="rcFace" src="'+E(n.face)+'" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><span class="rcFace crest" style="display:none">'+royalInitial(n)+'</span>'
                    :'<span class="rcFace crest">'+royalInitial(n)+'</span>';
@@ -2600,9 +2724,9 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
     var place=firstPlace(n.place);
     var lead=(st&&st.lead)||(pf&&pf.who)||'';
     var bio=(st&&st.bio)||(pf&&pf.bio)||'';
-    var snip=bio?(bio.length>320?E(bio.slice(0,320)).replace(/\n+/g,' ')+'…':E(bio).replace(/\n+/g,' ')):'';
-    return '<div class="royalCard'+(isSource?' source':'')+'">'+
-      (isSource?'<div class="rcSrcBanner">&#127942; The Source &mdash; the oldest ancestor on this line</div>':'')+
+    var snip=(!compact&&bio)?(bio.length>300?E(bio.slice(0,300)).replace(/\n+/g,' ')+'…':E(bio).replace(/\n+/g,' ')):'';
+    return '<div class="royalCard'+(isSource?' source':'')+(compact?' compact':'')+'">'+
+      (isSource?'<div class="rcSrcBanner">&#127942; The Source &mdash; the oldest ancestor this line can name</div>':'')+
       '<div class="rcRow">'+face+
         '<div class="rcBody">'+
           '<div class="rcName">'+E(n.label)+(leg?' <span class="rcLeg">legendary</span>':(n.unverified?' <span class="rcUnv">unverified</span>':''))+'</div>'+
@@ -2664,44 +2788,51 @@ var HISTORY = /*__HIST_START__*/[{"key":"thury-6835","founderStory":"John Franci
       '<div class="drToSource">&#11015;&#65039; &hellip;and then, the first ancestor you can name &mdash; the Source</div></div>';
   }
   window.bOpenRoyal=function(startId){
-    if(!cur) return; var chain=royalChain(startId); if(chain.length<2) return;
+    if(!cur) return;
+    var anc=royalAncestorsFrom(startId); if(anc.length<1) return;
     sClick(); stopJourney();
-    var disp=chain.slice().reverse();                 // Source (oldest) first -> documented bridge last
-    var deepest=chain[chain.length-1], isSrc=cur._source&&deepest.id===cur._source.id;
-    // dynasty per node, then smooth 1-2 node islands wedged between identical
-    // neighbours (the data has a few out-of-order birth years that would otherwise
-    // split one dynasty in two).
-    var tagged=disp.map(function(n){ return {n:n, d:n.unverified?dynastyOf(n):{k:'family',t:'Back to your documented family',ic:'&#128106;'}}; });
-    for(var pass=0;pass<2;pass++){ for(var ti=1;ti<tagged.length-1;ti++){
-      if(tagged[ti-1].d.k===tagged[ti+1].d.k && tagged[ti].d.k!==tagged[ti-1].d.k) tagged[ti].d=tagged[ti-1].d;
-    } }
-    var groups=[], curG=null;
-    tagged.forEach(function(t){
-      if(!curG||curG.k!==t.d.k){ curG={k:t.d.k,t:t.d.t,ic:t.d.ic,nodes:[]}; groups.push(curG); }
-      curG.nodes.push(t.n);
+    var bridge=byIdB[startId];
+    // group ancestors by HOUSE (the real, branching pedigree — many houses, not one chain)
+    var Hg={};
+    anc.forEach(function(n){ var h=royalHouse(n); if(!Hg[h.k])Hg[h.k]={k:h.k,t:h.t,ic:h.ic,nodes:[]}; Hg[h.k].nodes.push(n); });
+    var houses=Object.keys(Hg).map(function(k){return Hg[k];});
+    houses.forEach(function(g){
+      g.nodes.sort(function(a,b){ return (b.b||0)-(a.b||0); });            // recent -> ancient within a house
+      g.maxB=g.nodes.reduce(function(m,n){return Math.max(m,n.b||0);},0);
+      g.minB=g.nodes.reduce(function(m,n){return Math.min(m,n.b||9999);},9999);
     });
-    var body=groups.map(function(g){
-      return '<div class="royalSection"><div class="rsH"><span class="rsIc">'+g.ic+'</span>'+E(g.t)+'</div><div class="rsCards">'+
-        g.nodes.map(function(n){ return royalCardHTML(n, isSrc&&n.id===deepest.id); }).join('')+'</div></div>';
+    houses.sort(function(a,b){ return (b.maxB-a.maxB) || (b.minB-a.minB); });  // closest-to-you house first
+    var oldest=anc.slice().sort(function(a,b){return (a.b||9999)-(b.b||9999);})[0];
+    var isSrc=cur._legendOldest && oldest && oldest.id===cur._legendOldest.id;
+    function notable(n){ return !!(n.face || (PSTORY[n.id]&&!PSTORY[n.id]._auto) || PFACT[n.id] || royalLegendary(n) || /\b(king|queen|duke|duchess|earl|count|countess|emperor|empress|prince|princess|lord|lady|jarl|sir|saint|st\.)\b/.test((n.label||'').toLowerCase())); }
+    var chips=houses.map(function(g){
+      return '<button class="rhChip" onclick="bScrollHouse(\''+g.k+'\')"><span class="rhcIc">'+g.ic+'</span><span class="rhcT">'+g.t+'</span><span class="rhcN">'+g.nodes.length+'</span></button>';
     }).join('');
-    var nRoyal=chain.filter(function(n){return n.unverified;}).length;
+    var body=houses.map(function(g){
+      var span=(g.minB<1500?'~':'')+g.minB+' – '+(g.maxB<1500?'~':'')+g.maxB;
+      var cards=g.nodes.map(function(n){ return royalCardHTML(n, isSrc&&oldest&&n.id===oldest.id, !notable(n)); }).join('');
+      return '<div class="royalSection" id="rsHouse-'+g.k+'"><div class="rsH"><span class="rsIc">'+g.ic+'</span><span class="rsHt">'+g.t+'</span><span class="rsHmeta">'+g.nodes.length+' ancestor'+(g.nodes.length>1?'s':'')+' &middot; '+E(span)+'</span></div><div class="rsCards">'+cards+'</div></div>';
+    }).join('');
     var ov=document.getElementById('bRoyal');
     ov.innerHTML='<div class="royalSheet '+sideOf(cur)+'">'+
       '<button class="royalX" onclick="bCloseRoyal()" title="Close">&times;</button>'+
       '<div class="royalHead"><div class="royalCrest">&#9876;&#65039;</div>'+
         '<div class="royalTtl"><div class="rtKick">'+E(cur.surname)+' line &middot; '+sideLabel(cur)+'</div>'+
         '<h2>Into Royalty &amp; Legend</h2>'+
-        '<div class="rtSub">From <b>'+E(deepest.label)+'</b>'+(deepest.b?' ('+(deepest.b<1500?'~':'')+deepest.b+')':'')+' down through <b>'+nRoyal+'</b> kings, dukes and legends to where your blood rejoins the documented family.</div></div></div>'+
-      '<div class="royalScroll">'+buildDeepRoots(cur)+body+
-        '<div class="royalFoot">'+(isSrc?'&#127942; You have traced this bloodline to its very Source.':'The trail runs cold here — for now.')+'</div>'+
+        '<div class="rtSub">Past <b>'+E(bridge?bridge.label:cur.surname)+'</b>, the blood fans out into <b>'+houses.length+'</b> royal '+(houses.length>1?'houses':'house')+' &mdash; <b>'+anc.length+'</b> kings, queens, dukes and legends'+(oldest?(', reaching back to <b>'+E(oldest.label)+'</b>'+(oldest.b?' ('+(oldest.b<1500?'~':'')+oldest.b+')':'')):'')+'. <span class="rtCaveat">These deep links are family-tree lore, not proven record.</span></div>'+
+        (chips?'<div class="rhChips">'+chips+'</div>':'')+'</div></div>'+
+      '<div class="royalScroll">'+
+        '<div class="royalIntro">&#11015;&#65039; Nearest to you first &mdash; scroll down to travel further back in time, house by house, to the oldest names of all.</div>'+
+        body+
+        buildDeepRoots(cur)+
+        '<div class="royalFoot">'+(isSrc?'&#127942; You have followed this blood to the oldest name it holds.':'The trail runs cold here &mdash; for now.')+'</div>'+
       '</div></div>';
-    ov.classList.add('open');
-    // land on the Source (the climax); Deep Roots sits ABOVE it — scroll up to go deeper in time
-    var _sc=ov.querySelector('.royalScroll'), _src=ov.querySelector('.royalCard.source');
-    if(_sc&&_src) _sc.scrollTop=Math.max(0,_src.offsetTop-64);
-    if(isSrc && cur.ancCount) markRoyalReached(deepest);
+    ov.classList.add('open'); setChrome(true);
+    var _sc=ov.querySelector('.royalScroll'); if(_sc) _sc.scrollTop=0;   // ENTER at the near end (not teleported to Buri)
+    if(cur.ancCount) markRoyalReached(oldest);
   };
-  window.bCloseRoyal=function(){ var ov=document.getElementById('bRoyal'); if(ov) ov.classList.remove('open'); };
+  window.bScrollHouse=function(k){ var ov=document.getElementById('bRoyal'); if(!ov) return; var sec=ov.querySelector('#rsHouse-'+k), sc=ov.querySelector('.royalScroll'); if(sec&&sc){ sc.scrollTop=Math.max(0,sec.offsetTop-72); sClick(); } };
+  window.bCloseRoyal=function(){ var ov=document.getElementById('bRoyal'); if(ov) ov.classList.remove('open'); var f=document.getElementById('bFocus'); if(!(f&&f.classList.contains('bfShow'))) setChrome(false); };
   function markRoyalReached(s){
     if(cur._reached||!cur.ancCount) return;
     cur._reached=true; var P=loadPass(); P.lines[cur.key]=1; savePass(P);
