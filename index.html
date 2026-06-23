@@ -109,6 +109,32 @@
   #card .reveal{background:var(--gold);color:#fff;border-color:var(--gold);}
   #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;z-index:11;pointer-events:none;}
   #toast.show{opacity:.95;}
+  /* ===== Home screen + redesign Phase A (2026-06-23) — in MAIN css so _apply won't wipe it ===== */
+  #home{position:fixed;inset:0;z-index:8;display:none;overflow:auto;background:radial-gradient(120% 80% at 50% 0%,#f3efe4 0%,#e3ddcd 100%);}
+  #home.show{display:flex;align-items:center;justify-content:center;}
+  .homeWrap{max-width:760px;width:100%;padding:64px 22px 44px;text-align:center;}
+  .homeBrand{font-size:30px;font-weight:800;color:#3a342b;letter-spacing:.01em;}
+  .homeTag{font-size:15px;color:#6b6456;margin:10px auto 30px;max-width:540px;line-height:1.55;}
+  .homeCards{display:flex;gap:18px;justify-content:center;}
+  .homeCard{flex:1;min-width:0;background:rgba(255,255,255,.92);border:1px solid #e0d7c2;border-radius:18px;padding:22px 20px;cursor:pointer;text-align:left;transition:transform .12s,box-shadow .12s,border-color .12s;font:inherit;}
+  .homeCard:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(90,70,30,.18);border-color:#caa23c;}
+  .hcIcon{font-size:34px;line-height:1;}
+  .hcTitle{font-size:19px;font-weight:800;color:#2f2a22;margin:10px 0 6px;}
+  .hcDesc{font-size:13.5px;color:#6b6456;line-height:1.5;}
+  .hcGo{margin-top:12px;font-size:13px;font-weight:700;color:#9a6b2b;}
+  .homeStat{margin-top:26px;font-size:13px;color:#7a7363;} .homeStat b{color:#9a6b2b;}
+  .homeAbout{margin-top:14px;background:none;border:none;color:#8a7a55;font-size:13px;cursor:pointer;text-decoration:underline;font:inherit;}
+  #homeAboutPanel{display:none;max-width:560px;margin:16px auto 0;text-align:left;background:rgba(255,252,245,.96);border:1px solid #e0d7c2;border-radius:14px;padding:16px 20px;font-size:13.5px;color:#5a5346;line-height:1.6;}
+  #homeAboutPanel.show{display:block;}
+  @media(max-width:600px){.homeCards{flex-direction:column;}.homeWrap{padding:40px 16px 32px;}.homeBrand{font-size:25px;}}
+  #top.slim #search,#top.slim #surpriseBtn{display:none!important;}
+  #top.slim{z-index:21;}
+  #title[role=button]{cursor:pointer;} #title[role=button]:hover{box-shadow:0 2px 10px rgba(0,0,0,.22);}
+  .coachOv{position:fixed;inset:0;z-index:30;background:rgba(20,17,12,.5);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .coachCard{max-width:380px;background:#fffdf7;border-radius:16px;padding:20px 22px;box-shadow:0 12px 40px rgba(0,0,0,.4);font-size:14.5px;color:#3a342b;line-height:1.5;text-align:center;}
+  .coachCard b{color:#2f2a22;} .coachCard p{margin:9px 0 0;color:#6b6456;font-size:13.5px;}
+  .coachBtn{margin-top:16px;background:#9a6b2b;color:#fff;border:none;border-radius:10px;padding:9px 24px;font-size:13.5px;font-weight:700;cursor:pointer;font:inherit;}
+  .coachBtn:hover{background:#8a5d23;}
               /* ===== Bloodlines mode ===== */
   #modeSw{display:flex;background:rgba(255,255,255,.92);border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.15);overflow:hidden;}
   .msw{border:none;background:transparent;padding:8px 13px;font-size:13px;font-weight:600;cursor:pointer;color:#8a857a;}
@@ -1854,7 +1880,8 @@ var HISTORY=window.HISTORY||[];
     document.getElementById('mBlood').classList.toggle('on',blood);
     if(typeof closeModal==='function')closeModal();
     if(blood){ silenced=false; fx(); if(!cur) showLanding(); else { startMotes(); if(!muted){ amTrack=null; playTrack(curTrack); } } }
-    else { silenced=true; stopMusic(); stopNarr(); stopJourney(); stopMotes(); }   // leaving Bloodlines -> silence
+    else { silenced=true; stopMusic(); stopNarr(); stopJourney(); stopMotes();   // leaving Bloodlines -> silence
+      setTimeout(function(){ showCoach('ft_coach_explore','<b>Exploring the family tree</b><p>Drag to move &middot; pinch or scroll to zoom &middot; tap any card to open a person &middot; use Search to jump to someone.</p>'); },450); }
   };
   /* ---- Home screen (2026-06-23 redesign Phase A): the app's front door + a plain
      explanation of what this is + a choice of the two ways in. Fixes "no main menu /
@@ -1878,6 +1905,16 @@ var HISTORY=window.HISTORY||[];
   window.goMode=function(m){ var h=document.getElementById('home'); if(h)h.classList.remove('show'); setMode(m);
     try{ history.replaceState({},'',location.pathname+'?mode='+m); }catch(e){} sClick&&sClick(); };
   window.toggleAbout=function(){ var p=document.getElementById('homeAboutPanel'); if(p)p.classList.toggle('show'); };
+  /* one-time coach overlay per mode (gated by a localStorage flag), teaches the core gestures */
+  function showCoach(flag, html){
+    try{ if(localStorage.getItem(flag)) return; }catch(e){}
+    var ov=document.createElement('div'); ov.className='coachOv';
+    ov.innerHTML='<div class="coachCard">'+html+'<button class="coachBtn">Got it</button></div>';
+    function close(){ try{localStorage.setItem(flag,'1');}catch(e){} if(ov.parentNode)ov.parentNode.removeChild(ov); }
+    ov.addEventListener('click',function(e){ if(e.target===ov||(e.target.className||'').indexOf('coachBtn')>=0) close(); });
+    document.body.appendChild(ov);
+  }
+  window.showCoach=showCoach;
 
   /* ---- landing ---- */
   /* ---- URL state & deep-link sharing ---- */
@@ -2263,6 +2300,7 @@ var HISTORY=window.HISTORY||[];
     curEra=null; curTrack=null; setScene(cur._founderYear, f0&&f0.place, true);
     renderStop(true); buildRibbon(); startMotes();
     renderObjective();
+    setTimeout(function(){ showCoach('ft_coach_blood','<b>Tracing a bloodline</b><p>Tap a <b>parent</b> to travel back a generation &middot; tap a <b>portrait</b> to read that ancestor&rsquo;s life &middot; drag the <b>wagon</b> along the road at the bottom to scrub through the generations.</p>'); },600);
     // origin line: a founder with a rich dossier (only Charlene/the Davis line) opens
     // straight to her full page — story, records, the timeline. The trail waits behind it.
     if(PSTORY && PSTORY[f0.id]){ showFocus(); setFocus(f0, true); }
@@ -3070,7 +3108,9 @@ var HISTORY=window.HISTORY||[];
   /* ---- reset / new game ---- */
   window.bNewGame=function(){ sClick(); showBLanding(); };
   window.bReset=function(){
-    if(!cur) return; stopJourney(); stopNarr(); sClick();
+    if(!cur) return;
+    if((trailStack.length||curGen()>0) && !window.confirm('Restart the '+(cur.surname||'')+' line from today?\nYou’ll lose your place on it.')) return;
+    stopJourney(); stopNarr(); sClick();
     shownB=new Set(); bornB=new Set(); oldestBelowMemo={}; _srcSubMemo={};
     cur._reached=false;
     var f0=cur.nodes.filter(function(n){return n.gen===0;})[0]||cur.nodes[0];
