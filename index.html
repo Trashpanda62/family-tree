@@ -841,11 +841,33 @@
 </head>
 <body>
 <div id="top">
-  <div id="title">&#127795; Family Tree</div>
+  <div id="title" onclick="showHome&&showHome()" title="Home" role="button" tabindex="0">&#127795; Family Tree</div>
   <div id="modeSw"><button id="mAnc" class="msw on" onclick="setMode('anc')" title="Browse the whole family tree — pan, zoom and search">&#128269; Explore</button><button id="mBlood" class="msw" onclick="setMode('blood')" title="Travel back through time, one bloodline at a time">&#129656; Bloodlines</button></div>
   <input id="search" placeholder="Search an ancestor by name…" autocomplete="off">
   <button class="btn" id="surpriseBtn" onclick="surprise()">&#127922; Surprise</button>
 </div>
+<div id="home"><div class="homeWrap">
+  <div class="homeBrand">&#127795; Our Family Tree</div>
+  <div class="homeTag">Five centuries of the family, gathered in one place. See everyone at once &mdash; or pick a grandparent and trace a single bloodline back through the generations to its Source.</div>
+  <div class="homeCards">
+    <button class="homeCard" onclick="goMode('anc')">
+      <div class="hcIcon">&#128269;</div><div class="hcTitle">Explore the Tree</div>
+      <div class="hcDesc">See everyone at once. Pan, zoom and search the whole family &mdash; tap anyone to read their records.</div>
+      <div class="hcGo">Open the tree &#8594;</div></button>
+    <button class="homeCard" onclick="goMode('blood')">
+      <div class="hcIcon">&#129656;</div><div class="hcTitle">Trace a Bloodline</div>
+      <div class="hcDesc">Pick a grandparent and journey back in time, generation by generation, with each ancestor&rsquo;s life story along the way.</div>
+      <div class="hcGo">Start a journey &#8594;</div></button>
+  </div>
+  <div class="homeStat" id="homeStat"></div>
+  <button class="homeAbout" onclick="toggleAbout()">What is this?</button>
+  <div id="homeAboutPanel">
+    <b>This is our family&rsquo;s history</b> &mdash; built from census records, certificates, gravestones, newspapers and family memory.
+    Two ways in: <b>Explore</b> shows the whole tree at a glance; <b>Bloodlines</b> walks a single line back through time, telling each ancestor&rsquo;s story.
+    Living relatives are shown by name only, for privacy. Deep ancestors past the 1500s come from shared family-tree research and old royal &amp; legendary lines &mdash;
+    those are marked <i>unverified</i>: the romance of the tree, not proven fact. Everything runs right here in your browser; nothing is uploaded.
+  </div>
+</div></div>
 <div id="ctl"><button class="btn" onclick="showAll()" title="Show all cards">&#127183;</button><button class="btn" onclick="resetTree()" title="Reset to the beginning">&#8634;</button><button class="btn" onclick="zoom(1.25)">+</button><button class="btn" onclick="zoom(.8)">&minus;</button><button class="btn" onclick="fitAll()" title="Fit the whole tree on screen">&#9974;</button><button class="btn" onclick="home()" title="Back to the start">&#8962;</button></div>
 <div id="stage"><svg id="edges"></svg><div id="world"></div></div>
 <div id="prog"><span id="progtxt"></span><div class="bar"><i id="progbar"></i></div></div>
@@ -1825,15 +1847,37 @@ var HISTORY=window.HISTORY||[];
   var ANC=['stage','prog','fact','ctl','search','surpriseBtn'];
   window.setMode=function(m){
     var blood=(m==='blood');
+    var hm=document.getElementById('home'); if(hm)hm.classList.remove('show');   // leaving Home
     document.getElementById('bloodMode').style.display=blood?'block':'none';
     ANC.forEach(function(id){var e=document.getElementById(id);if(e)e.style.display=blood?'none':'';});
     document.getElementById('mAnc').classList.toggle('on',!blood);
     document.getElementById('mBlood').classList.toggle('on',blood);
-    // #title is a static brand now — the highlighted tab tells you which view you're in
     if(typeof closeModal==='function')closeModal();
     if(blood){ silenced=false; fx(); if(!cur) showLanding(); else { startMotes(); if(!muted){ amTrack=null; playTrack(curTrack); } } }
     else { silenced=true; stopMusic(); stopNarr(); stopJourney(); stopMotes(); }   // leaving Bloodlines -> silence
   };
+  /* ---- Home screen (2026-06-23 redesign Phase A): the app's front door + a plain
+     explanation of what this is + a choice of the two ways in. Fixes "no main menu /
+     no explanation". ---- */
+  window.showHome=function(){
+    var h=document.getElementById('home'); if(!h) return;
+    document.getElementById('bloodMode').style.display='none';
+    ANC.forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
+    document.getElementById('mAnc').classList.remove('on'); document.getElementById('mBlood').classList.remove('on');
+    silenced=true; stopMusic(); stopNarr(); stopJourney(); stopMotes();
+    if(typeof setChrome==='function') setChrome(false);
+    try{ var P=loadPass(), withAnc=BL.filter(function(b){return b.ancCount;}).length,
+         traced=BL.filter(function(b){return P.lines[b.key];}).length;
+         var st=document.getElementById('homeStat');
+         if(st) st.innerHTML=traced?('&#127942; <b>'+traced+'</b> of <b>'+withAnc+'</b> bloodlines traced to the Source &middot; pick up where you left off'):'&#129534; '+withAnc+' grandparent lines to explore';
+    }catch(e){}
+    h.classList.add('show');
+    try{ history.replaceState({},'',location.pathname+'?mode=home'); }catch(e){}
+    try{ localStorage.setItem('ft_seen','1'); }catch(e){}
+  };
+  window.goMode=function(m){ var h=document.getElementById('home'); if(h)h.classList.remove('show'); setMode(m);
+    try{ history.replaceState({},'',location.pathname+'?mode='+m); }catch(e){} sClick&&sClick(); };
+  window.toggleAbout=function(){ var p=document.getElementById('homeAboutPanel'); if(p)p.classList.toggle('show'); };
 
   /* ---- landing ---- */
   /* ---- URL state & deep-link sharing ---- */
@@ -2127,11 +2171,17 @@ var HISTORY=window.HISTORY||[];
 
   function parseStartState(){
     var sp=new URLSearchParams(window.location.search);
-    var lk=sp.get('line'), nid=sp.get('node');
-    if(!lk){ setMode('blood'); return; }
-    var line=BL.filter(function(b){return b.key===lk;})[0]; if(!line){ setMode('blood'); return; }
-    setMode('blood'); openLine(lk);
-    if(nid){ bRevealAll(); setTimeout(function(){ bFocusId(nid); },200); }
+    var lk=sp.get('line'), nid=sp.get('node'), mode=sp.get('mode');
+    if(lk){
+      var line=BL.filter(function(b){return b.key===lk;})[0];
+      if(!line){ showHome(); return; }                 // bad link -> Home (was: silent blood landing)
+      setMode('blood'); openLine(lk);
+      if(nid){ bRevealAll(); setTimeout(function(){ bFocusId(nid); },200); }
+      return;
+    }
+    if(mode==='anc'){ setMode('anc'); return; }
+    if(mode==='blood'){ setMode('blood'); return; }
+    showHome();                                          // default: the Home screen (was: setMode('blood'))
   }
 
   function showLanding(){
@@ -2366,7 +2416,10 @@ var HISTORY=window.HISTORY||[];
   /* the shared mode-switch bar (#top, z6) sits in a higher root stacking context than
      #bloodMode (z2), so it paints OVER our fullscreen overlays. Hide it while a life
      page or the royal sheet is open. (2026-06-22) */
-  function setChrome(hidden){ var t=document.getElementById('top'); if(t) t.style.visibility=hidden?'hidden':''; }
+  /* Keep a SLIM persistent bar on life pages / royal sheet (brand=Home + mode tabs) so
+     there's always orientation + an exit — only collapse the Explore-specific controls.
+     (2026-06-23 Phase A: was hiding the entire #top → no way out of a journey.) */
+  function setChrome(hidden){ var t=document.getElementById('top'); if(t){ t.style.visibility=''; t.classList.toggle('slim',!!hidden); } }
   function showFocus(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='block'; el.classList.add('bfShow'); } setChrome(true); }
   window.hideFocus=function(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='none'; el.classList.remove('bfShow'); } if(!(document.getElementById('bRoyal')||{}).classList||!document.getElementById('bRoyal').classList.contains('open')) setChrome(false); stopNarr(); };
 

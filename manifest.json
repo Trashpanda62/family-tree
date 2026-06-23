@@ -1,7 +1,7 @@
 {
-  "name": "Family Bloodlines",
-  "short_name": "Bloodlines",
-  "description": "Trace your blood backward through time to the Source.",
+  "name": "Our Family Tree",
+  "short_name": "Family Tree",
+  "description": "Explore the whole family tree, or trace a single bloodline back through the generations.",
   "start_url": "./",
   "display": "standalone",
   "orientation": "any",
