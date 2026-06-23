@@ -1978,6 +1978,7 @@ var HISTORY=window.HISTORY||[];
   function _vis(id){ var e=document.getElementById(id); return !!(e && getComputedStyle(e).display!=='none'); }
   function _cls(id,c){ var e=document.getElementById(id); return !!(e && e.classList.contains(c)); }
   function appGoBack(){
+    if(_vis('bPayoff')){ bClosePayoff(); return true; }
     if(_vis('bClipView')){ bCloseClip(); return true; }
     if(_vis('bContrib')){ bCloseContrib(); return true; }
     if(_cls('bPeriod','open')){ bClosePeriod(); return true; }
@@ -2816,8 +2817,10 @@ var HISTORY=window.HISTORY||[];
     if(!cur||!cur._source||cur._reached||!cur.ancCount) return;
     if(trailCouple.indexOf(cur._source.id)<0) return;   // must TRAVEL onto the Source, not just have it shown
     cur._reached=true;
-    var P=loadPass(); P.lines[cur.key]=1; savePass(P);
+    var P=loadPass(), already=!!P.lines[cur.key];        // already traced to the Source on a prior visit?
+    P.lines[cur.key]=1; savePass(P);
     renderObjective();
+    if(already) return;                                   // celebrate the FIRST arrival only — no repeat popup when revisiting a traced line
     var s=cur._source;
     if(s._px!=null){ burstAt(s,true); setTimeout(function(){burstAt(s,true);},250); }
     if(!muted) sChime();
@@ -2838,6 +2841,7 @@ var HISTORY=window.HISTORY||[];
       '<div class="bPayBtns">'+(entersRoyal?'<button class="bPayB pri" onclick="bClosePayoff();bOpenRoyal(\''+EQ(s.id)+'\')">&#9876;&#65039; Into royalty &amp; legend</button><button class="bPayB" onclick="bClosePayoff()">Keep exploring</button>':'<button class="bPayB pri" onclick="bClosePayoff()">Keep exploring</button>')+'<button class="bPayB" onclick="bClosePayoff();showBLanding()">New game &mdash; choose a line</button></div>'+
       '</div>';
     ov.style.display='flex'; ov.classList.add('go');
+    ov.onclick=function(e){ if(e.target===ov) bClosePayoff(); };   // tap the backdrop to dismiss (Back also closes it)
   }
   window.bClosePayoff=function(){ var ov=document.getElementById('bPayoff'); ov.style.display='none'; ov.classList.remove('go'); };
 
