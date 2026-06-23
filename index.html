@@ -109,24 +109,26 @@
   #card .reveal{background:var(--gold);color:#fff;border-color:var(--gold);}
   #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;z-index:11;pointer-events:none;}
   #toast.show{opacity:.95;}
-  /* ===== Home screen + redesign Phase A (2026-06-23) — in MAIN css so _apply won't wipe it ===== */
-  #home{position:fixed;inset:0;z-index:8;display:none;overflow:auto;background:radial-gradient(120% 80% at 50% 0%,#f3efe4 0%,#e3ddcd 100%);}
+  /* ===== Home screen (2026-06-23) — heritage backdrop + crest; in MAIN css so _apply won't wipe it ===== */
+  #home{position:fixed;inset:0;z-index:8;display:none;overflow:auto;
+    background:linear-gradient(180deg,rgba(20,15,9,.55) 0%,rgba(24,17,10,.66) 55%,rgba(16,11,6,.86) 100%),url('bg/home.jpg') center/cover no-repeat #1a140d;}
   #home.show{display:flex;align-items:center;justify-content:center;}
-  .homeWrap{max-width:760px;width:100%;padding:64px 22px 44px;text-align:center;}
-  .homeBrand{font-size:30px;font-weight:800;color:#3a342b;letter-spacing:.01em;}
-  .homeTag{font-size:15px;color:#6b6456;margin:10px auto 30px;max-width:540px;line-height:1.55;}
+  .homeWrap{max-width:780px;width:100%;padding:54px 22px 44px;text-align:center;}
+  .homeCrest{font-size:42px;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));}
+  .homeBrand{font-family:Georgia,'Times New Roman',serif;font-size:46px;font-weight:700;color:#f0dcab;letter-spacing:.03em;margin:6px 0 0;text-shadow:0 2px 16px rgba(0,0,0,.6);}
+  .homeTag{font-size:15px;color:#e8dcc2;margin:12px auto 32px;max-width:540px;line-height:1.6;text-shadow:0 1px 8px rgba(0,0,0,.7);}
   .homeCards{display:flex;gap:18px;justify-content:center;}
-  .homeCard{flex:1;min-width:0;background:rgba(255,255,255,.92);border:1px solid #e0d7c2;border-radius:18px;padding:22px 20px;cursor:pointer;text-align:left;transition:transform .12s,box-shadow .12s,border-color .12s;font:inherit;}
-  .homeCard:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(90,70,30,.18);border-color:#caa23c;}
-  .hcIcon{font-size:34px;line-height:1;}
-  .hcTitle{font-size:19px;font-weight:800;color:#2f2a22;margin:10px 0 6px;}
-  .hcDesc{font-size:13.5px;color:#6b6456;line-height:1.5;}
-  .hcGo{margin-top:12px;font-size:13px;font-weight:700;color:#9a6b2b;}
-  .homeStat{margin-top:26px;font-size:13px;color:#7a7363;} .homeStat b{color:#9a6b2b;}
-  .homeAbout{margin-top:14px;background:none;border:none;color:#8a7a55;font-size:13px;cursor:pointer;text-decoration:underline;font:inherit;}
-  #homeAboutPanel{display:none;max-width:560px;margin:16px auto 0;text-align:left;background:rgba(255,252,245,.96);border:1px solid #e0d7c2;border-radius:14px;padding:16px 20px;font-size:13.5px;color:#5a5346;line-height:1.6;}
-  #homeAboutPanel.show{display:block;}
-  @media(max-width:600px){.homeCards{flex-direction:column;}.homeWrap{padding:40px 16px 32px;}.homeBrand{font-size:25px;}}
+  .homeCard{flex:1;min-width:0;background:rgba(28,22,15,.62);border:1px solid rgba(220,190,120,.4);border-radius:18px;padding:24px 22px;cursor:pointer;text-align:left;backdrop-filter:blur(6px);transition:transform .14s,box-shadow .14s,border-color .14s,background .14s;font:inherit;}
+  .homeCard:hover{transform:translateY(-4px);box-shadow:0 14px 40px rgba(0,0,0,.5);border-color:#e0b85a;background:rgba(40,31,20,.72);}
+  .hcIcon{font-size:36px;line-height:1;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5));}
+  .hcTitle{font-family:Georgia,serif;font-size:21px;font-weight:700;color:#f3e6c6;margin:12px 0 7px;}
+  .hcDesc{font-size:13.5px;color:#d8ccb2;line-height:1.55;}
+  .hcGo{margin-top:14px;font-size:13px;font-weight:700;color:#e0b85a;}
+  .homeStat{margin-top:30px;font-size:13.5px;color:#cdbfa0;text-shadow:0 1px 6px rgba(0,0,0,.7);} .homeStat b{color:#e0b85a;}
+  .homeAbout{margin-top:16px;background:none;border:none;color:#c9b894;font-size:13px;cursor:pointer;text-decoration:underline;font:inherit;}
+  #homeAboutPanel{display:none;max-width:580px;margin:18px auto 0;text-align:left;background:rgba(20,15,9,.82);border:1px solid rgba(220,190,120,.35);border-radius:14px;padding:17px 21px;font-size:13.5px;color:#e3d7bf;line-height:1.65;backdrop-filter:blur(4px);}
+  #homeAboutPanel.show{display:block;} #homeAboutPanel b{color:#f0dcab;}
+  @media(max-width:600px){.homeCards{flex-direction:column;}.homeWrap{padding:42px 16px 34px;}.homeBrand{font-size:36px;}}
   /* live search results dropdown (Explore) */
   #searchWrap{position:relative;flex:1;min-width:130px;max-width:300px;pointer-events:auto;}
   #searchWrap #search{width:100%;max-width:none;box-sizing:border-box;padding-right:30px;}
@@ -897,14 +899,15 @@
 <body>
 <div id="boot">&#127795; Loading the family tree&hellip;</div>
 <div id="top">
-  <div id="title" onclick="showHome&&showHome()" title="Home" role="button" tabindex="0">&#127795; Family Tree</div>
+  <div id="title" onclick="showHome&&showHome()" title="Home" role="button" tabindex="0">&#127795; Bloodlines</div>
   <div id="modeSw"><button id="mAnc" class="msw on" onclick="setMode('anc')" title="Browse the whole family tree — pan, zoom and search">&#128269; Explore</button><button id="mBlood" class="msw" onclick="setMode('blood')" title="Travel back through time, one bloodline at a time">&#129656; Bloodlines</button></div>
   <div id="searchWrap"><input id="search" placeholder="Search an ancestor by name…" autocomplete="off" aria-label="Search ancestors by name"><button id="searchClear" onclick="clearSearch()" aria-label="Clear search" title="Clear">&times;</button><div id="searchResults"></div></div>
   <button class="btn" id="surpriseBtn" onclick="surprise()">&#127922; Surprise</button>
 </div>
 <div id="home"><div class="homeWrap">
-  <div class="homeBrand">&#127795; Our Family Tree</div>
-  <div class="homeTag">Five centuries of the family, gathered in one place. See everyone at once &mdash; or pick a grandparent and trace a single bloodline back through the generations to its Source.</div>
+  <div class="homeCrest">&#127795;</div>
+  <div class="homeBrand">Bloodlines</div>
+  <div class="homeTag">Five centuries of one family, gathered in one place. See everyone at once &mdash; or pick a grandparent and trace a single bloodline back through the generations to its Source.</div>
   <div class="homeCards">
     <button class="homeCard" onclick="goMode('anc')">
       <div class="hcIcon">&#128269;</div><div class="hcTitle">Explore the Tree</div>
@@ -1956,7 +1959,7 @@ var HISTORY=window.HISTORY||[];
     try{ localStorage.setItem('ft_seen','1'); }catch(e){}
   };
   window.goMode=function(m){ var h=document.getElementById('home'); if(h)h.classList.remove('show'); setMode(m);
-    try{ history.replaceState({},'',location.pathname+'?mode='+m); }catch(e){} sClick&&sClick(); };
+    try{ history.pushState({m:m},'',location.pathname+'?mode='+m); }catch(e){} sClick&&sClick(); };
   window.toggleAbout=function(){ var p=document.getElementById('homeAboutPanel'); if(p)p.classList.toggle('show'); };
   /* one-time coach overlay per mode (gated by a localStorage flag), teaches the core gestures */
   function showCoach(flag, html){
@@ -1968,6 +1971,30 @@ var HISTORY=window.HISTORY||[];
     document.body.appendChild(ov);
   }
   window.showCoach=showCoach;
+
+  /* ---- in-app BACK navigation (2026-06-23): mobile/PWA back was exiting the app because
+     we only used replaceState (no history entries). Now goMode/deep-links push a buffer
+     entry, and popstate closes the topmost layer / mode->Home instead of leaving. ---- */
+  function _vis(id){ var e=document.getElementById(id); return !!(e && getComputedStyle(e).display!=='none'); }
+  function _cls(id,c){ var e=document.getElementById(id); return !!(e && e.classList.contains(c)); }
+  function appGoBack(){
+    if(_vis('bClipView')){ bCloseClip(); return true; }
+    if(_vis('bContrib')){ bCloseContrib(); return true; }
+    if(_cls('bPeriod','open')){ bClosePeriod(); return true; }
+    if(_cls('bMap','open')){ bCloseMap(); return true; }
+    if(_vis('bPassport')){ bClosePass(); return true; }
+    if(_cls('bRoyal','open')){ bCloseRoyal(); return true; }
+    if(_cls('bFocus','bfShow')){ hideFocus(); return true; }
+    if(typeof closeModal==='function' && _vis('modal')){ closeModal(); return true; }
+    if(typeof trailStack!=='undefined' && trailStack.length){ bTrailBack(); return true; }   // step back toward today
+    if(!_cls('home','show')){ showHome(); return true; }   // in a mode -> Home
+    return false;   // at Home -> let the browser leave
+  }
+  function seedBack(){ try{ history.pushState({a:1},''); }catch(e){} }
+  window.seedBack=seedBack;
+  window.addEventListener('popstate', function(){
+    if(appGoBack()) seedBack();   // keep exactly one buffer entry so further back-presses stay in-app
+  });
 
   /* ---- landing ---- */
   /* ---- URL state & deep-link sharing ---- */
@@ -2266,12 +2293,12 @@ var HISTORY=window.HISTORY||[];
     if(lk){
       var line=BL.filter(function(b){return b.key===lk;})[0];
       if(!line){ showHome(); return; }                 // bad link -> Home (was: silent blood landing)
-      setMode('blood'); openLine(lk);
+      setMode('blood'); openLine(lk); seedBack();
       if(nid){ bRevealAll(); setTimeout(function(){ bFocusId(nid); },200); }
       return;
     }
-    if(mode==='anc'){ setMode('anc'); if(person&&window.exploreGoTo) setTimeout(function(){ exploreGoTo(person); },250); return; }
-    if(mode==='blood'){ setMode('blood'); return; }
+    if(mode==='anc'){ setMode('anc'); seedBack(); if(person&&window.exploreGoTo) setTimeout(function(){ exploreGoTo(person); },250); return; }
+    if(mode==='blood'){ setMode('blood'); seedBack(); return; }
     showHome();                                          // default: the Home screen (was: setMode('blood'))
   }
 
