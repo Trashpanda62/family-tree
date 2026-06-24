@@ -1048,7 +1048,20 @@
   .sMore{margin-top:13px;border:1px dashed rgba(220,190,120,.4);background:rgba(40,31,20,.5);color:#e7d8b6;border-radius:8px;padding:9px 16px;font:inherit;font-size:12.5px;cursor:pointer;}
   .sMore:hover{background:rgba(60,46,26,.7);}
   .sDeep .sBandRail{border-left-color:#2f8a7a;}
-  .sDeepChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+  .sDeepChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;}
+  .sDeepChipsLbl{font-size:12px;color:#a99e86;margin-top:14px;margin-bottom:2px;}
+  .sDnaNote{font-size:13px;line-height:1.55;color:#cdc2a8;background:rgba(0,0,0,.22);border:1px solid rgba(120,180,150,.25);border-radius:10px;padding:11px 14px;margin-top:6px;max-width:600px;}
+  .sDnaPanel{background:rgba(0,0,0,.24);border:1px solid rgba(120,180,150,.3);border-radius:11px;padding:13px 15px;margin-top:8px;max-width:560px;}
+  .sDnaHd{font-size:13px;font-weight:600;color:#ece1c8;margin-bottom:11px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .sDnaRow{display:flex;align-items:center;gap:10px;margin:6px 0;}
+  .sDnaLbl{font-size:12px;color:#d3c8ad;flex:0 0 150px;}
+  .sDnaTrack{flex:1;height:10px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden;}
+  .sDnaBar{display:block;height:100%;border-radius:6px;}
+  .sDnaPct{font-size:12px;font-weight:600;color:#efe6d6;flex:0 0 36px;text-align:right;}
+  .sDnaBadge{font-size:10.5px;font-weight:600;border-radius:6px;padding:2px 8px;}
+  .sDnaBadge.meas{background:rgba(47,138,122,.3);color:#9fe2cb;border:1px solid rgba(80,180,150,.5);}
+  .sDnaBadge.est{background:rgba(120,90,30,.32);color:#e6c98e;border:1px solid rgba(200,160,90,.45);}
+  @media(max-width:600px){.sDnaLbl{flex-basis:108px;}}
   .sDeepTimeline{max-width:680px;margin-top:18px;}
   .sLegLine{margin-top:18px;}
   .sLegHd{display:flex;align-items:baseline;gap:10px;margin:0 0 9px;padding-bottom:5px;border-bottom:1px solid rgba(150,130,200,.22);}
@@ -2599,18 +2612,40 @@ var HISTORY=window.HISTORY||[];
     html+='<div class="sSource">🏆 The Source — the oldest the blood reaches.</div>';
     host.innerHTML=html;
   }
+  // per-bloodline DNA — Thury = Debra Thury's real measured test; the rest estimated from each line's homeland.
+  var DNA_GROUPS={ british:{l:'British Isles',c:'#4a86c8'}, germanic:{l:'Germanic & W. Europe',c:'#d29a44'}, nordic:{l:'Norse North',c:'#36a6ba'}, centraleast:{l:'Central & E. Europe',c:'#8a7ce0'}, balkan:{l:'Balkans & SE Europe',c:'#cf6647'} };
+  var LINEDNA={
+    'thury-6835':   {measured:true,  g:[['british',48],['germanic',21],['nordic',18],['centraleast',10],['balkan',3]]},
+    'harris-6831':  {measured:false, g:[['british',78],['germanic',13],['nordic',9]]},
+    'garrison-6832':{measured:false, g:[['british',64],['germanic',22],['nordic',14]]},
+    'davis-6833':   {measured:false, g:[['british',85],['germanic',8],['nordic',7]]},
+    'maxfield-6329':{measured:false, g:[['british',71],['germanic',17],['nordic',12]]},
+    'mccollum-6950':{measured:false, g:[['british',67],['nordic',25],['germanic',8]]},
+    'mailloux-6998':{measured:false, g:[['germanic',80],['british',11],['nordic',9]]},
+    'hepburn-6358': {measured:false, g:[['centraleast',50],['germanic',27],['balkan',15],['nordic',8]]}
+  };
+  function lineDnaHTML(){
+    if(_scaleFilter==='all') return '<div class="sDnaNote">&#129516; <b>Each bloodline carries its own ancestry</b> &mdash; pick a bloodline above to see its DNA make-up. Only the <b>Thury line</b> comes from a real DNA test (Debra Thury); the other seven are estimated from each line&rsquo;s homeland.</div>';
+    var L=LINEDNA[_scaleFilter], ln=null; for(var i=0;i<BL.length;i++){ if(BL[i].key===_scaleFilter){ ln=BL[i]; break; } }
+    if(!L||!ln) return '';
+    var rows=L.g.map(function(p){ var m=DNA_GROUPS[p[0]]||{l:p[0],c:'#888'};
+      return '<div class="sDnaRow"><span class="sDnaLbl">'+E(m.l)+'</span><span class="sDnaTrack"><span class="sDnaBar" style="width:'+p[1]+'%;background:'+m.c+'"></span></span><span class="sDnaPct">'+p[1]+'%</span></div>'; }).join('');
+    var badge=L.measured?'<span class="sDnaBadge meas">&#129516; measured &middot; Debra Thury</span>':'<span class="sDnaBadge est">estimated from homeland</span>';
+    return '<div class="sDnaPanel"><div class="sDnaHd">'+E(ln.surname)+' line &mdash; DNA make-up '+badge+'</div>'+rows+'</div>';
+  }
   function scaleDeepHTML(){
     if(!window.DEEP||!DEEP.groups) return '';
     var sh=DEEP.groups.shared, cards=(sh&&sh.cards)?sh.cards.slice():[];
     cards.sort(function(a,b){ return b.start-a.start; });   // recent-first; out-of-Africa sits at the very bottom
     var inner=cards.map(deepCardHTML).join('');
     var chips=Object.keys(DEEP.groups).filter(function(k){ return k!=='shared'&&DEEP.groups[k].cards&&DEEP.groups[k].cards.length; })
-      .map(function(k){ var g=DEEP.groups[k]; return '<button class="sDeepChip" onclick="scaleDeepGroup(\''+k+'\')">'+E(g.label)+' <b>'+g.dnaPct+'%</b></button>'; }).join('');
+      .map(function(k){ var g=DEEP.groups[k]; return '<button class="sDeepChip" onclick="scaleDeepGroup(\''+k+'\')">'+E(g.label)+'</button>'; }).join('');
     return '<section class="sBand sDeep" style="--bc:#2f8a7a;background:rgba(47,138,122,.14)">'+
       '<div class="sBandMain">'+
       '<div class="sBandArt" style="background-image:url(\'img/band-african.webp\')"><div class="sBandArtCap"><span class="sRailIc">⏳</span><h3>African roots — the common source</h3><span class="sArtSpan">deep time</span></div></div>'+
-      '<p class="sBandSub">Past the named kin: the <b>peoples</b> your blood descends from, traced by archaeology and ancient DNA — back toward the dawn of our species. These are populations and cultures, not individuals. Tap a DNA line to follow it deeper.</p>'+
-      '<div class="sDeepChips">'+chips+'</div><div class="drCards sDeepTimeline" id="sDeepCards">'+inner+'</div></div>'+
+      '<p class="sBandSub">Past the named kin: the <b>peoples</b> your blood descends from, by archaeology and ancient DNA — back toward the dawn of our species. Each bloodline carries its own mix.</p>'+
+      lineDnaHTML()+
+      '<div class="sDeepChipsLbl">Follow a region into deep time:</div><div class="sDeepChips">'+chips+'</div><div class="drCards sDeepTimeline" id="sDeepCards">'+inner+'</div></div>'+
       '<div class="sBandRail"><div class="sRailIn"><span class="sRailIc">⏳</span><span class="sRailT">African roots</span><span class="sRailSpan">deep time</span></div></div>'+
       '</section>';
   }
