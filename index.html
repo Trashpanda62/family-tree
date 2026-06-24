@@ -996,6 +996,10 @@
   #bScaleTools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
   .sSideBtn{border:1px solid rgba(220,190,120,.32);background:rgba(40,31,20,.6);color:#e7d8b6;border-radius:999px;padding:6px 13px;font:inherit;font-size:12px;cursor:pointer;}
   .sSideBtn.on{background:#caa24a;color:#231a0c;border-color:#caa24a;font-weight:600;}
+  .sSideBtn.lineChip{display:inline-flex;align-items:center;gap:6px;}
+  .sSideBtn.lineChip .lcDot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
+  .sSideBtn.lineChip.on{background:var(--cc);border-color:var(--cc);color:#160f06;font-weight:600;}
+  .sSideBtn.lineChip.on .lcDot{background:#160f06 !important;}
   .sYearBtn{margin-left:auto;border:1px solid rgba(220,190,120,.3);background:rgba(40,31,20,.6);color:#e7d8b6;border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer;}
   #bScaleBody{flex:1;overflow-y:auto;overflow-x:hidden;padding:0 0 50px;scroll-behavior:smooth;}
   .sBand{position:relative;display:grid;grid-template-columns:1fr 128px;border-bottom:3px solid rgba(0,0,0,.5);}
@@ -1088,11 +1092,7 @@
   <div id="bScaleHead">
     <h2>&#9202; The Time Scale</h2>
     <div class="ssub">Every ancestor in one tall descent &mdash; documented kin at the top, down through history and into myth &amp; legend, to the deep African roots we all share. The deeper you scroll, the older it gets.</div>
-    <div id="bScaleTools">
-      <button class="sSideBtn on" data-s="all" onclick="bScaleSide('all')">Both lines</button>
-      <button class="sSideBtn" data-s="harris" onclick="bScaleSide('harris')">Harris &middot; paternal</button>
-      <button class="sSideBtn" data-s="maxfield" onclick="bScaleSide('maxfield')">Maxfield &middot; maternal</button>
-    </div>
+    <div id="bScaleTools"></div>
   </div>
   <div id="bScaleBody"></div>
 </div>
@@ -2451,11 +2451,18 @@ var HISTORY=window.HISTORY||[];
     {tier:'legendary',   l:'Mythical & legendary', ic:'⚔️', span:'saga age · pre-550', col:'#7a6cc4', bg:'rgba(122,108,196,.16)', art:'img/band-legendary.webp',
      sub:'Saga-kings and the old gods. Each card shows the lore — and what is actually true.'}
   ];
-  var _scaleSide='all', _scaleExpand={};
-  window.openScale=function(){ _scaleExpand={}; bAllNodes(); bRenderScale(); if(typeof seedBack==='function')seedBack(); var b=document.getElementById('bScaleBody'); if(b)b.scrollTop=0; };
-  window.bScaleSide=function(s){ _scaleSide=s; _scaleExpand={};
-    var btns=document.querySelectorAll('#bScaleTools .sSideBtn'); for(var i=0;i<btns.length;i++){ btns[i].classList.toggle('on', btns[i].getAttribute('data-s')===s); }
-    bRenderScale(); if(typeof sClick==='function')sClick(); };
+  var _scaleFilter='all', _scaleExpand={};
+  function renderScaleTools(){
+    var host=document.getElementById('bScaleTools'); if(!host) return;
+    var h='<button class="sSideBtn'+(_scaleFilter==='all'?' on':'')+'" onclick="bScaleFilter(\'all\')">All lines</button>';
+    BL.forEach(function(line){
+      var col=BLOODLINE_COLORS[(line.surname||'').toLowerCase()]||{c:'#caa24a'};
+      h+='<button class="sSideBtn lineChip'+(_scaleFilter===line.key?' on':'')+'" style="--cc:'+col.c+'" onclick="bScaleFilter(\''+EQ(line.key)+'\')"><i class="lcDot" style="background:'+col.c+'"></i>'+E(line.surname)+'</button>';
+    });
+    host.innerHTML=h;
+  }
+  window.openScale=function(){ _scaleExpand={}; _scaleFilter='all'; bAllNodes(); renderScaleTools(); bRenderScale(); if(typeof seedBack==='function')seedBack(); var b=document.getElementById('bScaleBody'); if(b)b.scrollTop=0; };
+  window.bScaleFilter=function(f){ _scaleFilter=f; _scaleExpand={}; renderScaleTools(); bRenderScale(); if(typeof sClick==='function')sClick(); };
   window.bScaleMore=function(t){ _scaleExpand[t]=1; bRenderScale(); if(typeof sClick==='function')sClick(); };
   window.bScaleLF=function(id,which,ev){ if(ev){ev.stopPropagation();}
     var c=document.getElementById('lf_'+id); if(c){ c.className='sLF '+which; }
@@ -2537,7 +2544,7 @@ var HISTORY=window.HISTORY||[];
     var groups=[];
     BL.forEach(function(line){
       var side=sideOf(line);
-      if(_scaleSide!=='all' && side!==_scaleSide) return;
+      if(_scaleFilter!=='all' && line.key!==_scaleFilter) return;
       var seen={}, nodes=[];
       (line.nodes||[]).forEach(function(n){
         var t=(window.TIER||{})[n.id]||'documented'; if(t==='mythological')t='legendary';
@@ -2553,7 +2560,9 @@ var HISTORY=window.HISTORY||[];
   }
   function bRenderScale(){
     var host=document.getElementById('bScaleBody'); if(!host) return;
-    var all=bAllNodes().filter(function(x){ return _scaleSide==='all'||x.side===_scaleSide; });
+    var all;
+    if(_scaleFilter==='all') all=bAllNodes();
+    else { var _ln=null; for(var _li=0;_li<BL.length;_li++){ if(BL[_li].key===_scaleFilter){ _ln=BL[_li]; break; } } all=_ln?_ln.nodes.map(function(nn){ return {n:nn, line:_ln, side:sideOf(_ln)}; }):[]; }
     var byTier={documented:[],historical:[],legendary:[]};
     all.forEach(function(x){ var t=(window.TIER||{})[x.n.id]||'documented'; if(t==='mythological')t='legendary'; if(byTier[t])byTier[t].push(x); });
     for(var t in byTier){ byTier[t].forEach(function(x){ x._ns=bNotabScore(x.n); }); }
