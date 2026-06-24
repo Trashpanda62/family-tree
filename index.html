@@ -363,6 +363,15 @@
   .bMapClose{width:34px;height:34px;font-size:20px;line-height:1;padding:0;background:rgba(255,255,255,.1);color:#f5e9c6;border:none;border-radius:8px;cursor:pointer;}
   .bMapClose:hover{background:rgba(255,255,255,.22);}
   #bMapLeaflet{flex:1;min-height:0;}
+  /* shown when OSM tiles can't load (offline / tile server down) — the map is the one
+     asset that can't be self-hosted; the rest of the app works offline. */
+  #bMapOffline{position:absolute;inset:0;z-index:1500;display:none;align-items:center;justify-content:center;background:rgba(20,15,9,.88);backdrop-filter:blur(3px);padding:24px;}
+  .bmoCard{max-width:340px;text-align:center;color:#e8dcc2;}
+  .bmoIcon{font-size:42px;line-height:1;}
+  .bmoTtl{font-family:Georgia,serif;font-size:19px;font-weight:700;color:#f0dcab;margin:12px 0 8px;}
+  .bmoTxt{font-size:13.5px;line-height:1.55;color:#d8ccb2;}
+  .bmoBtn{margin-top:18px;background:#caa23c;color:#1a140d;border:none;border-radius:9px;padding:9px 18px;font-weight:700;cursor:pointer;font:inherit;}
+  .bmoBtn:hover{background:#dab44e;}
   #bMapLegend{display:flex;gap:12px;padding:7px 14px;background:rgba(20,18,14,.88);flex-shrink:0;flex-wrap:wrap;}
   .bMapLegItem{display:flex;align-items:center;gap:6px;font-size:12px;color:#d8ccb0;}
   .bMapDot{width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.5);flex-shrink:0;}
@@ -1130,7 +1139,7 @@ var HISTORY=window.HISTORY||[];
       var paras=String(d.body).split(/\n\n+/).map(function(t){return '<p>'+esc(t).replace(/\n/g,'<br>')+'</p>';}).join('');
       var bscan=d.scan?'<div class="docscan"><img src="'+d.scan+'" alt="clipping" onerror="this.parentNode.style.display=\'none\'"><div class="cap">'+esc(d.cap||'Original clipping')+'</div></div>':'';
       inner=bscan+'<div class="body docprose">'+paras+'</div>'+(d.fields&&Object.keys(d.fields).length?fieldsHtml(d):'');
-      var bsrc=d.src||(/^https?:/.test(d.url||'')?d.url:'');
+      var bsrc=d.src||(/^https?:/.test(d.url||'')&&!/archive\.local/.test(d.url)?d.url:'');  // synthetic /view/ keys aren't real external links
       foot='<span class="tag">'+esc(d.note||'From the family archive')+'</span>'+(bsrc?'<a href="'+esc(bsrc)+'" target="_blank" rel="noopener">Read the original &#8599;</a>':'');
     } else if(d.scan){
       inner='<div class="docscan"><img src="'+d.scan+'" alt="record scan" onerror="this.parentNode.style.display=\'none\'"><div class="cap">Original record image</div></div>'+fieldsHtml(d);
@@ -2020,12 +2029,17 @@ var HISTORY=window.HISTORY||[];
     else if(mode==='line') bMapMode='line';
     if(!cur) bMapMode='all';                 // from the landing screen: show everyone
     el.classList.add('open');
-    if(!window.L){ el.classList.remove('open'); return; }   // Leaflet still loading
+    if(!window.L){ bShowMapOffline(); return; }   // map library unavailable
     if(!_bLeafMap){
       _bLeafMap=L.map('bMapLeaflet',{zoomControl:true,attributionControl:true,worldCopyJump:true}).setView([38,-10],3);
+      var _tileOK=false;
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
         attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:12
-      }).addTo(_bLeafMap);
+      // map tiles are the one asset that can't be self-hosted; if they fail (offline /
+      // tile server down) tell the user plainly — the rest of the app is fully offline.
+      }).on('tileload',function(){ _tileOK=true; var n=document.getElementById('bMapOffline'); if(n)n.style.display='none'; })
+        .on('tileerror',function(){ if(!_tileOK) bShowMapOffline(); })
+        .addTo(_bLeafMap);
     }
     bRenderMapMarkers();
     bUpdateMapHead();
@@ -2035,6 +2049,21 @@ var HISTORY=window.HISTORY||[];
       if(_bMapBounds.length) _bLeafMap.fitBounds(_bMapBounds,{padding:[34,34],maxZoom:7});
     },140);
   };
+  function bShowMapOffline(){
+    var el=document.getElementById('bMap'); if(!el) return;
+    el.classList.add('open');
+    var n=document.getElementById('bMapOffline');
+    if(!n){
+      n=document.createElement('div'); n.id='bMapOffline';
+      n.innerHTML='<div class="bmoCard"><div class="bmoIcon">&#128506;&#65039;</div>'+
+        '<div class="bmoTtl">The map needs an internet connection</div>'+
+        '<div class="bmoTxt">Map tiles load from OpenStreetMap &mdash; the only part of this app that isn&rsquo;t self-contained. Everything else works offline.</div>'+
+        '<button class="bmoBtn" onclick="this.parentNode.parentNode.style.display=&#39;none&#39;;bCloseMap&&bCloseMap()">Close map</button></div>';
+      el.appendChild(n);
+    }
+    n.style.display='flex';
+  }
+  window.bShowMapOffline=bShowMapOffline;
   function bPlotNode(n,line){
     if(n.living) return;
     var g=GEO[n.id]; if(!g) return;
