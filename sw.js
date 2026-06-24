@@ -1,7 +1,7 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
 const CACHE = 'familytree-v2';
 const SHELL = ['./'];
-const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//];
+const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 
 function rel(url) { return new URL(url).pathname.replace(/^\/family-tree\//, ''); }
 function isAsset(url) { return ASSET_GLOBS.some(function(re) { return re.test(rel(url)); }); }
