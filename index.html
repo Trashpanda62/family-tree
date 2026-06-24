@@ -1040,11 +1040,17 @@
   .sLF .sLFfact{color:#cfc6b4;}
   .sLF.lore .sLFfact{display:none;}
   .sLF.fact .sLFlore{display:none;}
+  .sStory{margin-top:7px;padding:9px 11px;font-size:12px;line-height:1.55;color:#ddd3f2;background:rgba(20,15,28,.5);border:1px solid rgba(150,130,200,.22);border-radius:8px;}
   .sMore{margin-top:13px;border:1px dashed rgba(220,190,120,.4);background:rgba(40,31,20,.5);color:#e7d8b6;border-radius:8px;padding:9px 16px;font:inherit;font-size:12.5px;cursor:pointer;}
   .sMore:hover{background:rgba(60,46,26,.7);}
   .sDeep .sBandRail{border-left-color:#2f8a7a;}
   .sDeepChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
   .sDeepTimeline{max-width:680px;margin-top:18px;}
+  .sLegLine{margin-top:18px;}
+  .sLegHd{display:flex;align-items:baseline;gap:10px;margin:0 0 9px;padding-bottom:5px;border-bottom:1px solid rgba(150,130,200,.22);}
+  .sLegNm{font-size:15px;font-weight:600;color:#e6dbf7;}
+  .sLegSide{font-size:11.5px;color:#a99ec6;}
+  .sLegN{margin-left:auto;font-size:11px;color:#dcd2f4;background:rgba(95,80,160,.32);border:1px solid rgba(150,130,200,.4);border-radius:999px;padding:1px 9px;}
   .sDeepChip{border:1px solid rgba(80,180,150,.4);background:rgba(20,40,34,.6);color:#bfe6d6;border-radius:999px;padding:4px 11px;font:inherit;font-size:11.5px;cursor:pointer;}
   .sSource{text-align:center;font-size:14px;color:#e7b94a;padding:28px 16px 14px;letter-spacing:.03em;}
   @media(max-width:600px){#bScaleHead{padding-top:96px;} .sBand{grid-template-columns:1fr 80px;} .sRailT{font-size:11px;} .sRailIc{font-size:18px;} .sBandMain{padding:14px 12px 18px;} .sCards{grid-template-columns:1fr;} .sYearBtn{margin-left:0;} .sBandArt{height:98px;} .sBandArtCap h3{font-size:18px;}}
@@ -2438,15 +2444,46 @@ var HISTORY=window.HISTORY||[];
       face+'<span class="sCardInfo"><span class="sName">'+star+E(n.label)+tag+phtag+'</span>'+
       '<span class="sMeta">'+yrs+(place?' · '+place:'')+'</span>'+
       '<span class="sLine">'+E(x.line.surname)+' line · '+E(sideLabel(x.line))+'</span></span></button>';
-    if(lf){
+    if(lf && lf.diverge){
       body+='<div class="sLFwrap"><div class="sLFtabs">'+
         '<button class="on" onclick="bScaleLF(\''+EQ(n.id)+'\',\'lore\',event)">📖 Lore</button>'+
         '<button onclick="bScaleLF(\''+EQ(n.id)+'\',\'fact\',event)">⚖️ Historical fact</button></div>'+
         '<div class="sLF lore" id="lf_'+E(n.id)+'"><div class="sLFlore">'+E(lf.lore)+'</div><div class="sLFfact">'+E(lf.fact)+'</div></div></div>';
+    } else if(lf){
+      body+='<div class="sStory">'+E(lf.lore)+'</div>';
     }
     return '<div class="sCardCell">'+body+'</div>';
   }
   window.bScaleGoto=function(lineKey,id){ if(typeof sClick==='function')sClick(); setMode('blood'); openLine(lineKey); bRevealAll(); setTimeout(function(){ bFocusId(id); },220); };
+  function sBandHTML(B, inner, count, subExtra){
+    return '<section class="sBand" style="--bc:'+B.col+';background:'+B.bg+'">'+
+      '<div class="sBandMain">'+
+      '<div class="sBandArt" style="background-image:url(\''+B.art+'\')"><div class="sBandArtCap"><span class="sRailIc">'+B.ic+'</span><h3>'+E(B.l)+'</h3><span class="sArtSpan">'+E(B.span)+'</span></div></div>'+
+      '<p class="sBandSub">'+E(B.sub)+(subExtra||'')+'</p>'+
+      inner+'</div>'+
+      '<div class="sBandRail"><div class="sRailIn"><span class="sRailIc">'+B.ic+'</span><span class="sRailT">'+E(B.l)+'</span><span class="sRailSpan">'+E(B.span)+'</span><span class="sRailN">'+count+'</span></div></div>'+
+      '</section>';
+  }
+  // legendary/mythical figures grouped by EACH bloodline they descend through (shared
+  // figures appear under every line). Per-line, oldest sink to the bottom (gods last).
+  function legendaryByLine(){
+    var groups=[];
+    BL.forEach(function(line){
+      var side=sideOf(line);
+      if(_scaleSide!=='all' && side!==_scaleSide) return;
+      var seen={}, nodes=[];
+      (line.nodes||[]).forEach(function(n){
+        var t=(window.TIER||{})[n.id]||'documented'; if(t==='mythological')t='legendary';
+        if(t!=='legendary' || seen[n.id]) return; seen[n.id]=1; nodes.push(n);
+      });
+      if(nodes.length){
+        nodes.sort(function(a,b){ return (b.b||0)-(a.b||0); });
+        groups.push({line:line, side:side, surname:line.surname, nodes:nodes});
+      }
+    });
+    groups.sort(function(a,b){ return b.nodes.length-a.nodes.length; });   // richest legendary line first
+    return groups;
+  }
   function bRenderScale(){
     var host=document.getElementById('bScaleBody'); if(!host) return;
     var all=bAllNodes().filter(function(x){ return _scaleSide==='all'||x.side===_scaleSide; });
@@ -2458,20 +2495,23 @@ var HISTORY=window.HISTORY||[];
     byTier.legendary.sort(function(a,b){ return ((b.n.b||0)-(a.n.b||0)); });   // recent legend high, gods sink to the bottom
     var html='';
     SCALE_BANDS.forEach(function(B){
+      if(B.tier==='legendary') return;   // legendary rendered grouped-by-bloodline below
       var list=byTier[B.tier]||[]; if(!list.length) return;
-      var LIMIT=(B.tier==='legendary')?9999:24;
-      var shown=_scaleExpand[B.tier]?list:list.slice(0,LIMIT);
+      var shown=_scaleExpand[B.tier]?list:list.slice(0,24);
       var cards=shown.map(scaleCard).join('');
       var more=(!_scaleExpand[B.tier] && list.length>shown.length)?
         '<button class="sMore" onclick="bScaleMore(\''+B.tier+'\')">Show all '+list.length+' ↓</button>':'';
-      html+='<section class="sBand" style="--bc:'+B.col+';background:'+B.bg+'">'+
-        '<div class="sBandMain">'+
-        '<div class="sBandArt" style="background-image:url(\''+B.art+'\')"><div class="sBandArtCap"><span class="sRailIc">'+B.ic+'</span><h3>'+E(B.l)+'</h3><span class="sArtSpan">'+E(B.span)+'</span></div></div>'+
-        '<p class="sBandSub">'+E(B.sub)+'</p>'+
-        '<div class="sCards">'+cards+'</div>'+more+'</div>'+
-        '<div class="sBandRail"><div class="sRailIn"><span class="sRailIc">'+B.ic+'</span><span class="sRailT">'+E(B.l)+'</span><span class="sRailSpan">'+E(B.span)+'</span><span class="sRailN">'+list.length+'</span></div></div>'+
-        '</section>';
+      html+=sBandHTML(B, '<div class="sCards">'+cards+'</div>'+more, list.length, '');
     });
+    var legB=null; for(var bi=0;bi<SCALE_BANDS.length;bi++){ if(SCALE_BANDS[bi].tier==='legendary') legB=SCALE_BANDS[bi]; }
+    var legGroups=legendaryByLine();
+    if(legB && legGroups.length){
+      var legBody=legGroups.map(function(g){
+        var cards=g.nodes.map(function(n){ return scaleCard({n:n, line:g.line, side:g.side}); }).join('');
+        return '<div class="sLegLine '+g.side+'"><div class="sLegHd"><span class="sLegNm">'+E(g.surname)+' line</span><span class="sLegSide">'+E(sideLabel(g.line))+'</span><span class="sLegN">'+g.nodes.length+'</span></div><div class="sCards">'+cards+'</div></div>';
+      }).join('');
+      html+=sBandHTML(legB, legBody, byTier.legendary.length, ' &middot; grouped by the bloodline each descends through');
+    }
     html+=scaleDeepHTML();
     html+='<div class="sSource">🏆 The Source — the oldest the blood reaches.</div>';
     host.innerHTML=html;
