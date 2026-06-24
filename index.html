@@ -1026,6 +1026,10 @@
   .sMeta{font-size:11.5px;color:#cdbf9f;}
   .sLine{font-size:10.5px;color:#9d927b;}
   .sTag.contested{display:inline-block;margin-left:6px;font-size:9.5px;font-weight:600;color:#e6c98e;background:rgba(120,90,30,.4);border:1px solid rgba(200,160,90,.5);border-radius:5px;padding:0 5px;vertical-align:1px;}
+  .sTag.phantom{display:inline-block;margin-left:6px;font-size:9.5px;font-weight:600;color:#f2b8b8;background:rgba(130,30,30,.5);border:1px solid rgba(210,95,95,.6);border-radius:5px;padding:0 5px;vertical-align:1px;}
+  .sCard.phantom{opacity:.74;}
+  .sCard.phantom{border-left-color:#a33 !important;}
+  .unvb.phantom{background:rgba(165,45,45,.9) !important;color:#fff !important;}
   .sLFwrap{margin-top:7px;background:rgba(20,15,28,.6);border:1px solid rgba(150,130,200,.3);border-radius:8px;overflow:hidden;}
   .sLFtabs{display:flex;}
   .sLFtabs button{flex:1;border:none;background:rgba(40,33,60,.7);color:#cdc2ec;font:inherit;font-size:11px;font-weight:600;padding:6px 4px;cursor:pointer;border-bottom:1px solid rgba(150,130,200,.25);}
@@ -2424,11 +2428,13 @@ var HISTORY=window.HISTORY||[];
     var place=E(firstPlace(n.place||''));
     var contested=(window.CONTESTED||[]).indexOf(n.id)>=0;
     var lf=(window.LOREFACT||{})[n.id];
+    var ph=(window.PHANTOM||{})[n.id];
     var face=n.face?'<img class="sCardFace" src="'+E(n.face)+'" onerror="this.style.display=\'none\'">':'';
     var star=n.notable?'<span class="sStar">★</span>':'';
     var tag=contested?'<span class="sTag contested" title="A traditional / disputed descent, not firmly proven">by tradition</span>':'';
-    var body='<button class="sCard '+x.side+(n.notable?' notable':'')+'" style="border-left-color:'+col+'" onclick="bScaleGoto(\''+EQ(x.line.key)+'\',\''+EQ(n.id)+'\')">'+
-      face+'<span class="sCardInfo"><span class="sName">'+star+E(n.label)+tag+'</span>'+
+    var phtag=ph?'<span class="sTag phantom" title="'+E(ph)+'">⚠ likely not a real person</span>':'';
+    var body='<button class="sCard '+x.side+(n.notable?' notable':'')+(ph?' phantom':'')+'" style="border-left-color:'+col+'" onclick="bScaleGoto(\''+EQ(x.line.key)+'\',\''+EQ(n.id)+'\')">'+
+      face+'<span class="sCardInfo"><span class="sName">'+star+E(n.label)+tag+phtag+'</span>'+
       '<span class="sMeta">'+yrs+(place?' · '+place:'')+'</span>'+
       '<span class="sLine">'+E(x.line.surname)+' line · '+E(sideLabel(x.line))+'</span></span></button>';
     if(lf){
@@ -2651,7 +2657,7 @@ var HISTORY=window.HISTORY||[];
     var yrs=n.living?'living family':E(n.span||(n.b?((n.b<1500?'~':'')+n.b):''));
     var place=n.living?'':E(firstPlace(n.place));
     return '<button class="personBtn '+side+(n.notable?' notable':'')+(n.unverified?' unv':'')+'" onclick="bOpenPerson(\''+EQ(n.id)+'\')">'+
-      face+'<div class="pInfo"><div class="pName">'+E(n.label)+(n.unverified?' <span class="unvb">lore</span>':'')+'</div>'+
+      face+'<div class="pInfo"><div class="pName">'+E(n.label)+(n.unverified?((window.PHANTOM||{})[n.id]?' <span class="unvb phantom" title="'+E((window.PHANTOM||{})[n.id])+'">&#9888; not a real person</span>':' <span class="unvb">lore</span>'):'')+'</div>'+
       '<div class="pYrs">'+yrs+(place?' &middot; '+place:'')+'</div>'+
       '<div class="pHook">'+E(personHook(n))+'</div>'+personBadges(n)+'</div>'+
       '<span class="pGo">their life &#8594;</span></button>';
@@ -2880,7 +2886,7 @@ var HISTORY=window.HISTORY||[];
     b+=docRail(n, st);                              // documents/records -> left-rail menu (item 1)
     b+='<div class="hudScroll"><div class="hudInner">';
     b+='<div class="hudHero">'+face+'<div class="hudId">'+
-      '<div class="hudNm">'+E(n.label)+(n.unverified?' <span class="unvb">lore</span>':'')+'</div>'+
+      '<div class="hudNm">'+E(n.label)+(n.unverified?((window.PHANTOM||{})[n.id]?' <span class="unvb phantom" title="'+E((window.PHANTOM||{})[n.id])+'">&#9888; not a real person</span>':' <span class="unvb">lore</span>'):'')+'</div>'+
       '<div class="hudSpan">'+E(n.span||(n.living?'living family':''))+(place?' &middot; '+place:'')+'</div>'+
       '<div class="hudTags"><span class="bfTag '+sideOf(cur)+'">'+sideLabel(cur)+'</span><span class="bfTag">'+E(genTxt)+'</span>'+(eLabel?'<span class="bfTag">'+E(eLabel)+'</span>':'')+(reg?'<span class="bfTag">'+E(REGION_LABEL[reg])+'</span>':'')+'</div>'+
       (hasNarr(nk)?'<div class="hudListen">'+listenBtn(nk)+'</div>':'')+
@@ -3288,7 +3294,7 @@ var HISTORY=window.HISTORY||[];
       el.style.left=n._px+'px';el.style.top=n._py+'px';
       if(fresh) el.style.animationDelay=(Math.min(n.gen,6)*0.06)+'s';
       var face=n.face?'<img class="bface" src="'+E(n.face)+'" onerror="this.style.display=\'none\'">':'';
-      el.innerHTML=face+'<div class="bnm">'+E(n.label)+(n.unverified?' <span class="unvb">lore</span>':'')+'</div>'+
+      el.innerHTML=face+'<div class="bnm">'+E(n.label)+(n.unverified?((window.PHANTOM||{})[n.id]?' <span class="unvb phantom" title="'+E((window.PHANTOM||{})[n.id])+'">&#9888; not a real person</span>':' <span class="unvb">lore</span>'):'')+'</div>'+
         '<div class="bsub">'+E(n.span||(n.living?'living family':''))+(n.place&&!n.living?' &middot; '+E(firstPlace(n.place)):'')+'</div>'+
         (hiddenPar?'<span class="bpip" onclick="event.stopPropagation();bRevealOne(\''+n.id+'\')">&#8617; further back</span>':'');
       el.onclick=function(){ tapNode(n); };
