@@ -2409,6 +2409,9 @@ var HISTORY=window.HISTORY||[];
     hideFocus();
     trailStack=[]; trailCouple=[f0.id];   // start at the grandparent (the trailhead)
     curEra=null; curTrack=null; setScene(cur._founderYear, f0&&f0.place, true);
+    // start the era score immediately (opening a line IS a user gesture) so music plays
+    // from the founder onward — not only after the first hop. (was silent until bTravel.)
+    if(!muted){ var _tk0=pickTrack(cur._founderYear, f0&&f0.place); if(_tk0){ curTrack=_tk0; playTrack(_tk0); } }
     renderStop(true); buildRibbon(); startMotes();
     renderObjective();
     setTimeout(function(){ showCoach('ft_coach_blood','<b>Tracing a bloodline</b><p>Tap a <b>parent</b> to travel back a generation &middot; tap a <b>portrait</b> to read that ancestor&rsquo;s life &middot; drag the <b>wagon</b> along the road at the bottom to scrub through the generations.</p>'); },600);
