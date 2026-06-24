@@ -2474,7 +2474,7 @@ var HISTORY=window.HISTORY||[];
     });
     host.innerHTML=h;
   }
-  window.openScale=function(){ _scaleExpand={}; _scaleFilter='all'; bAllNodes(); renderScaleTools(); bRenderScale(); if(typeof seedBack==='function')seedBack(); var b=document.getElementById('bScaleBody'); if(b)b.scrollTop=0; };
+  window.openScale=function(){ _scaleExpand={}; bAllNodes(); renderScaleTools(); bRenderScale(); if(typeof seedBack==='function')seedBack(); var b=document.getElementById('bScaleBody'); if(b)b.scrollTop=0; };
   window.bScaleFilter=function(f){ _scaleFilter=f; _scaleExpand={}; renderScaleTools(); bRenderScale(); if(typeof sClick==='function')sClick(); };
   window.bScaleMore=function(t){ _scaleExpand[t]=1; bRenderScale(); if(typeof sClick==='function')sClick(); };
   window.bScaleLF=function(id,which,ev){ if(ev){ev.stopPropagation();}
@@ -2512,34 +2512,20 @@ var HISTORY=window.HISTORY||[];
     garrison:{c:'#d29a44',bg:'rgba(210,154,68,.13)'}, davis:{c:'#cf6647',bg:'rgba(207,102,71,.13)'},
     mailloux:{c:'#b06fd8',bg:'rgba(176,111,216,.13)'}, hepburn:{c:'#9aa843',bg:'rgba(154,168,67,.13)'}
   };
-  // self-contained person panel — Time Scale is its OWN mode; a card never leaves it for Bloodlines.
+  // Clicking a Time Scale card opens the FULL Bloodlines life-page (story, records, timeline,
+  // narration — the rich HUD). We tag the trip so closing/back returns to the Time Scale
+  // instead of the Bloodlines selection screen (see hideFocus).
+  var _scaleReturn=false;
   window.bScalePerson=function(id, lineKey){
     if(typeof sClick==='function')sClick();
-    var line=BL.filter(function(b){return b.key===lineKey;})[0], n=null;
-    if(line) n=line.nodes.filter(function(x){return x.id===id;})[0];
-    if(!n){ for(var i=0;i<BL.length && !n;i++){ var f=BL[i].nodes.filter(function(x){return x.id===id;})[0]; if(f){ n=f; line=BL[i]; } } }
-    var el=document.getElementById('sPerson'); if(!n||!el) return;
-    var st=(window.PSTORY||{})[id]||{}, lf=(window.LOREFACT||{})[id], ph=(window.PHANTOM||{})[id];
-    var contested=(window.CONTESTED||[]).indexOf(id)>=0;
-    var face=n.face?'<img class="spFace" src="'+E(n.face)+'" onerror="this.parentNode.innerHTML=&quot;&quot;">':'<div class="spFace empty">'+E((n.first||n.label||'?').slice(0,1))+'</div>';
-    var yrs=E(n.span||(n.b?((n.b<1500?'~':'')+n.b+(n.d?'–'+n.d:'')):''));
-    var story='';
-    if(st.lead) story+='<p class="spLead">'+E(st.lead)+'</p>';
-    if(st.bio) story+='<div class="spBio">'+E(st.bio).replace(/\n+/g,'<br><br>')+'</div>';
-    var lfHtml='';
-    if(lf && lf.diverge) lfHtml='<div class="spLF"><div class="spLFh">📖 Lore</div><p>'+E(lf.lore)+'</p><div class="spLFh">⚖️ Historical fact</div><p class="spFact">'+E(lf.fact)+'</p></div>';
-    else if(lf) lfHtml='<div class="spLF"><p>'+E(lf.lore)+'</p></div>';
-    var flags='';
-    if(ph) flags='<span class="spFlag phantom">⚠ likely not a real person — '+E(ph)+'</span>';
-    else if(contested) flags='<span class="spFlag contested">by tradition — a disputed or unproven descent</span>';
-    var recs=(typeof docRail==='function')?docRail(n, st):'';
-    el.innerHTML='<div class="spBackdrop" onclick="bScaleClosePerson()"></div>'+
-      '<div class="spPanel"><button class="spX" onclick="bScaleClosePerson()" aria-label="Close">&times;</button>'+
-      '<div class="spHead">'+face+'<div class="spHd"><div class="spName">'+E(n.label)+'</div>'+
-        '<div class="spMeta">'+yrs+(n.place?' · '+E(n.place):'')+'</div>'+
-        '<div class="spLine">'+E(line.surname)+' line · '+E(sideLabel(line))+'</div>'+flags+'</div></div>'+
-        (story?'<div class="spStory">'+story+'</div>':'')+lfHtml+recs+'</div>';
-    el.classList.add('open'); if(typeof seedBack==='function')seedBack();
+    var line=BL.filter(function(b){return b.key===lineKey;})[0];
+    if(!line){ for(var i=0;i<BL.length;i++){ if(BL[i].nodes.some(function(x){return x.id===id;})){ line=BL[i]; break; } } }
+    if(!line) return;
+    _scaleReturn=false;               // cleared while opening (openLine fires hideFocus internally)
+    setMode('blood');                 // full Bloodlines page (+ ambiance)
+    openLine(line.key);
+    if(typeof bRevealAll==='function') bRevealAll();
+    setTimeout(function(){ _scaleReturn=true; if(typeof bFocusId==='function') bFocusId(id); }, 200);
   };
   window.bScaleClosePerson=function(){ var el=document.getElementById('sPerson'); if(el) el.classList.remove('open'); };
   function sBandHTML(B, inner, count, subExtra){
@@ -2922,7 +2908,8 @@ var HISTORY=window.HISTORY||[];
      (2026-06-23 Phase A: was hiding the entire #top → no way out of a journey.) */
   function setChrome(hidden){ var t=document.getElementById('top'); if(t){ t.style.visibility=''; t.classList.toggle('slim',!!hidden); } }
   function showFocus(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='block'; el.classList.add('bfShow'); } setChrome(true); }
-  window.hideFocus=function(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='none'; el.classList.remove('bfShow'); } if(!(document.getElementById('bRoyal')||{}).classList||!document.getElementById('bRoyal').classList.contains('open')) setChrome(false); stopNarr(); };
+  window.hideFocus=function(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='none'; el.classList.remove('bfShow'); } if(!(document.getElementById('bRoyal')||{}).classList||!document.getElementById('bRoyal').classList.contains('open')) setChrome(false); stopNarr();
+    if(_scaleReturn){ _scaleReturn=false; if(typeof setMode==='function') setMode('scale'); } };
 
   /* ---- the trail ribbon: a road along the bottom; a covered wagon rolls from
      'today' toward the Source as you travel back, milestone dot per generation ---- */
