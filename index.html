@@ -77,7 +77,7 @@
   #card .cardface{float:right;width:66px;height:66px;border-radius:10px;object-fit:cover;margin:0 0 8px 12px;border:1px solid #d8d0bc;box-shadow:0 2px 6px rgba(0,0,0,.25);}
   #card .none{color:#8a857a;font-style:italic;font-size:14px;}
   /* clickable document viewer */
-  #docview{position:fixed;inset:0;background:rgba(20,18,14,.62);display:none;align-items:center;justify-content:center;z-index:11;padding:16px;}
+  #docview{position:fixed;inset:0;background:rgba(20,18,14,.62);display:none;align-items:center;justify-content:center;z-index:44;padding:16px;}
   .docsheet{background:#fbf7ea;max-width:580px;width:96%;max-height:90vh;overflow:auto;border-radius:8px;box-shadow:0 14px 50px rgba(0,0,0,.5);font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;position:relative;border:1px solid #d8cba6;}
   .docsheet .dx{position:absolute;top:7px;right:13px;font-size:25px;color:#fff;cursor:pointer;line-height:1;text-shadow:0 1px 3px rgba(0,0,0,.6);z-index:2;}
   .docsheet .band{padding:14px 20px;color:#fff;background:linear-gradient(135deg,#6b5a3e,#8a7448);}
@@ -510,7 +510,7 @@
   .tlClipLink{display:inline-block;margin-top:5px;font-size:11.5px;font-weight:600;color:#8a6a1f;text-decoration:none;border:1px solid #e0cf9a;border-radius:7px;padding:4px 9px;background:#fffdf6;}
   .tlClipLink:hover{background:#fff4d8;}
   /* clipping lightbox */
-  #bClipView{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:rgba(14,11,7,.9);padding:26px;}
+  #bClipView{position:fixed;inset:0;z-index:40;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(14,11,7,.9);padding:26px;}
   #bClipView .bClipInner{max-width:94vw;max-height:90vh;text-align:center;overflow:auto;}
   #bClipView img{max-width:100%;max-height:80vh;border-radius:6px;box-shadow:0 12px 44px rgba(0,0,0,.6);background:#fff;}
   #bClipView .bClipCap{margin-top:11px;color:#e9dcb8;font-size:13px;line-height:1.5;max-width:760px;margin-left:auto;margin-right:auto;}
@@ -2108,10 +2108,11 @@ var HISTORY=window.HISTORY||[];
   function _vis(id){ var e=document.getElementById(id); return !!(e && getComputedStyle(e).display!=='none'); }
   function _cls(id,c){ var e=document.getElementById(id); return !!(e && e.classList.contains(c)); }
   function appGoBack(){
+    if(_vis('bClipView')){ bCloseClip(); return true; }
+    if(typeof closeDoc==='function' && _vis('docview')){ closeDoc(); return true; }
     if(_cls('sPerson','open')){ bScaleClosePerson(); return true; }
     if(_cls('bScale','open')){ showHome(); return true; }
     if(_vis('bPayoff')){ bClosePayoff(); return true; }
-    if(_vis('bClipView')){ bCloseClip(); return true; }
     if(_vis('bContrib')){ bCloseContrib(); return true; }
     if(_cls('bPeriod','open')){ bClosePeriod(); return true; }
     if(_cls('bMap','open')){ bCloseMap(); return true; }
@@ -2511,12 +2512,13 @@ var HISTORY=window.HISTORY||[];
     var flags='';
     if(ph) flags='<span class="spFlag phantom">⚠ likely not a real person — '+E(ph)+'</span>';
     else if(contested) flags='<span class="spFlag contested">by tradition — a disputed or unproven descent</span>';
+    var recs=(typeof docRail==='function')?docRail(n, st):'';
     el.innerHTML='<div class="spBackdrop" onclick="bScaleClosePerson()"></div>'+
       '<div class="spPanel"><button class="spX" onclick="bScaleClosePerson()" aria-label="Close">&times;</button>'+
       '<div class="spHead">'+face+'<div class="spHd"><div class="spName">'+E(n.label)+'</div>'+
         '<div class="spMeta">'+yrs+(n.place?' · '+E(n.place):'')+'</div>'+
         '<div class="spLine">'+E(line.surname)+' line · '+E(sideLabel(line))+'</div>'+flags+'</div></div>'+
-        (story?'<div class="spStory">'+story+'</div>':'')+lfHtml+'</div>';
+        (story?'<div class="spStory">'+story+'</div>':'')+lfHtml+recs+'</div>';
     el.classList.add('open'); if(typeof seedBack==='function')seedBack();
   };
   window.bScaleClosePerson=function(){ var el=document.getElementById('sPerson'); if(el) el.classList.remove('open'); };
