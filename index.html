@@ -2443,8 +2443,14 @@ var HISTORY=window.HISTORY||[];
   function oldestBelow(id){
     if(oldestBelowMemo[id]!=null) return oldestBelowMemo[id];
     oldestBelowMemo[id]=9999;                          // guard against cycles
-    var n=byIdB[id], best=(n&&n.b!=null)?n.b:9999;
-    (kidsOf[id]||[]).forEach(function(k){ var ob=oldestBelow(k); if(ob<best) best=ob; });
+    // only count DOCUMENTED ancestors — the "follow this line back to <year>" estimate must
+    // match what you can actually reach couple-by-couple. The unverified royal/legendary tail
+    // (back to ~100) is reached via the royal gate, not by following, so it must not inflate this.
+    var n=byIdB[id], best=(n&&n.b!=null&&!n.unverified)?n.b:9999;
+    // recurse via parentsOf (the same capped-at-2 set bTravel follows), NOT raw kidsOf —
+    // otherwise the estimate counts deep ancestors down duplicate/step parent records that
+    // following silently drops, so "to <year>" promises a depth you can't actually reach.
+    parentsOf(id).forEach(function(p){ var ob=oldestBelow(p.id); if(ob<best) best=ob; });
     oldestBelowMemo[id]=best; return best;
   }
   function personHook(n){
@@ -2933,7 +2939,10 @@ var HISTORY=window.HISTORY||[];
   function lineDocStats(b){
     if(b._statsDone) return b;
     var nodes=b.nodes||[], dmax=0, doldY=null, doldN='';
-    nodes.forEach(function(n){ if(!n.living && !n.unverified){ if(n.gen>dmax)dmax=n.gen; if(n.b && (doldY==null||n.b<doldY)){doldY=n.b;doldN=n.label;} } });
+    // generation count = the depth of the OLDEST DATED documented ancestor, so "reaches
+    // back N generations to YEAR" is coherent (N is that YEAR ancestor's depth). Using a raw
+    // max-gen counted stray/mis-linked deep nodes and produced nonsense like "45 generations".
+    nodes.forEach(function(n){ if(!n.living && !n.unverified && n.b!=null){ if(doldY==null||n.b<doldY){doldY=n.b;doldN=n.label;dmax=n.gen;} } });
     var unv=nodes.filter(function(n){return n.unverified;}), hs={};
     unv.forEach(function(n){ hs[royalHouse(n).k]=1; });
     b._docMaxGen2=dmax; b._docOldest=doldN||b.oldest; b._docOldestYear=(doldY!=null?doldY:b.oldestYear);
