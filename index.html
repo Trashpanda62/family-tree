@@ -1050,7 +1050,36 @@
   .sLegHd{display:flex;align-items:baseline;gap:10px;margin:0 0 9px;padding-bottom:5px;border-bottom:1px solid rgba(150,130,200,.22);}
   .sLegNm{font-size:15px;font-weight:600;color:#e6dbf7;}
   .sLegSide{font-size:11.5px;color:#a99ec6;}
-  .sLegN{margin-left:auto;font-size:11px;color:#dcd2f4;background:rgba(95,80,160,.32);border:1px solid rgba(150,130,200,.4);border-radius:999px;padding:1px 9px;}
+  .sLegN{margin-left:auto;font-size:11px;color:#efe6d6;background:rgba(0,0,0,.34);border:1px solid var(--bc);border-radius:999px;padding:1px 9px;}
+  .sLegSlice{border-bottom:3px solid rgba(0,0,0,.5);}
+  .sLegSliceHd{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1);}
+  .sLegSliceIc{font-size:18px;}
+  .sLegSliceNm{font-size:17px;font-weight:600;filter:brightness(1.18);}
+  .sLegSliceSide{font-size:12px;color:#b8ad92;}
+  .sLegIntro{font-size:13px;line-height:1.5;color:#cabfa6;font-style:italic;max-width:680px;}
+  #sPerson{position:fixed;inset:0;z-index:20;display:none;}
+  #sPerson.open{display:flex;align-items:center;justify-content:center;}
+  .spBackdrop{position:absolute;inset:0;background:rgba(8,6,4,.76);}
+  .spPanel{position:relative;max-width:560px;width:calc(100% - 36px);max-height:86vh;overflow-y:auto;background:#181109;border:1px solid rgba(220,190,120,.3);border-radius:16px;padding:22px 22px 26px;color:#efe6d6;box-shadow:0 24px 70px rgba(0,0,0,.65);}
+  .spX{position:absolute;top:12px;right:14px;border:none;background:rgba(60,46,26,.75);color:#e7d8b6;width:32px;height:32px;border-radius:50%;font-size:20px;line-height:1;cursor:pointer;}
+  .spHead{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px;padding-right:34px;}
+  .spFace,.spFace.empty{width:74px;height:74px;border-radius:12px;flex:0 0 auto;}
+  .spFace{object-fit:cover;}
+  .spFace.empty{background:rgba(120,100,60,.4);display:flex;align-items:center;justify-content:center;font-size:32px;color:#e7d8b6;}
+  .spName{font-size:20px;font-weight:600;color:#f4e9cf;line-height:1.2;}
+  .spMeta{font-size:13px;color:#cdbf9f;margin-top:3px;}
+  .spLine{font-size:12px;color:#a99e86;margin-top:2px;}
+  .spFlag{display:inline-block;margin-top:8px;font-size:11px;font-weight:600;border-radius:6px;padding:2px 8px;line-height:1.4;}
+  .spFlag.phantom{color:#f2b8b8;background:rgba(130,30,30,.5);border:1px solid rgba(210,95,95,.6);}
+  .spFlag.contested{color:#e6c98e;background:rgba(120,90,30,.4);border:1px solid rgba(200,160,90,.5);}
+  .spStory{margin-top:6px;}
+  .spLead{font-size:14px;font-style:italic;color:#e6dbc0;line-height:1.55;margin:0 0 11px;}
+  .spBio{font-size:13px;line-height:1.65;color:#d0c5ab;}
+  .spLF{margin-top:16px;padding-top:13px;border-top:1px solid rgba(150,130,200,.28);}
+  .spLFh{font-size:12px;font-weight:600;color:#cdc2ec;margin:10px 0 3px;}
+  .spLF p{font-size:13px;line-height:1.6;margin:0;color:#ddd3f2;}
+  .spLF p.spFact{color:#cfc6b4;}
+  @media(max-width:600px){.spPanel{padding:18px 16px 22px;} .spFace,.spFace.empty{width:60px;height:60px;}}
   .sDeepChip{border:1px solid rgba(80,180,150,.4);background:rgba(20,40,34,.6);color:#bfe6d6;border-radius:999px;padding:4px 11px;font:inherit;font-size:11.5px;cursor:pointer;}
   .sSource{text-align:center;font-size:14px;color:#e7b94a;padding:28px 16px 14px;letter-spacing:.03em;}
   @media(max-width:600px){#bScaleHead{padding-top:96px;} .sBand{grid-template-columns:1fr 80px;} .sRailT{font-size:11px;} .sRailIc{font-size:18px;} .sBandMain{padding:14px 12px 18px;} .sCards{grid-template-columns:1fr;} .sYearBtn{margin-left:0;} .sBandArt{height:98px;} .sBandArtCap h3{font-size:18px;}}
@@ -1063,11 +1092,11 @@
       <button class="sSideBtn on" data-s="all" onclick="bScaleSide('all')">Both lines</button>
       <button class="sSideBtn" data-s="harris" onclick="bScaleSide('harris')">Harris &middot; paternal</button>
       <button class="sSideBtn" data-s="maxfield" onclick="bScaleSide('maxfield')">Maxfield &middot; maternal</button>
-      <button class="sYearBtn" onclick="setMode('blood');setTimeout(function(){bOpenPeriod&&bOpenPeriod();},60);">&#9203; Who was alive in a given year?</button>
     </div>
   </div>
   <div id="bScaleBody"></div>
 </div>
+<div id="sPerson"></div>
 
 <script>
 var DATA=window.DATA||{};
@@ -2079,6 +2108,7 @@ var HISTORY=window.HISTORY||[];
   function _vis(id){ var e=document.getElementById(id); return !!(e && getComputedStyle(e).display!=='none'); }
   function _cls(id,c){ var e=document.getElementById(id); return !!(e && e.classList.contains(c)); }
   function appGoBack(){
+    if(_cls('sPerson','open')){ bScaleClosePerson(); return true; }
     if(_cls('bScale','open')){ showHome(); return true; }
     if(_vis('bPayoff')){ bClosePayoff(); return true; }
     if(_vis('bClipView')){ bCloseClip(); return true; }
@@ -2440,7 +2470,7 @@ var HISTORY=window.HISTORY||[];
     var star=n.notable?'<span class="sStar">★</span>':'';
     var tag=contested?'<span class="sTag contested" title="A traditional / disputed descent, not firmly proven">by tradition</span>':'';
     var phtag=ph?'<span class="sTag phantom" title="'+E(ph)+'">⚠ likely not a real person</span>':'';
-    var body='<button class="sCard '+x.side+(n.notable?' notable':'')+(ph?' phantom':'')+'" style="border-left-color:'+col+'" onclick="bScaleGoto(\''+EQ(x.line.key)+'\',\''+EQ(n.id)+'\')">'+
+    var body='<button class="sCard '+x.side+(n.notable?' notable':'')+(ph?' phantom':'')+'" style="border-left-color:'+col+'" onclick="bScalePerson(\''+EQ(n.id)+'\',\''+EQ(x.line.key)+'\')">'+
       face+'<span class="sCardInfo"><span class="sName">'+star+E(n.label)+tag+phtag+'</span>'+
       '<span class="sMeta">'+yrs+(place?' · '+place:'')+'</span>'+
       '<span class="sLine">'+E(x.line.surname)+' line · '+E(sideLabel(x.line))+'</span></span></button>';
@@ -2454,7 +2484,42 @@ var HISTORY=window.HISTORY||[];
     }
     return '<div class="sCardCell">'+body+'</div>';
   }
-  window.bScaleGoto=function(lineKey,id){ if(typeof sClick==='function')sClick(); setMode('blood'); openLine(lineKey); bRevealAll(); setTimeout(function(){ bFocusId(id); },220); };
+  // distinct colour per bloodline (its own slice in the legendary band)
+  var BLOODLINE_COLORS={
+    maxfield:{c:'#34a06a',bg:'rgba(52,160,106,.13)'}, mccollum:{c:'#8a7ce0',bg:'rgba(138,124,224,.15)'},
+    thury:{c:'#36a6ba',bg:'rgba(54,166,186,.13)'}, harris:{c:'#4a86c8',bg:'rgba(74,134,200,.14)'},
+    garrison:{c:'#d29a44',bg:'rgba(210,154,68,.13)'}, davis:{c:'#cf6647',bg:'rgba(207,102,71,.13)'},
+    mailloux:{c:'#b06fd8',bg:'rgba(176,111,216,.13)'}, hepburn:{c:'#9aa843',bg:'rgba(154,168,67,.13)'}
+  };
+  // self-contained person panel — Time Scale is its OWN mode; a card never leaves it for Bloodlines.
+  window.bScalePerson=function(id, lineKey){
+    if(typeof sClick==='function')sClick();
+    var line=BL.filter(function(b){return b.key===lineKey;})[0], n=null;
+    if(line) n=line.nodes.filter(function(x){return x.id===id;})[0];
+    if(!n){ for(var i=0;i<BL.length && !n;i++){ var f=BL[i].nodes.filter(function(x){return x.id===id;})[0]; if(f){ n=f; line=BL[i]; } } }
+    var el=document.getElementById('sPerson'); if(!n||!el) return;
+    var st=(window.PSTORY||{})[id]||{}, lf=(window.LOREFACT||{})[id], ph=(window.PHANTOM||{})[id];
+    var contested=(window.CONTESTED||[]).indexOf(id)>=0;
+    var face=n.face?'<img class="spFace" src="'+E(n.face)+'" onerror="this.parentNode.innerHTML=&quot;&quot;">':'<div class="spFace empty">'+E((n.first||n.label||'?').slice(0,1))+'</div>';
+    var yrs=E(n.span||(n.b?((n.b<1500?'~':'')+n.b+(n.d?'–'+n.d:'')):''));
+    var story='';
+    if(st.lead) story+='<p class="spLead">'+E(st.lead)+'</p>';
+    if(st.bio) story+='<div class="spBio">'+E(st.bio).replace(/\n+/g,'<br><br>')+'</div>';
+    var lfHtml='';
+    if(lf && lf.diverge) lfHtml='<div class="spLF"><div class="spLFh">📖 Lore</div><p>'+E(lf.lore)+'</p><div class="spLFh">⚖️ Historical fact</div><p class="spFact">'+E(lf.fact)+'</p></div>';
+    else if(lf) lfHtml='<div class="spLF"><p>'+E(lf.lore)+'</p></div>';
+    var flags='';
+    if(ph) flags='<span class="spFlag phantom">⚠ likely not a real person — '+E(ph)+'</span>';
+    else if(contested) flags='<span class="spFlag contested">by tradition — a disputed or unproven descent</span>';
+    el.innerHTML='<div class="spBackdrop" onclick="bScaleClosePerson()"></div>'+
+      '<div class="spPanel"><button class="spX" onclick="bScaleClosePerson()" aria-label="Close">&times;</button>'+
+      '<div class="spHead">'+face+'<div class="spHd"><div class="spName">'+E(n.label)+'</div>'+
+        '<div class="spMeta">'+yrs+(n.place?' · '+E(n.place):'')+'</div>'+
+        '<div class="spLine">'+E(line.surname)+' line · '+E(sideLabel(line))+'</div>'+flags+'</div></div>'+
+        (story?'<div class="spStory">'+story+'</div>':'')+lfHtml+'</div>';
+    el.classList.add('open'); if(typeof seedBack==='function')seedBack();
+  };
+  window.bScaleClosePerson=function(){ var el=document.getElementById('sPerson'); if(el) el.classList.remove('open'); };
   function sBandHTML(B, inner, count, subExtra){
     return '<section class="sBand" style="--bc:'+B.col+';background:'+B.bg+'">'+
       '<div class="sBandMain">'+
@@ -2506,11 +2571,18 @@ var HISTORY=window.HISTORY||[];
     var legB=null; for(var bi=0;bi<SCALE_BANDS.length;bi++){ if(SCALE_BANDS[bi].tier==='legendary') legB=SCALE_BANDS[bi]; }
     var legGroups=legendaryByLine();
     if(legB && legGroups.length){
-      var legBody=legGroups.map(function(g){
+      html+=sBandHTML(legB, '<div class="sLegIntro">Your saga-kings and the old gods &mdash; <b>one coloured slice per bloodline</b> they descend through. Shared ancestors (the gods, the Yngling kings) appear under every line.</div>', byTier.legendary.length, '');
+      legGroups.forEach(function(g){
+        var col=BLOODLINE_COLORS[(g.line.surname||'').toLowerCase()]||{c:'#7a6cc4',bg:'rgba(122,108,196,.13)'};
         var cards=g.nodes.map(function(n){ return scaleCard({n:n, line:g.line, side:g.side}); }).join('');
-        return '<div class="sLegLine '+g.side+'"><div class="sLegHd"><span class="sLegNm">'+E(g.surname)+' line</span><span class="sLegSide">'+E(sideLabel(g.line))+'</span><span class="sLegN">'+g.nodes.length+'</span></div><div class="sCards">'+cards+'</div></div>';
-      }).join('');
-      html+=sBandHTML(legB, legBody, byTier.legendary.length, ' &middot; grouped by the bloodline each descends through');
+        html+='<section class="sBand sLegSlice" style="--bc:'+col.c+';background:'+col.bg+'">'+
+          '<div class="sBandMain">'+
+            '<div class="sLegSliceHd"><span class="sLegSliceIc" style="color:'+col.c+'">&#9876;&#65039;</span><span class="sLegSliceNm" style="color:'+col.c+'">'+E(g.surname)+' line</span><span class="sLegSliceSide">'+E(sideLabel(g.line))+' &middot; mythical &amp; legendary</span><span class="sLegN">'+g.nodes.length+'</span></div>'+
+            '<div class="sCards">'+cards+'</div>'+
+          '</div>'+
+          '<div class="sBandRail"><div class="sRailIn"><span class="sRailIc">&#9876;&#65039;</span><span class="sRailT">'+E(g.surname)+'</span><span class="sRailSpan">'+E(g.line.side||'')+'</span><span class="sRailN">'+g.nodes.length+'</span></div></div>'+
+          '</section>';
+      });
     }
     html+=scaleDeepHTML();
     html+='<div class="sSource">🏆 The Source — the oldest the blood reaches.</div>';
@@ -2564,7 +2636,7 @@ var HISTORY=window.HISTORY||[];
     var withAnc=BL.filter(function(b){return b.ancCount;}).length;
     L.innerHTML='<div class="bIntro"><h1>How far back does your blood go?</h1>'+
       '<p>Pick a grandparent and travel <b>backward</b> in time. Tap each ancestor to reveal their parents &mdash; the world ages around you &mdash; until you arrive at the <b>Source</b>, the oldest known ancestor on that line. Trace all '+withAnc+'.</p>'+
-      '<div class="bMeta2"><span class="bSeal">&#127942; '+traced+' of '+withAnc+' bloodlines traced to the Source</span> <button class="bPassBtn" onclick="bPassport()">&#128214; Family Passport</button> <button class="bPassBtn" onclick="bOpenMap(\'all\')">&#128205; World Map</button> <button class="bPassBtn" onclick="bOpenPeriod()">&#9203; Time Period</button></div></div>'+
+      '<div class="bMeta2"><span class="bSeal">&#127942; '+traced+' of '+withAnc+' bloodlines traced to the Source</span> <button class="bPassBtn" onclick="bPassport()">&#128214; Family Passport</button> <button class="bPassBtn" onclick="bOpenMap(\'all\')">&#128205; World Map</button></div></div>'+
       '<div class="bGrid">'+BL.map(function(b){
         var empty=!b.ancCount, sealed=P.lines[b.key];
         lineDocStats(b);
