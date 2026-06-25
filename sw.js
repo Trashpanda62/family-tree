@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v3';  // bump on structural data changes to purge stale data/*.js (Time Scale sort fix)
+const CACHE = 'familytree-v4';  // v4: Migrations globe (new vendor/ libs + data/migrations.js)
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 

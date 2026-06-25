@@ -907,12 +907,14 @@
 <script src="data/cform.js"></script>
 <script src="data/contrib.js"></script>
 <script src="data/timeline.js"></script>
+<script src="vendor/globe.gl.min.js"></script>
+<script src="data/migrations.js"></script>
 </head>
 <body>
 <div id="boot">&#127795; Loading the family tree&hellip;</div>
 <div id="top">
   <div id="title" onclick="showHome&&showHome()" title="Home" role="button" tabindex="0">&#127795; Bloodlines</div>
-  <div id="modeSw"><button id="mAnc" class="msw on" onclick="setMode('anc')" title="Browse the whole family tree — pan, zoom and search">&#128269; Explore</button><button id="mBlood" class="msw" onclick="setMode('blood')" title="Travel back through time, one bloodline at a time">&#129656; Bloodlines</button><button id="mScale" class="msw" onclick="setMode('scale')" title="The geologic time scale: every ancestor, layer by layer, from today down to the source">&#9202; Time Scale</button></div>
+  <div id="modeSw"><button id="mAnc" class="msw on" onclick="setMode('anc')" title="Browse the whole family tree — pan, zoom and search">&#128269; Explore</button><button id="mBlood" class="msw" onclick="setMode('blood')" title="Travel back through time, one bloodline at a time">&#129656; Bloodlines</button><button id="mScale" class="msw" onclick="setMode('scale')" title="The geologic time scale: every ancestor, layer by layer, from today down to the source">&#9202; Time Scale</button><button id="mGlobe" class="msw" onclick="setMode('globe')" title="Watch our ancestors migrate across the world through time, with major events">&#127757; Migrations</button></div>
   <div id="searchWrap"><input id="search" placeholder="Search an ancestor by name…" autocomplete="off" aria-label="Search ancestors by name"><button id="searchClear" onclick="clearSearch()" aria-label="Clear search" title="Clear">&times;</button><div id="searchResults"></div></div>
   <button class="btn" id="surpriseBtn" onclick="surprise()">&#127922; Surprise</button>
 </div>
@@ -933,6 +935,10 @@
       <div class="hcIcon">&#9202;</div><div class="hcTitle">The Time Scale</div>
       <div class="hcDesc">Every ancestor in one tall column &mdash; documented kin, then history, then myth &amp; legend, down to our shared African roots.</div>
       <div class="hcGo">Descend the layers &#8594;</div></button>
+    <button class="homeCard" onclick="goMode('globe')">
+      <div class="hcIcon">&#127757;</div><div class="hcTitle">Migrations</div>
+      <div class="hcDesc">Watch the family cross the world on a living globe &mdash; arcs sweep from the old country to the new as the centuries roll, countries glow, and history happens around them.</div>
+      <div class="hcGo">Spin the globe &#8594;</div></button>
   </div>
   <div class="homeStat" id="homeStat"></div>
   <button class="homeAbout" onclick="toggleAbout()">What is this?</button>
@@ -1151,6 +1157,69 @@
 </div>
 <div id="sPerson"></div>
 <div id="sDotPanel"></div>
+
+<style id="globeCss">
+  #bGlobe{position:fixed;inset:0;z-index:5;display:none;background:radial-gradient(120% 120% at 50% 18%,#0a1020 0%,#05060a 70%);color:#eaf0fa;overflow:hidden;}
+  #bGlobe.open{display:block;}
+  #bgViz{position:absolute;inset:0;}
+  #bgViz canvas{display:block;}
+  #bgTop{position:absolute;top:58px;left:0;right:0;text-align:center;pointer-events:none;z-index:3;}
+  #bgYear{display:block;font-size:46px;font-weight:800;letter-spacing:.04em;color:#f0d9a6;text-shadow:0 2px 18px rgba(0,0,0,.8);font-variant-numeric:tabular-nums;}
+  #bgStats{display:block;margin-top:4px;font-size:12.5px;color:#bcd0ec;text-shadow:0 1px 8px rgba(0,0,0,.92);}
+  #bgChapter{display:block;margin-top:6px;max-width:88%;margin-left:auto;margin-right:auto;}
+  .bgEv{display:inline-block;margin:3px;padding:3px 10px;font-size:11.5px;border:1px solid #d4a017;border-radius:999px;background:rgba(6,9,16,.72);color:#eaf0fa;text-shadow:none;font-family:inherit;}
+  .bgEv.clk{cursor:pointer;pointer-events:auto;}
+  #bgCaption{position:absolute;left:50%;transform:translateX(-50%);bottom:128px;width:min(680px,90%);text-align:center;font-size:15px;line-height:1.55;color:#eef4ff;text-shadow:0 2px 12px rgba(0,0,0,.95);z-index:3;pointer-events:none;opacity:0;transition:opacity .5s;}
+  #bgCaption.show{opacity:1;}
+  #bgLegend{position:absolute;top:120px;right:14px;z-index:3;background:rgba(6,9,16,.6);border:1px solid rgba(150,180,220,.2);border-radius:10px;padding:9px 11px;font-size:11px;line-height:1.7;color:#cdd8ec;backdrop-filter:blur(4px);max-width:170px;}
+  #bgLegend b{color:#f0d9a6;font-size:11.5px;}
+  #bgLegend .lgrow{display:flex;align-items:center;gap:6px;}
+  #bgLegend i{width:11px;height:11px;border-radius:3px;display:inline-block;flex:0 0 auto;}
+  #bgCtl{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:14px 16px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(0deg,rgba(5,6,10,.92),rgba(5,6,10,0));display:flex;flex-direction:column;gap:9px;}
+  #bgCtlRow{display:flex;align-items:center;gap:11px;}
+  .bgBtn{flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:1px solid rgba(220,190,120,.5);background:rgba(40,33,20,.8);color:#f0d9a6;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .bgBtn:active{transform:scale(.94);}
+  .bgScrub{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:rgba(180,200,230,.25);outline:none;}
+  .bgScrub::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#f0d9a6;border:2px solid #05060a;cursor:pointer;box-shadow:0 0 0 2px #caa24a;}
+  .bgScrub::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#f0d9a6;border:2px solid #05060a;cursor:pointer;}
+  .bgChips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .bgChip{border:1px solid rgba(180,200,230,.32);background:rgba(20,28,44,.7);color:#cdd8ec;border-radius:999px;padding:4px 11px;font:inherit;font-size:11.5px;cursor:pointer;}
+  .bgChip.on{background:#caa24a;color:#1a1305;border-color:#caa24a;font-weight:600;}
+  .bgChip.lc{display:inline-flex;align-items:center;gap:5px;}
+  .bgChip.lc i{width:8px;height:8px;border-radius:50%;}
+  #bgSpeed{flex:0 0 auto;font-size:11.5px;color:#bcd0ec;cursor:pointer;border:1px solid rgba(180,200,230,.32);background:rgba(20,28,44,.7);border-radius:999px;padding:5px 10px;}
+  #bgSound{flex:0 0 auto;font-size:14px;line-height:1;cursor:pointer;border:1px solid rgba(180,200,230,.32);background:rgba(20,28,44,.7);color:#bcd0ec;border-radius:999px;padding:5px 9px;}
+  #bgSound.on{border-color:#caa24a;color:#f0d9a6;}
+  .bgChip:focus-visible,.bgBtn:focus-visible,.bgScrub:focus-visible,#bgSpeed:focus-visible,#bgSound:focus-visible{outline:2px solid #f0d9a6;outline-offset:2px;}
+  #bgFallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:40px;font-size:15px;color:#cdd8ec;}
+  #bGlobe.nogl #bgFallback{display:flex;}
+  #bGlobe.nogl #bgViz,#bGlobe.nogl #bgCtl,#bGlobe.nogl #bgTop,#bGlobe.nogl #bgLegend{display:none;}
+  #bgPeople{position:fixed;inset:0;z-index:23;display:none;}
+  #bgPeople.open{display:flex;align-items:center;justify-content:center;}
+  .bgpPanel{position:relative;max-width:760px;width:calc(100% - 36px);max-height:86vh;overflow-y:auto;background:#0c1322;border:1px solid rgba(150,180,220,.32);border-radius:16px;padding:20px 20px 26px;box-shadow:0 24px 70px rgba(0,0,0,.7);}
+  .bgpHd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding-right:34px;}
+  .bgpHd h3{margin:0;font-size:20px;color:#f0d9a6;}
+  .bgpSub{font-size:12.5px;color:#bcd0ec;}
+  @media(max-width:600px){ #bgYear{font-size:34px;} #bgLegend{display:none;} #bgCaption{bottom:158px;font-size:13.5px;} .bgBtn{width:42px;height:42px;} }
+</style>
+<div id="bGlobe">
+  <div id="bgViz"></div>
+  <div id="bgTop"><span id="bgYear">&mdash;</span><span id="bgStats"></span><span id="bgChapter"></span></div>
+  <div id="bgCaption"></div>
+  <div id="bgLegend"></div>
+  <div id="bgCtl">
+    <div id="bgCtlRow">
+      <button id="bgPlay" class="bgBtn" onclick="globeTogglePlay()" aria-label="Play the migration">&#9654;</button>
+      <input id="bgScrub" class="bgScrub" type="range" min="0" max="1000" value="0" aria-label="Scrub the years" oninput="globeScrub(+this.value)">
+      <button id="bgSpeed" onclick="globeCycleSpeed()">1&times;</button>
+      <button id="bgSound" class="on" onclick="globeToggleSound()" aria-label="Narration on/off" title="Narration">&#128266;</button>
+    </div>
+    <div id="bgMetric" class="bgChips"></div>
+    <div id="bgLines" class="bgChips"></div>
+  </div>
+  <div id="bgFallback">This globe needs WebGL &mdash; try opening it in a different browser.</div>
+</div>
+<div id="bgPeople"></div>
 
 <script>
 var DATA=window.DATA||{};
@@ -2108,15 +2177,18 @@ var HISTORY=window.HISTORY||[];
   /* ---- mode switch (with the stop-music fix) ---- */
   var ANC=['stage','prog','fact','ctl','search','surpriseBtn'];
   window.setMode=function(m){
-    var blood=(m==='blood'), scale=(m==='scale');
+    var blood=(m==='blood'), scale=(m==='scale'), globe=(m==='globe');
     var hm=document.getElementById('home'); if(hm)hm.classList.remove('show');   // leaving Home
     document.getElementById('bloodMode').style.display=blood?'block':'none';
-    ANC.forEach(function(id){var e=document.getElementById(id);if(e)e.style.display=(blood||scale)?'none':'';});
+    ANC.forEach(function(id){var e=document.getElementById(id);if(e)e.style.display=(blood||scale||globe)?'none':'';});
     document.getElementById('mAnc').classList.toggle('on',m==='anc');
     document.getElementById('mBlood').classList.toggle('on',blood);
     var msc=document.getElementById('mScale'); if(msc) msc.classList.toggle('on',scale);
     var bsc=document.getElementById('bScale'); if(bsc) bsc.classList.toggle('open',scale);
+    var mgl=document.getElementById('mGlobe'); if(mgl) mgl.classList.toggle('on',globe);
+    var bgl=document.getElementById('bGlobe'); if(bgl) bgl.classList.toggle('open',globe);
     if(typeof closeModal==='function')closeModal();
+    if(globe){ silenced=true; if(typeof stopMusic==='function')stopMusic(); if(typeof stopNarr==='function')stopNarr(); if(typeof stopJourney==='function')stopJourney(); if(typeof stopMotes==='function')stopMotes(); if(typeof setChrome==='function')setChrome(false); openGlobe(); return; }
     if(scale){ silenced=true; if(typeof stopMusic==='function')stopMusic(); if(typeof stopNarr==='function')stopNarr(); if(typeof stopJourney==='function')stopJourney(); if(typeof stopMotes==='function')stopMotes(); if(typeof setChrome==='function')setChrome(false); openScale(); return; }
     if(blood){ silenced=false; fx(); if(!cur) showLanding(); else { startMotes(); if(!muted){ amTrack=null; playTrack(curTrack); } } }
     else { silenced=true; stopMusic(); stopNarr(); stopJourney(); stopMotes();   // leaving Bloodlines -> silence
@@ -2131,6 +2203,8 @@ var HISTORY=window.HISTORY||[];
     ANC.forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
     document.getElementById('mAnc').classList.remove('on'); document.getElementById('mBlood').classList.remove('on');
     var _sc=document.getElementById('bScale'); if(_sc)_sc.classList.remove('open'); var _ms=document.getElementById('mScale'); if(_ms)_ms.classList.remove('on');
+    var _bg=document.getElementById('bGlobe'); if(_bg)_bg.classList.remove('open'); var _mg=document.getElementById('mGlobe'); if(_mg)_mg.classList.remove('on');
+    if(typeof stopGlobe==='function')stopGlobe();
     silenced=true; stopMusic(); stopNarr(); stopJourney(); stopMotes();
     if(typeof setChrome==='function') setChrome(false);
     try{ var P=loadPass(), withAnc=BL.filter(function(b){return b.ancCount;}).length,
@@ -2659,6 +2733,187 @@ var HISTORY=window.HISTORY||[];
   window.closeDot=function(){ var h=document.getElementById('sDotPanel'); if(h) h.classList.remove('open'); };
   window.dotGoPerson=function(id,line){ closeDot(); if(typeof bScalePerson==='function') bScalePerson(id,line); };
   window.addEventListener('keydown', function(e){ if(e.key==='Escape' && _cls('sDotPanel','open')){ closeDot(); } });
+
+  // ===== Migrations globe (plan c-000549) — globe.gl + window.MIG + TLMARKERS events =====
+  var _globe=null, _gjson=null, _gState=null, _gTimer=null, _gResizeWired=false;
+  var _RM=(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)||false;
+  var _gNarr=null, _gChapKey=null, _gNarrOn=true, _globeReturn=false;
+  function globeNarrate(key){   // play the Bill voice clip for a chapter (site has narration/mig-<key>.mp3)
+    if(!_gNarrOn || (typeof muted!=='undefined'&&muted) || !key) return;
+    var NARR=window.NARR||{}; if(!NARR['mig-'+key]) return;   // only when the clip exists (baked NARR island)
+    try{ if(_gNarr) _gNarr.pause(); _gNarr=new Audio('narration/mig-'+key+'.mp3'); _gNarr.volume=0.92; _gNarr.play().catch(function(){}); }catch(e){}
+  }
+  function _gNarrStop(){ if(_gNarr){ try{_gNarr.pause();}catch(e){} } }
+  var GMETRICS=[{k:'net',l:'Net flow'},{k:'in',l:'Arrivals'},{k:'out',l:'Departures'}];
+  var GLINES=[{k:'all',l:'All lines',c:'#caa24a'},{k:'harris',l:'Harris',c:'#5aa0ee'},{k:'maxfield',l:'Maxfield',c:'#46d39a'}];
+  var GCHAPTERS=[
+    {y0:-70000,key:'ooa',t:'Out of Africa — the first modern humans leave the Rift Valley and begin to people the world.'},
+    {y0:-45000,key:'iceeurope',t:'Into Ice-Age Europe — hunter-gatherers follow the herds as glaciers grip the north.'},
+    {y0:-24000,key:'lgm',t:'The Last Glacial Maximum — the world freezes; humanity shelters in the warm southern refuges.'},
+    {y0:-11000,key:'melt',t:'The great melt — as the ice retreats, people recolonize a greening Europe.'},
+    {y0:-9000,key:'farmers',t:'The first farmers spread out of Anatolia; villages and monuments rise.'},
+    {y0:-3300,key:'bronze',t:'The Bronze Age — steppe horsemen sweep west and remake the peoples of Europe.'},
+    {y0:-800,key:'ironage',t:'Iron-Age peoples — Celts, Germans and Norse — settle the homelands of our lines.'},
+    {y0:300,key:'recorded',t:'Recorded kin — our oldest documented ancestors emerge from the late-antique world.'},
+    {y0:1066,key:'norman',t:'1066 — Norman knights cross to England; the bloodlines weave through the courts of Europe.'},
+    {y0:1300,key:'tudor',t:'The Middle Ages give way to the Tudors — the family is still rooted in the Old World.'},
+    {y0:1600,key:'mayflower',t:'1620 — the Pilgrims sail. The Great Migration carries whole families to New England.'},
+    {y0:1660,key:'newfrance',t:'New France rises along the St. Lawrence as the English push west across the colonies.'},
+    {y0:1760,key:'republic',t:'Revolution, then a young republic — the family fans out across a growing America.'},
+    {y0:1850,key:'modern',t:'The German, Irish and Austro-Hungarian waves arrive; the modern family takes shape.'},
+  ];
+  var GDKCOL={ice:'#9fd3ff',origin:'#ffcf6b',culture:'#e8c878',migration:'#5aa0ee',disaster:'#e0563a',war:'#e0563a'};
+  // piecewise time <-> scrub-fraction: compress the 70,000-year prehistory and the deep
+  // documented past, but give the dense genealogical era (1500+) the most room.
+  var GSEG=[[-70000,0],[-10000,0.30],[-2000,0.45],[1,0.52],[1066,0.64],[1500,0.74],[2001,0.96],[2026,1.0]];
+  function fracToYear(f){ f=Math.max(0,Math.min(1,f)); for(var i=GSEG.length-1;i>=0;i--){ if(f>=GSEG[i][1]){ var a=GSEG[i],b=GSEG[Math.min(i+1,GSEG.length-1)]; if(b[1]<=a[1])return a[0]; return Math.round(a[0]+((f-a[1])/(b[1]-a[1]))*(b[0]-a[0])); } } return GSEG[0][0]; }
+  function yearToFrac(y){ for(var i=GSEG.length-1;i>=0;i--){ if(y>=GSEG[i][0]){ var a=GSEG[i],b=GSEG[Math.min(i+1,GSEG.length-1)]; if(b[0]<=a[0])return a[1]; return a[1]+((y-a[0])/(b[0]-a[0]))*(b[1]-a[1]); } } return 0; }
+  function fmtYear(y){ if(y>=1) return ''+y; var n=-y; return (n>=10000?(Math.round(n/1000)+',000'):n.toLocaleString())+' BCE'; }
+  // rough world-population estimates (year -> people), interpolated in log space
+  var GPOP=[[-70000,5000],[-30000,500000],[-10000,4000000],[-5000,18000000],[-1000,50000000],[1,250000000],[1000,300000000],[1500,460000000],[1700,600000000],[1800,1000000000],[1900,1650000000],[1950,2500000000],[2000,6150000000],[2025,8100000000]];
+  function popAt(y){ if(y<=GPOP[0][0])return GPOP[0][1]; for(var i=1;i<GPOP.length;i++){ if(y<=GPOP[i][0]){ var a=GPOP[i-1],b=GPOP[i],t=(y-a[0])/(b[0]-a[0]); return Math.exp(Math.log(a[1])+t*(Math.log(b[1])-Math.log(a[1]))); } } return GPOP[GPOP.length-1][1]; }
+  function fmtPop(n){ if(n>=1e9)return (n/1e9).toFixed(n<1e10?1:0)+' billion'; if(n>=1e6)return (n/1e6).toFixed(n<1e7?1:0)+' million'; if(n>=1e3)return Math.round(n/1e3)+',000'; return ''+Math.round(n); }
+  var GREG2ISO={England:['GBR'],Scotland:['GBR'],Wales:['GBR'],America:['USA'],Ireland:['IRL'],France:['FRA'],Normandy:['FRA'],NewFrance:['CAN'],Germanic:['DEU','AUT'],CentEur:['AUT','HUN'],Hungary:['HUN'],Nordic:['SWE','NOR','DNK'],Iberia:['ESP'],Italy:['ITA'],Byzantium:['TUR'],LowCountries:['NLD','BEL'],Switzerland:['CHE']};
+  var GKCOL={war:'#e0563a',plague:'#7ec24a',famine:'#d6a82a',migration:'#5aa0ee',disaster:'#3a9ad6',royal:'#b66bd6',fact:'#d4a017'};
+  function chapterFor(y){ var c=GCHAPTERS[0]; for(var i=0;i<GCHAPTERS.length;i++){ if(y>=GCHAPTERS[i].y0) c=GCHAPTERS[i]; } return c; }
+  function _supportsWebGL(){ try{ var c=document.createElement('canvas'); return !!(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl'))); }catch(e){ return false; } }
+
+  window.openGlobe=function(){
+    var host=document.getElementById('bGlobe'); if(!host) return;
+    var MIG=window.MIG;
+    if(!MIG||!MIG.legs||!MIG.legs.length||!window.Globe||!_supportsWebGL()){ host.classList.add('nogl'); return; }
+    host.classList.remove('nogl');
+    if(!_gState){ var evMax=(window.TLMARKERS||[]).reduce(function(a,m){return Math.max(a,m.y2||m.y);},0);
+      var dstart=(MIG.deep&&MIG.deep.start)||MIG.span[0];
+      _gState={year:dstart,metric:'net',side:'all',playing:false,speed:1,min:dstart,max:Math.max(MIG.span[1],evMax,2026)}; }
+    if(!_globe) _initGlobe(); else _resizeGlobe();
+    renderGlobeChips();
+    globeRender(_gState.year);
+    try{ var c=_globe.controls(); c.autoRotate=true; c.autoRotateSpeed=0.5; }catch(e){}
+    if(!_RM){ _globe&&_globe.pointOfView({lat:30,lng:-30,altitude:2.4},800); }
+    setTimeout(function(){ if(typeof showCoach==='function') showCoach('ft_coach_globe','<b>The Migrations globe</b><p>Press <b>&#9654; Play</b> to watch the family cross the world &mdash; from the Out-of-Africa dawn to today &middot; drag the <b>timeline</b> to any year &middot; tap a <b>country</b> to see who arrived or left &middot; tap an <b>event</b> for the people it touched.</p>'); },550);
+  };
+  window.stopGlobe=function(){ _gPause(); try{ if(_globe) _globe.controls().autoRotate=false; }catch(e){} };
+
+  function _initGlobe(){
+    _globe = Globe()(document.getElementById('bgViz'))
+      .globeImageUrl('vendor/earth-dark.jpg').backgroundColor('rgba(0,0,0,0)')
+      .showAtmosphere(true).atmosphereColor('#5a7fae').atmosphereAltitude(0.16)
+      .arcStartLat(function(d){return d.from[0];}).arcStartLng(function(d){return d.from[1];})
+      .arcEndLat(function(d){return d.to[0];}).arcEndLng(function(d){return d.to[1];})
+      .arcColor(function(d){ if(d.deep) return ['rgba(217,138,58,0.25)','#ffe6b0']; return [d.side==='maxfield'?'#46d39a':'#5aa0ee','#f0d9a6']; })
+      .arcAltitudeAutoScale(0.45).arcStroke(0.55).arcDashLength(0.45).arcDashGap(0.22)
+      .arcDashInitialGap(function(){return 1;}).arcDashAnimateTime(2200).arcsTransitionDuration(400)
+      .arcLabel(function(d){return E(d.label||'');}).onArcClick(function(d){ if(d&&d.id) globePerson(d.id); })
+      .ringLat(function(r){return r.lat;}).ringLng(function(r){return r.lng;}).ringMaxRadius(function(r){return r.maxR;})
+      .ringColor(function(r){ var c=r.color; return function(t){ return c+Math.round((1-t)*200).toString(16).padStart(2,'0'); }; })
+      .ringPropagationSpeed(1.6).ringRepeatPeriod(900);
+    fetch('vendor/countries-110m.geojson').then(function(r){return r.json();}).then(function(gj){
+      _gjson=gj.features;
+      _globe.polygonsData(_gjson).polygonCapColor(_countryColor).polygonSideColor(function(){return 'rgba(70,100,150,0.10)';})
+        .polygonStrokeColor(function(){return 'rgba(150,180,220,0.22)';}).polygonAltitude(_countryAlt)
+        .polygonLabel(_countryLabel).onPolygonClick(globeCountry).polygonsTransitionDuration(250);
+      globeRender(_gState.year);
+    }).catch(function(){});
+    _resizeGlobe();
+    if(!_gResizeWired){ window.addEventListener('resize', _resizeGlobe); _gResizeWired=true;
+      var viz=document.getElementById('bgViz'); if(viz) viz.addEventListener('pointerdown', function(){ try{ if(_globe) _globe.controls().autoRotate=false; }catch(e){} }, {passive:true});
+    }
+  }
+  function _resizeGlobe(){ if(!_globe)return; var el=document.getElementById('bGlobe'); if(el&&el.clientWidth) _globe.width(el.clientWidth).height(el.clientHeight); }
+  function _iso(f){ return f.properties.ISO_A3||f.properties.ADM0_A3; }
+  function _isoFlux(iso,upto){ var f=(window.MIG.flux||{})[iso]; if(!f)return{i:0,o:0}; var i=0,o=0; for(var d in f){ if(+d<=upto){ i+=f[d]['in']||0; o+=f[d]['out']||0; } } return {i:i,o:o}; }
+  function _metricVal(iso,upto){ var x=_isoFlux(iso,upto),m=_gState.metric; return m==='in'?x.i:m==='out'?x.o:(x.i-x.o); }
+  function _countryColor(f){ var v=_metricVal(_iso(f),_gState.year); if(!v) return 'rgba(38,52,78,0.32)'; var g=Math.min(1,Math.abs(v)/12),a=(0.4+0.5*g).toFixed(2);
+    if(_gState.metric==='out') return 'rgba('+(130+110*g|0)+',88,66,'+a+')';
+    if(_gState.metric==='in') return 'rgba(86,'+(150+90*g|0)+',120,'+a+')';
+    return v>0?'rgba('+(200+40*g|0)+','+(160+20*g|0)+',74,'+a+')':'rgba(70,120,'+(150+80*g|0)+','+a+')'; }
+  function _countryAlt(f){ var v=Math.abs(_metricVal(_iso(f),_gState.year)); return v?Math.min(0.13,0.012+v*0.004):0.006; }
+  function _countryLabel(f){ var x=_isoFlux(_iso(f),_gState.year); if(!x.i&&!x.o) return ''; return '<div style="background:rgba(6,9,16,.85);padding:5px 8px;border-radius:6px;color:#eaf0fa"><b>'+E(f.properties.NAME||_iso(f))+'</b><br>arrived '+x.i+' &middot; left '+x.o+'</div>'; }
+  function _activeEvents(year){   // [{name,key,kind,deep}] genealogical + deep events live at this year
+    var out=[];
+    (window.TLMARKERS||[]).forEach(function(m){ if(year>=m.y&&year<=(m.y2||m.y)) out.push({name:m.name,key:m.key,kind:m.kind}); });
+    var de=(window.MIG.deep&&window.MIG.deep.events)||[];
+    de.forEach(function(e){ if(year>=e.year&&year<=(e.y2||e.year)) out.push({name:e.name,kind:e.kind,deep:true}); });
+    return out;
+  }
+  function _eventRings(year){
+    var C=(window.MIG&&window.MIG.countries)||{}, out=[];
+    (window.TLMARKERS||[]).forEach(function(m){ if(year<m.y||year>(m.y2||m.y)) return;
+      var seen={}; (m.scope||[]).forEach(function(s){ (GREG2ISO[s]||[]).forEach(function(iso){ if(seen[iso]||!C[iso])return; seen[iso]=1;
+        out.push({lat:C[iso].lat,lng:C[iso].lng,maxR:6,color:GKCOL[m.kind]||'#d4a017',name:m.name}); }); });
+    });
+    ((window.MIG.deep&&window.MIG.deep.events)||[]).forEach(function(e){ if(year<e.year||year>(e.y2||e.year))return; var w=e.where||[0,0];
+      out.push({lat:w[0],lng:w[1],maxR:e.kind==='ice'?16:9,color:GDKCOL[e.kind]||'#9fd3ff',name:e.name}); });
+    return out;
+  }
+  function globeRender(year){
+    if(!_gState) return; _gState.year=year; var MIG=window.MIG, side=_gState.side;
+    var arcs=MIG.legs.filter(function(l){ return l.year<=year && (side==='all'||l.side===side); });
+    var deep=((MIG.deep&&MIG.deep.legs)||[]).filter(function(l){ return l.year<=year; })
+              .map(function(l){ return {from:l.from,to:l.to,year:l.year,label:l.label,deep:true,id:null}; });
+    var all=deep.concat(arcs); if(all.length>180) all=all.slice(all.length-180);
+    if(_globe){ _globe.arcsData(all); if(_gjson) _globe.polygonsData(_gjson); _globe.ringsData(_eventRings(year)); }
+    var yEl=document.getElementById('bgYear'); if(yEl) yEl.textContent=fmtYear(year);
+    var ch=chapterFor(year), ck=ch?ch.key:null, cap=document.getElementById('bgCaption');
+    if(cap && ch && ck!==_gChapKey){ cap.classList.remove('show'); cap.textContent=ch.t; void cap.offsetWidth; cap.classList.add('show'); }   // re-trigger the fade per chapter
+    if(_gState.playing && ck && ck!==_gChapKey) globeNarrate(ck);
+    _gChapKey=ck;
+    // world population + family-migration tally
+    var migs=MIG.legs.filter(function(l){return l.year<=year;}).length + ((MIG.deep&&MIG.deep.legs)||[]).filter(function(l){return l.year<=year;}).length;
+    var st=document.getElementById('bgStats'); if(st) st.innerHTML='&#127757; ~'+fmtPop(popAt(year))+' people on Earth &middot; '+migs+' family migrations traced';
+    // clickable event chips (genealogical events open the cohort panel)
+    var ev=_activeEvents(year), chEl=document.getElementById('bgChapter');
+    if(chEl){ chEl.innerHTML=ev.slice(0,3).map(function(e){ var c=(GKCOL[e.kind]||GDKCOL[e.kind]||'#d4a017');
+      return e.deep?('<span class="bgEv" style="border-color:'+c+'">'+E(e.name)+'</span>')
+                   :('<button class="bgEv clk" style="border-color:'+c+'" onclick="globeEvent(\''+EQ(e.key)+'\')">'+E(e.name)+' &#8250;</button>'); }).join(''); }
+    var sb=document.getElementById('bgScrub'); if(sb){ sb.value=Math.round(yearToFrac(year)*1000); }
+  }
+  window.globeEvent=function(key){ if(typeof openDot==='function') openDot(key); };
+  function _gPlay(){ if(_gState.playing)return; _gState.playing=true; var b=document.getElementById('bgPlay'); if(b)b.innerHTML='&#10073;&#10073;';
+    try{ _globe.controls().autoRotate=false; }catch(e){}
+    var ck0=chapterFor(_gState.year).key; _gChapKey=ck0; globeNarrate(ck0);
+    _gTimer=setInterval(function(){ var f=yearToFrac(_gState.year)+0.0042*_gState.speed;
+      if(f>=1){ globeRender(_gState.max); _gPause(); return; } globeRender(fracToYear(f)); }, _RM?240:120); }
+  function _gPause(){ if(!_gState)return; _gState.playing=false; if(_gTimer){clearInterval(_gTimer);_gTimer=null;} var b=document.getElementById('bgPlay'); if(b)b.innerHTML='&#9654;'; _gNarrStop(); }
+  window.globeToggleSound=function(){ _gNarrOn=!_gNarrOn; var b=document.getElementById('bgSound'); if(b){ b.innerHTML=_gNarrOn?'&#128266;':'&#128263;'; b.classList.toggle('on',_gNarrOn); } if(!_gNarrOn)_gNarrStop(); else if(_gState&&_gState.playing)globeNarrate(_gChapKey); };
+  window.globeTogglePlay=function(){ if(!_gState)return; if(_gState.playing)_gPause(); else { if(_gState.year>=_gState.max)_gState.year=_gState.min; _gPlay(); } sClick&&sClick(); };
+  window.globeScrub=function(v){ if(!_gState)return; _gPause(); globeRender(fracToYear(v/1000)); };
+  window.globeCycleSpeed=function(){ var s=[1,2,4],i=(s.indexOf(_gState.speed)+1)%s.length; _gState.speed=s[i]; document.getElementById('bgSpeed').textContent=s[i]+'×'; };
+  window.globeMetric=function(k){ _gState.metric=k; renderGlobeChips(); globeRender(_gState.year); sClick&&sClick(); };
+  window.globeSide=function(k){ _gState.side=k; renderGlobeChips(); globeRender(_gState.year); sClick&&sClick(); };
+  function renderGlobeChips(){
+    var mh='<span style="font-size:11px;color:#9fb2cf;align-self:center">Glow:</span>'+GMETRICS.map(function(m){return '<button class="bgChip'+(_gState.metric===m.k?' on':'')+'" onclick="globeMetric(\''+m.k+'\')">'+m.l+'</button>';}).join('');
+    var me=document.getElementById('bgMetric'); if(me)me.innerHTML=mh;
+    var le=document.getElementById('bgLines'); if(le)le.innerHTML=GLINES.map(function(l){return '<button class="bgChip lc'+(_gState.side===l.k?' on':'')+'" onclick="globeSide(\''+l.k+'\')"><i style="background:'+l.c+'"></i>'+l.l+'</button>';}).join('');
+    var lg=document.getElementById('bgLegend'); if(lg)lg.innerHTML='<b>'+(_gState.metric==='net'?'Net migration':_gState.metric==='in'?'Arrivals':'Departures')+'</b>'+
+      '<div class="lgrow"><i style="background:#f0d9a6"></i>net arrivals</div><div class="lgrow"><i style="background:#4a78c8"></i>net departures</div>'+
+      '<div class="lgrow"><i style="background:#5aa0ee"></i>Harris arc</div><div class="lgrow"><i style="background:#46d39a"></i>Maxfield arc</div><div class="lgrow"><i style="background:#e0563a"></i>event</div>';
+  }
+  window.globePerson=function(id){ globeClosePeople(); _globeReturn=true; if(typeof bScalePerson==='function') bScalePerson(id,''); };
+  window.globeCountry=function(f){
+    var iso=_iso(f), nm=f.properties.NAME||iso, MIG=window.MIG, year=_gState.year, arr=[], left=[], s={};
+    MIG.legs.forEach(function(l){ if(l.year>year)return; if(l.toIso===iso&&!s['a'+l.id]){s['a'+l.id]=1;arr.push(l);} if(l.fromIso===iso&&!s['l'+l.id]){s['l'+l.id]=1;left.push(l);} });
+    if(!arr.length&&!left.length) return;
+    function rows(list){ return list.map(function(l){ return '<button class="sCard" style="border-left-color:'+(l.side==='maxfield'?'#46d39a':'#5aa0ee')+'" onclick="globePerson(\''+EQ(l.id)+'\')"><span class="sCardInfo"><span class="sName">'+E((l.label||'').split(' — ')[0])+'</span><span class="sMeta">'+l.year+'</span></span></button>'; }).join(''); }
+    var h='<div class="spBackdrop" onclick="globeClosePeople()"></div><div class="bgpPanel"><button class="spX" onclick="globeClosePeople()">&times;</button>'+
+      '<div class="bgpHd"><h3>'+E(nm)+'</h3><span class="bgpSub">by '+year+'</span></div>'+
+      (arr.length?'<div class="dpSecHd">Arrived &middot; '+arr.length+'</div><div class="sCards">'+rows(arr)+'</div>':'')+
+      (left.length?'<div class="dpSecHd muted">Left &middot; '+left.length+'</div><div class="sCards">'+rows(left)+'</div>':'')+'</div>';
+    var host=document.getElementById('bgPeople'); host.innerHTML=h; host.classList.add('open'); if(typeof seedBack==='function')seedBack();
+  };
+  window.globeClosePeople=function(){ var h=document.getElementById('bgPeople'); if(h)h.classList.remove('open'); };
+  window.addEventListener('keydown', function(e){ if(e.key==='Escape' && _cls('bgPeople','open')){ globeClosePeople(); } });
+  // keyboard control of the globe timeline (when the mode is open + not typing)
+  window.addEventListener('keydown', function(e){
+    if(!_cls('bGlobe','open') || !_gState) return;
+    if(e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    if(e.key===' '||e.key==='k'){ e.preventDefault(); globeTogglePlay(); }
+    else if(e.key==='ArrowRight'){ e.preventDefault(); _gPause(); globeRender(fracToYear(Math.min(1,yearToFrac(_gState.year)+0.03))); }
+    else if(e.key==='ArrowLeft'){ e.preventDefault(); _gPause(); globeRender(fracToYear(Math.max(0,yearToFrac(_gState.year)-0.03))); }
+    else if(e.key==='Home'){ _gPause(); globeRender(_gState.min); }
+    else if(e.key==='End'){ _gPause(); globeRender(_gState.max); }
+  });
   function sBandHTML(B, inner, count, subExtra){
     return '<section class="sBand" style="--bc:'+B.col+';background:'+B.bg+'">'+
       '<div class="sBandMain">'+
@@ -2792,6 +3047,7 @@ var HISTORY=window.HISTORY||[];
     if(mode==='anc'){ setMode('anc'); seedBack(); if(person&&window.exploreGoTo) setTimeout(function(){ exploreGoTo(person); },250); return; }
     if(mode==='blood'){ setMode('blood'); seedBack(); return; }
     if(mode==='scale'){ setMode('scale'); seedBack(); return; }
+    if(mode==='globe'){ setMode('globe'); seedBack(); return; }
     showHome();                                          // default: the Home screen (was: setMode('blood'))
   }
 
@@ -3046,6 +3302,7 @@ var HISTORY=window.HISTORY||[];
   function setChrome(hidden){ var t=document.getElementById('top'); if(t){ t.style.visibility=''; t.classList.toggle('slim',!!hidden); } }
   function showFocus(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='block'; el.classList.add('bfShow'); } setChrome(true); }
   window.hideFocus=function(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='none'; el.classList.remove('bfShow'); } if(!(document.getElementById('bRoyal')||{}).classList||!document.getElementById('bRoyal').classList.contains('open')) setChrome(false); stopNarr();
+    if(_globeReturn){ _globeReturn=false; _scaleReturn=false; if(typeof setMode==='function') setMode('globe'); return; }
     if(_scaleReturn){ _scaleReturn=false; if(typeof setMode==='function') setMode('scale'); } };
 
   /* ---- the trail ribbon: a road along the bottom; a covered wagon rolls from
