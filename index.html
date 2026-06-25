@@ -2824,11 +2824,15 @@ var HISTORY=window.HISTORY||[];
   function _iso(f){ return f.properties.ISO_A3||f.properties.ADM0_A3; }
   function _isoFlux(iso,upto){ var f=(window.MIG.flux||{})[iso]; if(!f)return{i:0,o:0}; var i=0,o=0; for(var d in f){ if(+d<=upto){ i+=f[d]['in']||0; o+=f[d]['out']||0; } } return {i:i,o:o}; }
   function _metricVal(iso,upto){ var x=_isoFlux(iso,upto),m=_gState.metric; return m==='in'?x.i:m==='out'?x.o:(x.i-x.o); }
-  function _countryColor(f){ var v=_metricVal(_iso(f),_gState.year); if(!v) return 'rgba(38,52,78,0.32)'; var g=Math.min(1,Math.abs(v)/12),a=(0.4+0.5*g).toFixed(2);
-    if(_gState.metric==='out') return 'rgba('+(130+110*g|0)+',88,66,'+a+')';
-    if(_gState.metric==='in') return 'rgba(86,'+(150+90*g|0)+',120,'+a+')';
-    return v>0?'rgba('+(200+40*g|0)+','+(160+20*g|0)+',74,'+a+')':'rgba(70,120,'+(150+80*g|0)+','+a+')'; }
-  function _countryAlt(f){ var v=Math.abs(_metricVal(_iso(f),_gState.year)); return v?Math.min(0.13,0.012+v*0.004):0.006; }
+  function _presentIso(iso,year){ var P=(window.MIG.deep&&window.MIG.deep.presence)||[]; for(var i=0;i<P.length;i++){ if(year>=P[i].year && P[i].iso.indexOf(iso)>=0) return true; } return false; }
+  function _countryColor(f){ var iso=_iso(f), v=_metricVal(iso,_gState.year);
+    if(v){ var g=Math.min(1,Math.abs(v)/12),a=(0.45+0.5*g).toFixed(2);
+      if(_gState.metric==='out') return 'rgba('+(130+110*g|0)+',88,66,'+a+')';
+      if(_gState.metric==='in') return 'rgba(86,'+(150+90*g|0)+',120,'+a+')';
+      return v>0?'rgba('+(200+40*g|0)+','+(160+20*g|0)+',74,'+a+')':'rgba(70,120,'+(150+80*g|0)+','+a+')'; }
+    if(_presentIso(iso,_gState.year)) return 'rgba(160,112,56,0.52)';   // inhabited — where people are by now
+    return 'rgba(40,54,80,0.26)'; }
+  function _countryAlt(f){ var iso=_iso(f), v=Math.abs(_metricVal(iso,_gState.year)); if(v) return Math.min(0.13,0.012+v*0.004); return _presentIso(iso,_gState.year)?0.014:0.004; }
   function _countryLabel(f){ var x=_isoFlux(_iso(f),_gState.year); if(!x.i&&!x.o) return ''; return '<div style="background:rgba(6,9,16,.85);padding:5px 8px;border-radius:6px;color:#eaf0fa"><b>'+E(f.properties.NAME||_iso(f))+'</b><br>arrived '+x.i+' &middot; left '+x.o+'</div>'; }
   function _activeEvents(year){   // [{name,key,kind,deep}] genealogical + deep events live at this year
     var out=[];
@@ -2857,8 +2861,7 @@ var HISTORY=window.HISTORY||[];
     var yEl=document.getElementById('bgYear'); if(yEl) yEl.textContent=fmtYear(year);
     var ch=chapterFor(year), ck=ch?ch.key:null, cap=document.getElementById('bgCaption');
     if(cap && ch && ck!==_gChapKey){ cap.classList.remove('show'); cap.textContent=ch.t; void cap.offsetWidth; cap.classList.add('show'); }   // re-trigger the fade per chapter
-    if(_gState.playing && ck && ck!==_gChapKey) globeNarrate(ck);
-    _gChapKey=ck;
+    _gChapKey=ck;   // narration is driven by the chapter tour (_gTourStep), not per-frame
     // world population + family-migration tally
     var migs=MIG.legs.filter(function(l){return l.year<=year;}).length + ((MIG.deep&&MIG.deep.legs)||[]).filter(function(l){return l.year<=year;}).length;
     var st=document.getElementById('bgStats'); if(st) st.innerHTML='&#127757; ~'+fmtPop(popAt(year))+' people on Earth &middot; '+migs+' family migrations traced';
@@ -2870,12 +2873,40 @@ var HISTORY=window.HISTORY||[];
     var sb=document.getElementById('bgScrub'); if(sb){ sb.value=Math.round(yearToFrac(year)*1000); }
   }
   window.globeEvent=function(key){ if(typeof openDot==='function') openDot(key); };
+  // ---- narrated tour: Play steps chapter-by-chapter; each chapter's narration plays in full
+  // while the globe animates across that era, so the pace follows the storytelling (not a fast
+  // fixed clock). Falls back to a timed pace when narration is off/muted/absent.
+  var _gTourI=0, _gTourTimer=null, _gAnim=null;
+  function _gChapIndexFor(y){ var i=0; for(var k=0;k<GCHAPTERS.length;k++){ if(y>=GCHAPTERS[k].y0) i=k; } return i; }
+  function _gAnimateYears(from,to,durMs){
+    if(_gAnim){ clearInterval(_gAnim); _gAnim=null; }
+    var stepMs=_RM?220:90, steps=Math.max(1,Math.round(durMs/stepMs)), i=0;
+    _gAnim=setInterval(function(){ i++; var p=Math.min(1,i/steps); globeRender(Math.round(from+(to-from)*p));
+      if(p>=1){ clearInterval(_gAnim); _gAnim=null; } }, stepMs);
+  }
   function _gPlay(){ if(_gState.playing)return; _gState.playing=true; var b=document.getElementById('bgPlay'); if(b)b.innerHTML='&#10073;&#10073;';
     try{ _globe.controls().autoRotate=false; }catch(e){}
-    var ck0=chapterFor(_gState.year).key; _gChapKey=ck0; globeNarrate(ck0);
-    _gTimer=setInterval(function(){ var f=yearToFrac(_gState.year)+0.0042*_gState.speed;
-      if(f>=1){ globeRender(_gState.max); _gPause(); return; } globeRender(fracToYear(f)); }, _RM?240:120); }
-  function _gPause(){ if(!_gState)return; _gState.playing=false; if(_gTimer){clearInterval(_gTimer);_gTimer=null;} var b=document.getElementById('bgPlay'); if(b)b.innerHTML='&#9654;'; _gNarrStop(); }
+    _gTourI=_gChapIndexFor(_gState.year); _gTourStep(); }
+  function _gTourStep(){
+    if(!_gState||!_gState.playing) return;
+    if(_gTourI>=GCHAPTERS.length){ globeRender(_gState.max); _gPause(); return; }
+    var ch=GCHAPTERS[_gTourI], fromY=Math.max(_gState.year, ch.y0),
+        toY=(_gTourI+1<GCHAPTERS.length)?GCHAPTERS[_gTourI+1].y0:_gState.max;
+    function adv(){ if(_gTourTimer){clearTimeout(_gTourTimer);_gTourTimer=null;} _gTourI++; _gTourStep(); }
+    var voice=_gNarrOn && !(typeof muted!=='undefined'&&muted) && (window.NARR||{})['mig-'+ch.key];
+    var fb=(Math.abs(toY-fromY)>20000?14000:10500)/(_gState.speed||1);
+    if(voice){
+      try{ if(_gNarr)_gNarr.pause(); _gNarr=new Audio('narration/mig-'+ch.key+'.mp3'); _gNarr.volume=0.92; var started=false;
+        _gNarr.addEventListener('loadedmetadata',function(){ if(started)return; started=true; _gAnimateYears(fromY,toY,Math.max(7000,(_gNarr.duration||10)*1000)); });
+        _gNarr.addEventListener('ended', adv);
+        _gNarr.addEventListener('error', function(){ if(!started){started=true;_gAnimateYears(fromY,toY,fb);} _gTourTimer=setTimeout(adv,fb); });
+        _gNarr.play().catch(function(){ if(!started){started=true;_gAnimateYears(fromY,toY,fb);} _gTourTimer=setTimeout(adv,fb); });
+      }catch(e){ _gAnimateYears(fromY,toY,fb); _gTourTimer=setTimeout(adv,fb); }
+    } else { _gAnimateYears(fromY,toY,fb); _gTourTimer=setTimeout(adv,fb+1500); }
+  }
+  function _gPause(){ if(!_gState)return; _gState.playing=false;
+    if(_gTimer){clearInterval(_gTimer);_gTimer=null;} if(_gTourTimer){clearTimeout(_gTourTimer);_gTourTimer=null;} if(_gAnim){clearInterval(_gAnim);_gAnim=null;}
+    var b=document.getElementById('bgPlay'); if(b)b.innerHTML='&#9654;'; _gNarrStop(); }
   window.globeToggleSound=function(){ _gNarrOn=!_gNarrOn; var b=document.getElementById('bgSound'); if(b){ b.innerHTML=_gNarrOn?'&#128266;':'&#128263;'; b.classList.toggle('on',_gNarrOn); } if(!_gNarrOn)_gNarrStop(); else if(_gState&&_gState.playing)globeNarrate(_gChapKey); };
   window.globeTogglePlay=function(){ if(!_gState)return; if(_gState.playing)_gPause(); else { if(_gState.year>=_gState.max)_gState.year=_gState.min; _gPlay(); } sClick&&sClick(); };
   window.globeScrub=function(v){ if(!_gState)return; _gPause(); globeRender(fracToYear(v/1000)); };
