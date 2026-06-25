@@ -2756,6 +2756,7 @@ var HISTORY=window.HISTORY||[];
   var GLINES=[{k:'all',l:'All lines',c:'#caa24a'},{k:'harris',l:'Harris',c:'#5aa0ee'},{k:'maxfield',l:'Maxfield',c:'#46d39a'}];
   var GCHAPTERS=[
     {y0:-70000,key:'ooa',t:'Out of Africa — the first modern humans leave the Rift Valley and begin to people the world.'},
+    {y0:-58000,key:'neanderthal',t:'We are not alone — Neanderthals already rule Ice-Age Europe and the Denisovans the East. Where our kind meets theirs, the bloodlines mingle.'},
     {y0:-45000,key:'iceeurope',t:'Into Ice-Age Europe — hunter-gatherers follow the herds as glaciers grip the north.'},
     {y0:-24000,key:'lgm',t:'The Last Glacial Maximum — the world freezes; humanity shelters in the warm southern refuges.'},
     {y0:-11000,key:'melt',t:'The great melt — as the ice retreats, people recolonize a greening Europe.'},
@@ -2770,7 +2771,7 @@ var HISTORY=window.HISTORY||[];
     {y0:1760,key:'republic',t:'Revolution, then a young republic — the family fans out across a growing America.'},
     {y0:1850,key:'modern',t:'The German, Irish and Austro-Hungarian waves arrive; the modern family takes shape.'},
   ];
-  var GDKCOL={ice:'#9fd3ff',origin:'#ffcf6b',culture:'#e8c878',migration:'#5aa0ee',disaster:'#e0563a',war:'#e0563a'};
+  var GDKCOL={ice:'#9fd3ff',origin:'#ffcf6b',culture:'#e8c878',migration:'#5aa0ee',disaster:'#e0563a',war:'#e0563a',archaic:'#7daaff'};
   // piecewise time <-> scrub-fraction: compress the 70,000-year prehistory and the deep
   // documented past, but give the dense genealogical era (1500+) the most room.
   var GSEG=[[-70000,0],[-10000,0.30],[-2000,0.45],[1,0.52],[1066,0.64],[1500,0.74],[2001,0.96],[2026,1.0]];
@@ -2838,9 +2839,11 @@ var HISTORY=window.HISTORY||[];
       if(_gState.metric==='out') return 'rgba('+(130+110*g|0)+',88,66,'+a+')';
       if(_gState.metric==='in') return 'rgba(86,'+(150+90*g|0)+',120,'+a+')';
       return v>0?'rgba('+(200+40*g|0)+','+(160+20*g|0)+',74,'+a+')':'rgba(70,120,'+(150+80*g|0)+','+a+')'; }
-    if(_presentIso(iso,_gState.year)) return 'rgba(206,142,60,0.7)';   // inhabited — where people are by now (stays lit)
+    if(_presentIso(iso,_gState.year)) return 'rgba(206,142,60,0.7)';   // inhabited by US — warm, stays lit
+    var ac=_archaicCol(iso,_gState.year); if(ac) return ac;   // other human species (Neanderthal/Denisovan) — cool
     return 'rgba(44,58,84,0.22)'; }
-  function _countryAlt(f){ var iso=_iso(f), v=Math.abs(_metricVal(iso,_gState.year)); if(v) return Math.min(0.13,0.014+v*0.004); return _presentIso(iso,_gState.year)?0.02:0.004; }
+  function _archaicCol(iso,year){ var A=(window.MIG.deep&&window.MIG.deep.archaic)||[]; for(var i=0;i<A.length;i++){ var a=A[i]; if(year>=a.from&&year<=a.to&&a.iso.indexOf(iso)>=0) return a.color; } return null; }
+  function _countryAlt(f){ var iso=_iso(f), v=Math.abs(_metricVal(iso,_gState.year)); if(v) return Math.min(0.13,0.014+v*0.004); if(_presentIso(iso,_gState.year)) return 0.02; return _archaicCol(iso,_gState.year)?0.012:0.004; }
   function _countryLabel(f){ var x=_isoFlux(_iso(f),_gState.year); if(!x.i&&!x.o) return ''; return '<div style="background:rgba(6,9,16,.85);padding:5px 8px;border-radius:6px;color:#eaf0fa"><b>'+E(f.properties.NAME||_iso(f))+'</b><br>arrived '+x.i+' &middot; left '+x.o+'</div>'; }
   function _activeEvents(year){   // [{name,key,kind,deep}] genealogical + deep events live at this year
     var out=[];
@@ -2924,8 +2927,10 @@ var HISTORY=window.HISTORY||[];
     var me=document.getElementById('bgMetric'); if(me)me.innerHTML=mh;
     var le=document.getElementById('bgLines'); if(le)le.innerHTML=GLINES.map(function(l){return '<button class="bgChip lc'+(_gState.side===l.k?' on':'')+'" onclick="globeSide(\''+l.k+'\')"><i style="background:'+l.c+'"></i>'+l.l+'</button>';}).join('');
     var lg=document.getElementById('bgLegend'); if(lg)lg.innerHTML='<b>'+(_gState.metric==='net'?'Net migration':_gState.metric==='in'?'Arrivals':'Departures')+'</b>'+
+      '<div class="lgrow"><i style="background:#ce8e3c"></i>where people live</div>'+
+      '<div class="lgrow"><i style="background:#7daaff"></i>Neanderthals / Denisovans</div>'+
       '<div class="lgrow"><i style="background:#f0d9a6"></i>net arrivals</div><div class="lgrow"><i style="background:#4a78c8"></i>net departures</div>'+
-      '<div class="lgrow"><i style="background:#5aa0ee"></i>Harris arc</div><div class="lgrow"><i style="background:#46d39a"></i>Maxfield arc</div><div class="lgrow"><i style="background:#e0563a"></i>event</div>';
+      '<div class="lgrow"><i style="background:#5aa0ee"></i>Harris</div><div class="lgrow"><i style="background:#46d39a"></i>Maxfield</div><div class="lgrow"><i style="background:#e0563a"></i>event</div>';
   }
   window.globePerson=function(id){ globeClosePeople(); _globeReturn=true; if(typeof bScalePerson==='function') bScalePerson(id,''); };
   window.globeCountry=function(f){

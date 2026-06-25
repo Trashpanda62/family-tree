@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v6';  // v6: mobile audio unlock (reused element) + persistent/brighter presence glow
+const CACHE = 'familytree-v7';  // v7: other human species (Neanderthals/Denisovans) cool-glow + chapter
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 
