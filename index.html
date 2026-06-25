@@ -2601,7 +2601,7 @@ var HISTORY=window.HISTORY||[];
     var MINGAP=1.4, lastTop=-99, lane=0;
     dotList.forEach(function(d){ lane=(d.top-lastTop<MINGAP)?Math.min(lane+1,2):0; d.lane=lane; lastTop=d.top; });
     dotList.forEach(function(d){ var m=d.m, n=m.provenCount+(m.livedCount||0);
-      th+='<button class="sTLdot'+(m.thin?' thin':'')+'" style="top:'+d.top.toFixed(2)+'%;left:'+(-3 - d.lane*13)+'px" title="'+EQ(m.name)+'" onclick="openDot(\''+EQ(m.key)+'\')"><span class="sTLlbl">'+E(m.name)+' &middot; '+n+'</span></button>';
+      th+='<button class="sTLdot'+(m.thin?' thin':'')+'" style="top:'+d.top.toFixed(2)+'%;left:'+(-3 - d.lane*11)+'px" title="'+EQ(m.name)+'" onclick="openDot(\''+EQ(m.key)+'\')"><span class="sTLlbl">'+E(m.name)+' &middot; '+n+'</span></button>';
     });
     track.innerHTML=th;
     if(!_tlWired){ wireTimeline(); _tlWired=true; }
