@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v5';  // v5: presence glow, narrated tour, Barry voice + longer scripts
+const CACHE = 'familytree-v6';  // v6: mobile audio unlock (reused element) + persistent/brighter presence glow
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 
