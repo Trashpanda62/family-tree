@@ -906,6 +906,7 @@
 <script src="data/surname-origins.js"></script>
 <script src="data/cform.js"></script>
 <script src="data/contrib.js"></script>
+<script src="data/timeline.js"></script>
 </head>
 <body>
 <div id="boot">&#127795; Loading the family tree&hellip;</div>
@@ -1099,6 +1100,44 @@
   @media(max-width:600px){.spPanel{padding:18px 16px 22px;} .spFace,.spFace.empty{width:60px;height:60px;}}
   .sDeepChip{border:1px solid rgba(80,180,150,.4);background:rgba(20,40,34,.6);color:#bfe6d6;border-radius:999px;padding:4px 11px;font:inherit;font-size:11.5px;cursor:pointer;}
   .sSource{text-align:center;font-size:14px;color:#e7b94a;padding:28px 16px 14px;letter-spacing:.03em;}
+  /* --- draggable timeline rail (plan c-000546) --- */
+  #sTimeline{position:absolute;top:0;right:0;bottom:0;width:72px;z-index:14;background:linear-gradient(90deg,rgba(14,11,7,0),rgba(14,11,7,.85) 40%,#0e0b07);padding:14px 10px 14px 0;display:flex;}
+  #sTLtrack{position:relative;flex:1;margin:8px 0;border-left:3px solid rgba(220,190,120,.4);cursor:grab;touch-action:none;}
+  #sTLtrack:active{cursor:grabbing;}
+  #sTLfill{position:absolute;left:-3px;top:0;width:3px;background:#caa24a;height:0;}
+  #sTLnow{position:absolute;left:-7px;width:11px;height:11px;border-radius:50%;background:#f0d9a6;border:2px solid #0e0b07;box-shadow:0 0 0 2px #caa24a;top:0;transform:translateY(-50%);pointer-events:none;z-index:4;}
+  .sTLtick{position:absolute;left:7px;font-size:9.5px;color:#8d8268;white-space:nowrap;transform:translateY(-50%);pointer-events:none;}
+  .sTLband{position:absolute;left:-3px;width:3px;background:rgba(220,190,120,.3);}
+  .sTLdot{position:absolute;left:-3px;transform:translate(-46%,-50%);width:15px;height:15px;border-radius:50%;background:#caa24a;border:2px solid #0e0b07;cursor:pointer;z-index:2;}
+  .sTLdot::before{content:"";position:absolute;left:50%;top:50%;width:40px;height:26px;transform:translate(-50%,-50%);}
+  .sTLdot:hover,.sTLdot:focus{background:#f0d9a6;transform:translate(-46%,-50%) scale(1.5);outline:2px solid #f0d9a6;outline-offset:2px;z-index:3;}
+  .sTLdot.thin{background:#8a7748;}
+  .sTLlbl{position:absolute;right:22px;top:50%;transform:translateY(-50%);background:rgba(14,11,7,.95);border:1px solid rgba(220,190,120,.4);color:#efe6d6;font-size:11px;padding:3px 8px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;}
+  .sTLdot:hover .sTLlbl,.sTLdot:focus .sTLlbl{opacity:1;}
+  #bScale.tl #bScaleBody{padding-right:76px;}
+  @media(max-width:600px){ #sTimeline{width:30px;padding-right:5px;} .sTLtick{display:none;} .sTLlbl{display:none;} #bScale.tl #bScaleBody{padding-right:33px;} }
+  /* --- region×era sub-sections --- */
+  .sSub{margin:16px 0 4px;}
+  .sSubHd{display:flex;align-items:baseline;gap:9px;margin:0 0 9px;padding-bottom:5px;border-bottom:1px solid rgba(220,190,120,.18);}
+  .sSubT{font-size:14.5px;font-weight:600;color:#ecd9ad;letter-spacing:.02em;}
+  .sSubN{font-size:11px;color:#cabfa6;background:rgba(0,0,0,.3);border:1px solid rgba(220,190,120,.25);border-radius:999px;padding:1px 8px;}
+  .sSubCtx{font-size:11.5px;color:#a99e86;margin:-3px 0 9px;font-style:italic;}
+  .sSubEmpty{font-size:12.5px;color:#9d927b;font-style:italic;padding:8px 0;}
+  /* --- dot people panel --- */
+  #sDotPanel{position:fixed;inset:0;z-index:22;display:none;}
+  #sDotPanel.open{display:flex;align-items:center;justify-content:center;}
+  .dpPanel{position:relative;max-width:780px;width:calc(100% - 36px);max-height:88vh;overflow-y:auto;background:#15100a;border:1px solid rgba(220,190,120,.32);border-radius:16px;padding:22px 22px 28px;box-shadow:0 24px 70px rgba(0,0,0,.7);}
+  .dpHd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding-right:34px;}
+  .dpHd h3{margin:0;font-size:21px;color:#f0d9a6;letter-spacing:.02em;}
+  .dpSpan{font-size:13px;color:#cabfa6;}
+  .dpCtx{font-size:13px;line-height:1.55;color:#cabfa6;margin:7px 0 14px;}
+  .dpSecHd{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#e7b94a;margin:16px 0 9px;}
+  .dpSecHd.muted{color:#9d927b;}
+  .sCards.muted .sCard{opacity:.82;}
+  .sEvid{font-size:11px;line-height:1.45;color:#bcae8e;margin-top:3px;font-style:italic;}
+  .sCard.pend{opacity:.72;cursor:default;border-left-color:#6a6a4a !important;}
+  .sCard.pend:hover{transform:none;border-color:rgba(220,190,120,.16);}
+  .sTag.pending{display:inline-block;margin-left:6px;font-size:9.5px;font-weight:600;color:#d6c7a0;background:rgba(90,80,40,.5);border:1px solid rgba(170,150,90,.5);border-radius:5px;padding:0 5px;vertical-align:1px;}
   @media(max-width:600px){#bScaleHead{padding-top:96px;} .sBand{grid-template-columns:1fr 80px;} .sRailT{font-size:11px;} .sRailIc{font-size:18px;} .sBandMain{padding:14px 12px 18px;} .sCards{grid-template-columns:1fr;} .sYearBtn{margin-left:0;} .sBandArt{height:98px;} .sBandArtCap h3{font-size:18px;}}
 </style>
 <div id="bScale">
@@ -1108,8 +1147,10 @@
     <div id="bScaleTools"></div>
   </div>
   <div id="bScaleBody"></div>
+  <div id="sTimeline" aria-label="Draggable timeline"><div id="sTLtrack"><div id="sTLfill"></div><div id="sTLnow"></div></div></div>
 </div>
 <div id="sPerson"></div>
+<div id="sDotPanel"></div>
 
 <script>
 var DATA=window.DATA||{};
@@ -2123,6 +2164,7 @@ var HISTORY=window.HISTORY||[];
   function appGoBack(){
     if(_vis('bClipView')){ bCloseClip(); return true; }
     if(typeof closeDoc==='function' && _vis('docview')){ closeDoc(); return true; }
+    if(_cls('sDotPanel','open')){ closeDot(); return true; }
     if(_cls('sPerson','open')){ bScaleClosePerson(); return true; }
     if(_cls('bScale','open')){ showHome(); return true; }
     if(_vis('bPayoff')){ bClosePayoff(); return true; }
@@ -2474,7 +2516,7 @@ var HISTORY=window.HISTORY||[];
     });
     host.innerHTML=h;
   }
-  window.openScale=function(){ _scaleExpand={}; bAllNodes(); renderScaleTools(); bRenderScale(); if(typeof seedBack==='function')seedBack(); var b=document.getElementById('bScaleBody'); if(b)b.scrollTop=0; };
+  window.openScale=function(){ _scaleExpand={}; bAllNodes(); renderScaleTools(); bRenderScale(); buildTimeline(); if(typeof seedBack==='function')seedBack(); var b=document.getElementById('bScaleBody'); if(b)b.scrollTop=0; if(typeof tlSync==='function')setTimeout(tlSync,30); };
   window.bScaleFilter=function(f){ _scaleFilter=f; _scaleExpand={}; renderScaleTools(); bRenderScale(); if(typeof sClick==='function')sClick(); };
   window.bScaleMore=function(t){ _scaleExpand[t]=1; bRenderScale(); if(typeof sClick==='function')sClick(); };
   window.bScaleLF=function(id,which,ev){ if(ev){ev.stopPropagation();}
@@ -2528,6 +2570,95 @@ var HISTORY=window.HISTORY||[];
     setTimeout(function(){ _scaleReturn=true; if(typeof bFocusId==='function') bFocusId(id); }, 200);
   };
   window.bScaleClosePerson=function(){ var el=document.getElementById('sPerson'); if(el) el.classList.remove('open'); };
+
+  // ===== draggable timeline rail + event-cohort dots (plan c-000546) =====
+  var _tlWired=false;
+  function tlYearToFrac(y){
+    var TOPY=CURYEAR, MIDY=1500, BOTY=700;   // piecewise: linear 1500..today (top 55%), compressed 700..1500 (bottom 45%)
+    if(y>=MIDY){ return Math.max(0,Math.min(1,(TOPY-y)/(TOPY-MIDY)))*0.55; }
+    return 0.55+Math.max(0,Math.min(1,(MIDY-y)/(MIDY-BOTY)))*0.45;
+  }
+  function tlSpanLabel(m){ return (m.y2&&m.y2!==m.y)?(m.y+'–'+m.y2):(''+m.y); }
+  function buildTimeline(){
+    var wrap=document.getElementById('bScale'), track=document.getElementById('sTLtrack'), rail=document.getElementById('sTimeline');
+    var M=window.TLMARKERS||[];
+    if(!track||!rail) return;
+    if(!M.length){ rail.style.display='none'; return; }
+    wrap.classList.add('tl');
+    var th='<div id="sTLfill"></div><div id="sTLnow"></div>';
+    [2000,1900,1800,1700,1600,1500,1300,1100,900].forEach(function(ty){ th+='<div class="sTLtick" style="top:'+(tlYearToFrac(ty)*100).toFixed(2)+'%">'+ty+'</div>'; });
+    M.filter(function(m){return m.render==='band';}).forEach(function(m){
+      var ta=tlYearToFrac(m.y2||m.y)*100, tb=tlYearToFrac(m.y)*100, top=Math.min(ta,tb), h=Math.abs(ta-tb);
+      th+='<div class="sTLband" style="top:'+top.toFixed(2)+'%;height:'+h.toFixed(2)+'%"></div>';
+    });
+    // position dots by year, then de-collide (stagger overlapping markers down a min gap
+    // so clustered events — ww1/spanishflu, frenchindian/acadian — stay individually tappable)
+    // keep every dot at its TRUE year (aligned with ticks/bands); when markers cluster too
+    // close, stagger them HORIZONTALLY (left) instead of moving their year, so each stays
+    // individually tappable without drifting off its tick.
+    var dotList=M.map(function(m){ var midY=(m.y2&&m.y2!==m.y)?Math.round((m.y+m.y2)/2):m.y; return {m:m, top:tlYearToFrac(midY)*100}; });
+    dotList.sort(function(a,b){ return a.top-b.top; });
+    var MINGAP=1.4, lastTop=-99, lane=0;
+    dotList.forEach(function(d){ lane=(d.top-lastTop<MINGAP)?Math.min(lane+1,2):0; d.lane=lane; lastTop=d.top; });
+    dotList.forEach(function(d){ var m=d.m, n=m.provenCount+(m.livedCount||0);
+      th+='<button class="sTLdot'+(m.thin?' thin':'')+'" style="top:'+d.top.toFixed(2)+'%;left:'+(-3 - d.lane*13)+'px" title="'+EQ(m.name)+'" onclick="openDot(\''+EQ(m.key)+'\')"><span class="sTLlbl">'+E(m.name)+' &middot; '+n+'</span></button>';
+    });
+    track.innerHTML=th;
+    if(!_tlWired){ wireTimeline(); _tlWired=true; }
+    tlSync();
+  }
+  function tlSync(){
+    var body=document.getElementById('bScaleBody'), now=document.getElementById('sTLnow'), fill=document.getElementById('sTLfill');
+    if(!body||!now) return;
+    var max=body.scrollHeight-body.clientHeight, f=max>0?(body.scrollTop/max):0;
+    now.style.top=(f*100).toFixed(2)+'%'; if(fill) fill.style.height=(f*100).toFixed(2)+'%';
+  }
+  function wireTimeline(){
+    var body=document.getElementById('bScaleBody'), track=document.getElementById('sTLtrack');
+    if(body) body.addEventListener('scroll', tlSync, {passive:true});
+    if(!track) return;
+    var dragging=false;
+    function toScroll(clientY){
+      var r=track.getBoundingClientRect(), f=Math.max(0,Math.min(1,(clientY-r.top)/r.height));
+      var max=body.scrollHeight-body.clientHeight; body.scrollTop=f*max;
+    }
+    track.addEventListener('pointerdown', function(e){ if(e.target.closest('.sTLdot'))return; dragging=true; body.style.scrollBehavior='auto'; try{track.setPointerCapture(e.pointerId);}catch(_){} toScroll(e.clientY); e.preventDefault(); });
+    track.addEventListener('pointermove', function(e){ if(dragging) toScroll(e.clientY); });
+    function endDrag(){ dragging=false; body.style.scrollBehavior=''; }
+    track.addEventListener('pointerup', endDrag);
+    track.addEventListener('pointercancel', endDrag);
+  }
+  // ----- dot people panel: proven (with evidence) + lived-through (muted) -----
+  function dotCard(c){
+    var pend=c.pending||!c.id, col=SIDE_COLORS[c.side]||'#8a7748';
+    var face=c.face?'<img class="sCardFace" src="'+E(c.face)+'" onerror="this.style.display=\'none\'">':'';
+    var ev=c.evidence||c.basis||'';
+    var tags=(c.pending?'<span class="sTag pending">card pending</span>':'')+(c.unverified?'<span class="sTag contested">unverified</span>':'');
+    var attr=(c.id&&!pend)?(' onclick="dotGoPerson(\''+EQ(c.id)+'\',\''+EQ(c.line||'')+'\')"'):'';
+    return '<button class="sCard'+(pend?' pend':'')+'" style="border-left-color:'+col+'"'+attr+'>'+face+
+      '<span class="sCardInfo"><span class="sName">'+E(c.name)+tags+'</span>'+
+      ((c.yrs||c.place)?'<span class="sMeta">'+E(c.yrs||'')+(c.place?' · '+E(c.place):'')+'</span>':'')+
+      (ev?'<span class="sEvid">'+E(ev)+'</span>':'')+'</span></button>';
+  }
+  window.openDot=function(key){
+    var M=window.TLMARKERS||[], m=null; for(var i=0;i<M.length;i++){ if(M[i].key===key){ m=M[i]; break; } }
+    if(!m) return; if(typeof sClick==='function')sClick();
+    var host=document.getElementById('sDotPanel'); if(!host) return;
+    var pr=m.proven||[], lv=m.lived||[];
+    var h='<div class="spBackdrop" onclick="closeDot()"></div><div class="dpPanel">'+
+      '<button class="spX" onclick="closeDot()">&times;</button>'+
+      '<div class="dpHd"><h3>'+E(m.name)+'</h3><span class="dpSpan">'+E(tlSpanLabel(m))+'</span></div>'+
+      '<p class="dpCtx">'+E(m.ctx||'')+'</p>';
+    if(pr.length) h+='<div class="dpSecHd">Proven &middot; '+m.provenCount+(m.provenCount>pr.length?' (showing '+pr.length+')':'')+'</div><div class="sCards">'+pr.map(dotCard).join('')+'</div>';
+    if(lv.length) h+='<div class="dpSecHd muted">Lived through it &middot; '+m.livedCount+(m.livedCount>lv.length?' (showing '+lv.length+')':'')+'</div><div class="sCards muted">'+lv.map(dotCard).join('')+'</div>';
+    if(!pr.length && !lv.length) h+='<p class="dpCtx"><em>A lived-through era — the ancestors here are in the legendary mists, so there are no individual cards.</em></p>';
+    h+='</div>';
+    host.innerHTML=h; host.classList.add('open');
+    if(typeof seedBack==='function') seedBack();   // so a hardware/browser back-press closes the panel
+  };
+  window.closeDot=function(){ var h=document.getElementById('sDotPanel'); if(h) h.classList.remove('open'); };
+  window.dotGoPerson=function(id,line){ closeDot(); if(typeof bScalePerson==='function') bScalePerson(id,line); };
+  window.addEventListener('keydown', function(e){ if(e.key==='Escape' && _cls('sDotPanel','open')){ closeDot(); } });
   function sBandHTML(B, inner, count, subExtra){
     return '<section class="sBand" style="--bc:'+B.col+';background:'+B.bg+'">'+
       '<div class="sBandMain">'+
@@ -2559,29 +2690,35 @@ var HISTORY=window.HISTORY||[];
   }
   function bRenderScale(){
     var host=document.getElementById('bScaleBody'); if(!host) return;
-    var all;
-    if(_scaleFilter==='all') all=bAllNodes();
-    else { var _ln=null; for(var _li=0;_li<BL.length;_li++){ if(BL[_li].key===_scaleFilter){ _ln=BL[_li]; break; } } all=_ln?_ln.nodes.map(function(nn){ return {n:nn, line:_ln, side:sideOf(_ln)}; }):[]; }
-    var byTier={documented:[],historical:[],legendary:[]};
-    all.forEach(function(x){ var t=(window.TIER||{})[x.n.id]||'documented'; if(t==='mythological')t='legendary'; if(byTier[t])byTier[t].push(x); });
-    for(var t in byTier){ byTier[t].forEach(function(x){ x._ns=bNotabScore(x.n); }); }
-    byTier.documented.sort(function(a,b){ return (b._ns-a._ns)||((b.n.b||0)-(a.n.b||0)); });
-    byTier.historical.sort(function(a,b){ return (b._ns-a._ns)||((b.n.b||0)-(a.n.b||0)); });
-    byTier.legendary.sort(function(a,b){ return ((b.n.b||0)-(a.n.b||0)); });   // recent legend high, gods sink to the bottom
+    var TB=window.TLBUCKETS||{};
+    var idMap={}; bAllNodes().forEach(function(x){ idMap[x.n.id]=x; });
+    var lk=_scaleFilter;
+    function bucketIds(ids){ return (lk==='all')?ids:ids.filter(function(id){ var x=idMap[id]; return x && x.line.key===lk; }); }
+    function subSections(tier){
+      var bks=TB[tier]||[], out='', total=0;
+      bks.forEach(function(b){
+        var ids=bucketIds(b.ids).slice().sort(function(a,c){ var xa=idMap[a],xc=idMap[c]; return bNotabScore((xc&&xc.n)||{})-bNotabScore((xa&&xa.n)||{}); });
+        if(!ids.length) return; total+=ids.length;
+        var key=tier+'|'+b.label;
+        var shownIds=_scaleExpand[key]?ids:ids.slice(0,12);
+        var cards=shownIds.map(function(id){ var x=idMap[id]; return x?scaleCard(x):''; }).join('');
+        var more=(!_scaleExpand[key] && ids.length>shownIds.length)?
+          '<button class="sMore" onclick="bScaleMore(\''+EQ(key)+'\')">Show all '+ids.length+' &darr;</button>':'';
+        out+='<div class="sSub"><div class="sSubHd"><span class="sSubT">'+E(b.label)+'</span><span class="sSubN">'+ids.length+'</span></div>'+(b.context?'<div class="sSubCtx">'+E(b.context)+'</div>':'')+'<div class="sCards">'+cards+'</div>'+more+'</div>';
+      });
+      return {html:out||'<div class="sSubEmpty">No ancestors in this layer for this line.</div>', total:total};
+    }
     var html='';
     SCALE_BANDS.forEach(function(B){
       if(B.tier==='legendary') return;   // legendary rendered grouped-by-bloodline below
-      var list=byTier[B.tier]||[]; if(!list.length) return;
-      var shown=_scaleExpand[B.tier]?list:list.slice(0,24);
-      var cards=shown.map(scaleCard).join('');
-      var more=(!_scaleExpand[B.tier] && list.length>shown.length)?
-        '<button class="sMore" onclick="bScaleMore(\''+B.tier+'\')">Show all '+list.length+' ↓</button>':'';
-      html+=sBandHTML(B, '<div class="sCards">'+cards+'</div>'+more, list.length, '');
+      var ss=subSections(B.tier); if(!ss.total) return;
+      html+=sBandHTML(B, ss.html, ss.total, '');
     });
     var legB=null; for(var bi=0;bi<SCALE_BANDS.length;bi++){ if(SCALE_BANDS[bi].tier==='legendary') legB=SCALE_BANDS[bi]; }
     var legGroups=legendaryByLine();
     if(legB && legGroups.length){
-      html+=sBandHTML(legB, '<div class="sLegIntro">Your saga-kings and the old gods &mdash; <b>one coloured slice per bloodline</b> they descend through. Shared ancestors (the gods, the Yngling kings) appear under every line.</div>', byTier.legendary.length, '');
+      var legCount=bAllNodes().filter(function(x){ var t=(window.TIER||{})[x.n.id]; return (t==='legendary'||t==='mythological')&&(lk==='all'||x.line.key===lk); }).length;
+      html+=sBandHTML(legB, '<div class="sLegIntro">Your saga-kings and the old gods &mdash; <b>one coloured slice per bloodline</b> they descend through. Shared ancestors (the gods, the Yngling kings) appear under every line.</div>', legCount, '');
       legGroups.forEach(function(g){
         var col=BLOODLINE_COLORS[(g.line.surname||'').toLowerCase()]||{c:'#7a6cc4',bg:'rgba(122,108,196,.13)'};
         var cards=g.nodes.map(function(n){ return scaleCard({n:n, line:g.line, side:g.side}); }).join('');
