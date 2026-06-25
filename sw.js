@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v7';  // v7: other human species (Neanderthals/Denisovans) cool-glow + chapter
+const CACHE = 'familytree-v8';  // v8: Neanderthal-DNA % + arc fly-throughs + shareable clip
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 

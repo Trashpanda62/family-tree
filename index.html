@@ -1059,6 +1059,8 @@
   .sDeepChipsLbl{font-size:12px;color:#a99e86;margin-top:14px;margin-bottom:2px;}
   .sDnaNote{font-size:13px;line-height:1.55;color:#cdc2a8;background:rgba(0,0,0,.22);border:1px solid rgba(120,180,150,.25);border-radius:10px;padding:11px 14px;margin-top:6px;max-width:600px;}
   .sDnaPanel{background:rgba(0,0,0,.24);border:1px solid rgba(120,180,150,.3);border-radius:11px;padding:13px 15px;margin-top:8px;max-width:560px;}
+  .sDnaNeand{margin-top:11px;padding-top:10px;border-top:1px solid rgba(125,170,255,.28);font-size:12px;line-height:1.5;color:#c2cfe6;}
+  .sDnaNeand .nnPct{display:inline-block;font-size:13px;font-weight:700;color:#9ec0ff;background:rgba(125,170,255,.14);border:1px solid rgba(125,170,255,.4);border-radius:6px;padding:1px 7px;margin-right:4px;}
   .sDnaHd{font-size:13px;font-weight:600;color:#ece1c8;margin-bottom:11px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
   .sDnaRow{display:flex;align-items:center;gap:10px;margin:6px 0;}
   .sDnaLbl{font-size:12px;color:#d3c8ad;flex:0 0 150px;}
@@ -1190,6 +1192,11 @@
   #bgSpeed{flex:0 0 auto;font-size:11.5px;color:#bcd0ec;cursor:pointer;border:1px solid rgba(180,200,230,.32);background:rgba(20,28,44,.7);border-radius:999px;padding:5px 10px;}
   #bgSound{flex:0 0 auto;font-size:14px;line-height:1;cursor:pointer;border:1px solid rgba(180,200,230,.32);background:rgba(20,28,44,.7);color:#bcd0ec;border-radius:999px;padding:5px 9px;}
   #bgSound.on{border-color:#caa24a;color:#f0d9a6;}
+  #bgShare{flex:0 0 auto;font-size:14px;line-height:1;cursor:pointer;border:1px solid rgba(180,200,230,.32);background:rgba(20,28,44,.7);color:#bcd0ec;border-radius:999px;padding:5px 9px;}
+  #bgShare.rec{border-color:#e0563a;color:#ff9a86;animation:bgRecPulse 1s infinite;}
+  @keyframes bgRecPulse{50%{opacity:.5;}}
+  #bgToast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:6;background:rgba(6,9,16,.92);border:1px solid rgba(180,200,230,.35);color:#eaf0fa;font-size:13px;padding:8px 14px;border-radius:10px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:80%;text-align:center;}
+  #bgToast.show{opacity:1;}
   .bgChip:focus-visible,.bgBtn:focus-visible,.bgScrub:focus-visible,#bgSpeed:focus-visible,#bgSound:focus-visible{outline:2px solid #f0d9a6;outline-offset:2px;}
   #bgFallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:40px;font-size:15px;color:#cdd8ec;}
   #bGlobe.nogl #bgFallback{display:flex;}
@@ -1213,11 +1220,13 @@
       <input id="bgScrub" class="bgScrub" type="range" min="0" max="1000" value="0" aria-label="Scrub the years" oninput="globeScrub(+this.value)">
       <button id="bgSpeed" onclick="globeCycleSpeed()">1&times;</button>
       <button id="bgSound" class="on" onclick="globeToggleSound()" aria-label="Narration on/off" title="Narration">&#128266;</button>
+      <button id="bgShare" onclick="globeShareClip()" aria-label="Share a clip" title="Record &amp; share a clip of the journey">&#128249;</button>
     </div>
     <div id="bgMetric" class="bgChips"></div>
     <div id="bgLines" class="bgChips"></div>
   </div>
   <div id="bgFallback">This globe needs WebGL &mdash; try opening it in a different browser.</div>
+  <div id="bgToast"></div>
 </div>
 <div id="bgPeople"></div>
 
@@ -2805,7 +2814,7 @@ var HISTORY=window.HISTORY||[];
   window.stopGlobe=function(){ _gPause(); try{ if(_globe) _globe.controls().autoRotate=false; }catch(e){} };
 
   function _initGlobe(){
-    _globe = Globe()(document.getElementById('bgViz'))
+    _globe = Globe({rendererConfig:{preserveDrawingBuffer:true}})(document.getElementById('bgViz'))   // preserveDrawingBuffer so the share-clip recorder captures real frames
       .globeImageUrl('vendor/earth-dark.jpg').backgroundColor('rgba(0,0,0,0)')
       .showAtmosphere(true).atmosphereColor('#5a7fae').atmosphereAltitude(0.16)
       .arcStartLat(function(d){return d.from[0];}).arcStartLng(function(d){return d.from[1];})
@@ -2813,7 +2822,7 @@ var HISTORY=window.HISTORY||[];
       .arcColor(function(d){ if(d.deep) return ['rgba(217,138,58,0.25)','#ffe6b0']; return [d.side==='maxfield'?'#46d39a':'#5aa0ee','#f0d9a6']; })
       .arcAltitudeAutoScale(0.45).arcStroke(0.55).arcDashLength(0.45).arcDashGap(0.22)
       .arcDashInitialGap(function(){return 1;}).arcDashAnimateTime(2200).arcsTransitionDuration(400)
-      .arcLabel(function(d){return E(d.label||'');}).onArcClick(function(d){ if(d&&d.id) globePerson(d.id); })
+      .arcLabel(function(d){return E(d.label||'');}).onArcClick(function(d){ globeFlyArc(d); })
       .ringLat(function(r){return r.lat;}).ringLng(function(r){return r.lng;}).ringMaxRadius(function(r){return r.maxR;})
       .ringColor(function(r){ var c=r.color; return function(t){ return c+Math.round((1-t)*200).toString(16).padStart(2,'0'); }; })
       .ringPropagationSpeed(1.6).ringRepeatPeriod(900);
@@ -2946,6 +2955,47 @@ var HISTORY=window.HISTORY||[];
   };
   window.globeClosePeople=function(){ var h=document.getElementById('bgPeople'); if(h)h.classList.remove('open'); };
   window.addEventListener('keydown', function(e){ if(e.key==='Escape' && _cls('bgPeople','open')){ globeClosePeople(); } });
+
+  function _gToast(msg,ms){ var t=document.getElementById('bgToast'); if(!t)return; t.textContent=msg; t.classList.add('show'); clearTimeout(_gToast._t); _gToast._t=setTimeout(function(){t.classList.remove('show');}, ms||2500); }
+
+  // ---- "ride the migration": tap an arc and the camera flies along it, origin -> destination
+  window.globeFlyArc=function(d){
+    if(!_globe||!d||!d.from||!d.to) return; if(typeof sClick==='function')sClick();
+    if(_gState&&_gState.playing)_gPause();
+    try{ _globe.controls().autoRotate=false; }catch(e){}
+    _gToast(d.deep?'Riding an ancient migration…':('Riding '+(((d.label||'').split(' — ')[0])||'this journey')+'…'), 2600);
+    _globe.pointOfView({lat:d.from[0],lng:d.from[1],altitude:1.4},1100);
+    setTimeout(function(){ if(_globe)_globe.pointOfView({lat:d.to[0],lng:d.to[1],altitude:1.4},2600); },1180);
+    if(d.id) setTimeout(function(){ if(_globe)_globe.pointOfView({lat:d.to[0],lng:d.to[1],altitude:2.3},900); globePerson(d.id); },4000);
+  };
+
+  // ---- shareable clip: record a ~22s cinematic flythrough of the globe -> webm (share/download)
+  window.globeShareClip=function(){
+    var cv=document.querySelector('#bgViz canvas'), btn=document.getElementById('bgShare');
+    if(!cv||!cv.captureStream||typeof MediaRecorder==='undefined'){ _globeShareFallback(); return; }
+    var stream; try{ stream=cv.captureStream(30); }catch(e){ _globeShareFallback(); return; }
+    var rec, chunks=[];
+    try{ rec=new MediaRecorder(stream,{mimeType:'video/webm'}); }catch(e){ try{ rec=new MediaRecorder(stream); }catch(e2){ _globeShareFallback(); return; } }
+    rec.ondataavailable=function(e){ if(e.data&&e.data.size) chunks.push(e.data); };
+    rec.onstop=function(){ if(btn)btn.classList.remove('rec'); var blob=new Blob(chunks,{type:'video/webm'}); if(!blob.size){ _globeShareFallback(); return; }
+      var file=new File([blob],'our-migration.webm',{type:'video/webm'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){ navigator.share({files:[file],title:'Our family migration',text:'70,000 years of our family, across the world.'}).then(function(){_gToast('Shared.',1800);}).catch(function(){ _gDownload(blob); }); }
+      else { _gDownload(blob); } };
+    if(_gState&&_gState.playing)_gPause();
+    _gToast('Recording a ~22-second flythrough…',3000); if(btn)btn.classList.add('rec');
+    try{ _globe.controls().autoRotate=true; _globe.controls().autoRotateSpeed=1.8; }catch(e){}
+    rec.start();
+    var t0=null, DUR=22000, iv=setInterval(function(){ var now=(window.performance&&performance.now)?performance.now():(+new Date()); if(t0===null)t0=now;
+      var p=Math.min(1,(now-t0)/DUR); globeRender(fracToYear(p));
+      if(p>=1){ clearInterval(iv); setTimeout(function(){ try{rec.stop();}catch(e){} },350); } },90);
+  };
+  function _gDownload(blob){ try{ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='our-migration.webm'; document.body.appendChild(a); a.click(); a.remove(); _gToast('Clip saved to your downloads.',3000); }catch(e){ _globeShareFallback(); } }
+  function _globeShareFallback(){ var btn=document.getElementById('bgShare'); if(btn)btn.classList.remove('rec');
+    var url=location.origin+location.pathname+'?mode=globe';
+    if(navigator.share){ navigator.share({title:'Our family migration',text:'70,000 years of our family across the world',url:url}).catch(function(){}); }
+    else if(navigator.clipboard){ navigator.clipboard.writeText(url).then(function(){ _gToast('Link copied (video record not supported here).',3500); }).catch(function(){ _gToast('Sharing not supported on this browser.',3000); }); }
+    else { _gToast('Sharing not supported on this browser.',3000); }
+  }
   // keyboard control of the globe timeline (when the mode is open + not typing)
   window.addEventListener('keydown', function(e){
     if(!_cls('bGlobe','open') || !_gState) return;
@@ -3035,14 +3085,14 @@ var HISTORY=window.HISTORY||[];
   // per-bloodline DNA — Thury = Debra Thury's real measured test; the rest estimated from each line's homeland.
   var DNA_GROUPS={ british:{l:'British Isles',c:'#4a86c8'}, germanic:{l:'Germanic & W. Europe',c:'#d29a44'}, nordic:{l:'Norse North',c:'#36a6ba'}, centraleast:{l:'Central & E. Europe',c:'#8a7ce0'}, balkan:{l:'Balkans & SE Europe',c:'#cf6647'} };
   var LINEDNA={
-    'thury-6835':   {measured:true,  g:[['british',48],['germanic',21],['nordic',18],['centraleast',10],['balkan',3]]},
-    'harris-6831':  {measured:false, g:[['british',78],['germanic',13],['nordic',9]]},
-    'garrison-6832':{measured:false, g:[['british',64],['germanic',22],['nordic',14]]},
-    'davis-6833':   {measured:false, g:[['british',85],['germanic',8],['nordic',7]]},
-    'maxfield-6329':{measured:false, g:[['british',71],['germanic',17],['nordic',12]]},
-    'mccollum-6950':{measured:false, g:[['british',67],['nordic',25],['germanic',8]]},
-    'mailloux-6998':{measured:false, g:[['germanic',80],['british',11],['nordic',9]]},
-    'hepburn-6358': {measured:false, g:[['centraleast',50],['germanic',27],['balkan',15],['nordic',8]]}
+    'thury-6835':   {measured:true,  neand:2.0, g:[['british',48],['germanic',21],['nordic',18],['centraleast',10],['balkan',3]]},
+    'harris-6831':  {measured:false, neand:2.0, g:[['british',78],['germanic',13],['nordic',9]]},
+    'garrison-6832':{measured:false, neand:1.9, g:[['british',64],['germanic',22],['nordic',14]]},
+    'davis-6833':   {measured:false, neand:2.1, g:[['british',85],['germanic',8],['nordic',7]]},
+    'maxfield-6329':{measured:false, neand:2.0, g:[['british',71],['germanic',17],['nordic',12]]},
+    'mccollum-6950':{measured:false, neand:1.9, g:[['british',67],['nordic',25],['germanic',8]]},
+    'mailloux-6998':{measured:false, neand:2.1, g:[['germanic',80],['british',11],['nordic',9]]},
+    'hepburn-6358': {measured:false, neand:2.0, g:[['centraleast',50],['germanic',27],['balkan',15],['nordic',8]]}
   };
   function lineDnaHTML(){
     if(_scaleFilter==='all') return '<div class="sDnaNote">&#129516; <b>Each bloodline carries its own ancestry</b> &mdash; pick a bloodline above to see its DNA make-up. Only the <b>Thury line</b> comes from a real DNA test (Debra Thury); the other seven are estimated from each line&rsquo;s homeland.</div>';
@@ -3051,7 +3101,8 @@ var HISTORY=window.HISTORY||[];
     var rows=L.g.map(function(p){ var m=DNA_GROUPS[p[0]]||{l:p[0],c:'#888'};
       return '<div class="sDnaRow"><span class="sDnaLbl">'+E(m.l)+'</span><span class="sDnaTrack"><span class="sDnaBar" style="width:'+p[1]+'%;background:'+m.c+'"></span></span><span class="sDnaPct">'+p[1]+'%</span></div>'; }).join('');
     var badge=L.measured?'<span class="sDnaBadge meas">&#129516; measured &middot; Debra Thury</span>':'<span class="sDnaBadge est">estimated from homeland</span>';
-    return '<div class="sDnaPanel"><div class="sDnaHd">'+E(ln.surname)+' line &mdash; DNA make-up '+badge+'</div>'+rows+'</div>';
+    var neand=(L.neand!=null)?'<div class="sDnaNeand"><span class="nnPct">&#129704; ~'+L.neand+'%</span> <b>Neanderthal DNA</b> &mdash; a trace of the interbreeding ~55,000 years ago, carried by every European line (estimated; European average ~2%).</div>':'';
+    return '<div class="sDnaPanel"><div class="sDnaHd">'+E(ln.surname)+' line &mdash; DNA make-up '+badge+'</div>'+rows+neand+'</div>';
   }
   function scaleDeepHTML(){
     if(!window.DEEP||!DEEP.groups) return '';
