@@ -1246,6 +1246,7 @@
   #bgTop{position:absolute;top:58px;left:0;right:0;text-align:center;pointer-events:none;z-index:3;}
   #bgYear{display:block;font-size:46px;font-weight:800;letter-spacing:.04em;color:#f0d9a6;text-shadow:0 2px 18px rgba(0,0,0,.8);font-variant-numeric:tabular-nums;}
   #bgStats{display:block;margin-top:4px;font-size:12.5px;color:#bcd0ec;text-shadow:0 1px 8px rgba(0,0,0,.92);}
+  #bgActive{display:none;margin:6px auto 0;max-width:92%;font-size:14px;font-weight:600;color:#eef4ff;text-shadow:0 2px 10px rgba(0,0,0,.95);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   #bgChapter{display:block;margin-top:6px;max-width:88%;margin-left:auto;margin-right:auto;}
   .bgEv{display:inline-block;margin:3px;padding:3px 10px;font-size:11.5px;border:1px solid #d4a017;border-radius:999px;background:rgba(6,9,16,.72);color:#eaf0fa;text-shadow:none;font-family:inherit;}
   .bgEv.clk{cursor:pointer;pointer-events:auto;}
@@ -1300,7 +1301,7 @@
 </style>
 <div id="bGlobe">
   <div id="bgViz"></div>
-  <div id="bgTop"><span id="bgYear">&mdash;</span><span id="bgStats"></span><span id="bgChapter"></span></div>
+  <div id="bgTop"><span id="bgYear">&mdash;</span><span id="bgStats"></span><span id="bgActive"></span><span id="bgChapter"></span></div>
   <div id="bgCaption"></div>
   <div id="bgLegend"></div>
   <div id="bgCtl">
@@ -2869,7 +2870,7 @@ var HISTORY=window.HISTORY||[];
   }
   function _gNarrStop(){ if(_gNarr){ try{_gNarr.pause();}catch(e){} } }
   var GMETRICS=[{k:'net',l:'Net flow'},{k:'in',l:'Arrivals'},{k:'out',l:'Departures'}];
-  var GLINES=[{k:'all',l:'All lines',c:'#caa24a'},{k:'harris',l:'Harris',c:'#5aa0ee'},{k:'maxfield',l:'Maxfield',c:'#46d39a'}];
+  var GLINES=[{k:'all',l:'All',c:'#caa24a'},{k:'harris',l:'Harris',c:'#5aa0ee'},{k:'maxfield',l:'Maxfield',c:'#46d39a'}];
   var GCHAPTERS=[
     {y0:-70000,key:'ooa',t:'Out of Africa — the first modern humans leave the Rift Valley and begin to people the world.'},
     {y0:-58000,key:'neanderthal',t:'We are not alone — Neanderthals already rule Ice-Age Europe and the Denisovans the East. Where our kind meets theirs, the bloodlines mingle.'},
@@ -2926,8 +2927,10 @@ var HISTORY=window.HISTORY||[];
       .showAtmosphere(true).atmosphereColor('#5a7fae').atmosphereAltitude(0.16)
       .arcStartLat(function(d){return d.from[0];}).arcStartLng(function(d){return d.from[1];})
       .arcEndLat(function(d){return d.to[0];}).arcEndLng(function(d){return d.to[1];})
-      .arcColor(function(d){ if(d.deep) return ['rgba(217,138,58,0.25)','#ffe6b0']; return [d.side==='maxfield'?'#46d39a':'#5aa0ee','#f0d9a6']; })
-      .arcAltitudeAutoScale(0.45).arcStroke(0.55).arcDashLength(0.45).arcDashGap(0.22)
+      .arcColor(function(d){ if(d.deep) return d._active?['rgba(184,154,106,0.5)','#ffe6b0']:['rgba(184,154,106,0.16)','rgba(184,154,106,0.16)'];
+        if(d._active) return ['#cfd9ea', d.side==='maxfield'?'#46d39a':'#5aa0ee'];
+        return d.side==='maxfield'?['rgba(70,211,154,0.20)','rgba(70,211,154,0.20)']:['rgba(90,160,238,0.20)','rgba(90,160,238,0.20)']; })
+      .arcAltitudeAutoScale(0.45).arcStroke(function(d){ return d._active?(d.deep?0.55:0.95):0.3; }).arcDashLength(0.45).arcDashGap(0.22)
       .arcDashInitialGap(function(){return 1;}).arcDashAnimateTime(2200).arcsTransitionDuration(400)
       .arcLabel(function(d){return E(d.label||'');}).onArcClick(function(d){ globeFlyArc(d); })
       .ringLat(function(r){return r.lat;}).ringLng(function(r){return r.lng;}).ringMaxRadius(function(r){return r.maxR;})
@@ -2950,16 +2953,20 @@ var HISTORY=window.HISTORY||[];
   function _isoFlux(iso,upto){ var f=(window.MIG.flux||{})[iso]; if(!f)return{i:0,o:0}; var i=0,o=0; for(var d in f){ if(+d<=upto){ i+=f[d]['in']||0; o+=f[d]['out']||0; } } return {i:i,o:o}; }
   function _metricVal(iso,upto){ var x=_isoFlux(iso,upto),m=_gState.metric; return m==='in'?x.i:m==='out'?x.o:(x.i-x.o); }
   function _presentIso(iso,year){ var P=(window.MIG.deep&&window.MIG.deep.presence)||[]; for(var i=0;i<P.length;i++){ if(year>=P[i].year && P[i].iso.indexOf(iso)>=0) return true; } return false; }
-  function _countryColor(f){ var iso=_iso(f), v=_metricVal(iso,_gState.year);
-    if(v){ var g=Math.min(1,Math.abs(v)/12),a=(0.45+0.5*g).toFixed(2);
-      if(_gState.metric==='out') return 'rgba('+(130+110*g|0)+',88,66,'+a+')';
-      if(_gState.metric==='in') return 'rgba(86,'+(150+90*g|0)+',120,'+a+')';
-      return v>0?'rgba('+(200+40*g|0)+','+(160+20*g|0)+',74,'+a+')':'rgba(70,120,'+(150+80*g|0)+','+a+')'; }
-    if(_presentIso(iso,_gState.year)) return 'rgba(206,142,60,0.7)';   // inhabited by US — warm, stays lit
-    var ac=_archaicCol(iso,_gState.year); if(ac) return ac;   // other human species (Neanderthal/Denisovan) — cool
+  // population "density" 0..1, eased — drives how bright the inhabited land glows over time
+  function _densF(year){ var lo=Math.log(popAt(-70000)), hi=Math.log(popAt(2026)); var d=(Math.log(popAt(year))-lo)/(hi-lo); return Math.pow(Math.max(0,Math.min(1,d)),0.6); }
+  function _archaicOnScreen(year){ var A=(window.MIG.deep&&window.MIG.deep.archaic)||[]; for(var i=0;i<A.length;i++){ if(year>=A[i].from&&year<=A[i].to) return true; } return false; }
+  function _lerpHex(a,b,t){ t=Math.max(0,Math.min(1,t)); function h(s,i){return parseInt(s.slice(i,i+2),16);} var r=Math.round(h(a,1)+(h(b,1)-h(a,1))*t),g=Math.round(h(a,3)+(h(b,3)-h(a,3))*t),bl=Math.round(h(a,5)+(h(b,5)-h(a,5))*t); return 'rgb('+r+','+g+','+bl+')'; }
+  // FILL = where people LIVE (population). One warm lantern that brightens with world population and
+  // spreads from Africa outward. It NEVER encodes migration (that's the arcs/rings), so a glowing
+  // country can't be misread as "people moving here" — the root of the old confusion.
+  function _countryColor(f){ var iso=_iso(f), year=_gState.year, d=_densF(year);
+    if(_presentIso(iso,year)){ var r=Math.round(150+105*d), g=Math.round(92+104*d), b=Math.round(40+80*d), a=(0.30+0.62*d).toFixed(2);
+      return 'rgba('+r+','+g+','+b+','+a+')'; }
+    if(_archaicCol(iso,year)) return 'rgba(111,147,196,0.42)';   // other human species — flat cool slate, recedes
     return 'rgba(44,58,84,0.22)'; }
   function _archaicCol(iso,year){ var A=(window.MIG.deep&&window.MIG.deep.archaic)||[]; for(var i=0;i<A.length;i++){ var a=A[i]; if(year>=a.from&&year<=a.to&&a.iso.indexOf(iso)>=0) return a.color; } return null; }
-  function _countryAlt(f){ var iso=_iso(f), v=Math.abs(_metricVal(iso,_gState.year)); if(v) return Math.min(0.13,0.014+v*0.004); if(_presentIso(iso,_gState.year)) return 0.02; return _archaicCol(iso,_gState.year)?0.012:0.004; }
+  function _countryAlt(f){ var iso=_iso(f), year=_gState.year; if(_presentIso(iso,year)) return 0.02+0.03*_densF(year); return _archaicCol(iso,year)?0.012:0.004; }
   function _countryLabel(f){ var x=_isoFlux(_iso(f),_gState.year); if(!x.i&&!x.o) return ''; return '<div style="background:rgba(6,9,16,.85);padding:5px 8px;border-radius:6px;color:#eaf0fa"><b>'+E(f.properties.NAME||_iso(f))+'</b><br>arrived '+x.i+' &middot; left '+x.o+'</div>'; }
   function _activeEvents(year){   // [{name,key,kind,deep}] genealogical + deep events live at this year
     var out=[];
@@ -2978,19 +2985,34 @@ var HISTORY=window.HISTORY||[];
       out.push({lat:w[0],lng:w[1],maxR:e.kind==='ice'?16:9,color:GDKCOL[e.kind]||'#9fd3ff',name:e.name}); });
     return out;
   }
+  // a brief pulse in the family's color at the destination as each ancestor arrives — small + quick,
+  // so it reads as "family landing here" and never as a (larger, slower) event ring
+  function _arrivalRings(year){ var C=(window.MIG&&window.MIG.countries)||{}, out=[], side=_gState.side;
+    (window.MIG.legs||[]).forEach(function(l){ if(l.year>year||l.year<year-3) return; if(side!=='all'&&l.side!==side) return; var c=C[l.toIso]; if(!c)return;
+      out.push({lat:c.lat,lng:c.lng,maxR:4,color:(l.side==='maxfield'?'#46d39a':'#5aa0ee')}); }); return out;
+  }
   function globeRender(year){
     if(!_gState) return; _gState.year=year; var MIG=window.MIG, side=_gState.side;
+    // "happening now" = legs in the current chapter window, up to the year on screen (these are the bright, animated hero arcs)
+    var _ci=_gChapIndexFor(year), _wLo=GCHAPTERS[_ci]?GCHAPTERS[_ci].y0:-1e9, _wHi=GCHAPTERS[_ci+1]?GCHAPTERS[_ci+1].y0:_gState.max;
+    function _actv(yr){ return yr>=_wLo && yr<_wHi && yr<=year; }
     var arcs=MIG.legs.filter(function(l){ return l.year<=year && (side==='all'||l.side===side); });
+    arcs.forEach(function(l){ l._active=_actv(l.year); });
     var deep=((MIG.deep&&MIG.deep.legs)||[]).filter(function(l){ return l.year<=year; })
-              .map(function(l){ return {from:l.from,to:l.to,year:l.year,label:l.label,deep:true,id:null}; });
+              .map(function(l){ return {from:l.from,to:l.to,year:l.year,label:l.label,deep:true,id:null,_active:_actv(l.year)}; });
     var all=deep.concat(arcs); if(all.length>180) all=all.slice(all.length-180);
     if(_globe){ _globe.arcsData(all);
-      if(_gjson){ var _t=(window.performance&&performance.now)?performance.now():0; if(_t-_lastPoly>380){ _lastPoly=_t; _globe.polygonsData(_gjson); } }   // throttle: re-coloring every frame left polygons perpetually mid-transition (dark)
-      _globe.ringsData(_eventRings(year)); }
+      if(_gjson){ var _t=(window.performance&&performance.now)?performance.now():0; if(_t-_lastPoly>380){ _lastPoly=_t; _globe.polygonsData(_gjson); try{ _globe.atmosphereColor(_lerpHex('#5a7fae','#ffc896',_densF(year))); }catch(e){} } }   // throttle: re-coloring every frame left polygons perpetually mid-transition (dark)
+      _globe.ringsData(_eventRings(year).concat(_arrivalRings(year))); }
     var yEl=document.getElementById('bgYear'); if(yEl) yEl.textContent=fmtYear(year);
     var ch=chapterFor(year), ck=ch?ch.key:null, cap=document.getElementById('bgCaption');
-    if(cap && ch && ck!==_gChapKey){ cap.classList.remove('show'); cap.textContent=ch.t; void cap.offsetWidth; cap.classList.add('show'); }   // re-trigger the fade per chapter
+    if(cap && ch && ck!==_gChapKey){ cap.classList.remove('show'); cap.textContent=ch.t; void cap.offsetWidth; cap.classList.add('show'); if(typeof _renderLegend==='function')_renderLegend(); }   // re-trigger the fade per chapter; refresh the archaic legend footnote
     _gChapKey=ck;   // narration is driven by the chapter tour (_gTourStep), not per-frame
+    // the named "happening now" family leg — the phone-legible hero line under the year
+    var aEl=document.getElementById('bgActive');
+    if(aEl){ var L=null; for(var qi=0;qi<arcs.length;qi++){ if(arcs[qi]._active && (!L||arcs[qi].year>L.year)) L=arcs[qi]; }
+      if(L){ var col=(L.side==='maxfield'?'#46d39a':'#5aa0ee'); aEl.innerHTML='<span style="color:'+col+'">&#8594;</span> '+E(L.label||''); aEl.style.display='block'; }
+      else { aEl.style.display='none'; aEl.textContent=''; } }
     // world population + family-migration tally
     var migs=MIG.legs.filter(function(l){return l.year<=year;}).length + ((MIG.deep&&MIG.deep.legs)||[]).filter(function(l){return l.year<=year;}).length;
     var st=document.getElementById('bgStats'); if(st) st.innerHTML='&#127757; ~'+fmtPop(popAt(year))+' people on Earth &middot; '+migs+' family migrations traced';
@@ -3048,15 +3070,18 @@ var HISTORY=window.HISTORY||[];
   window.globeCycleSpeed=function(){ var s=[1,2,4],i=(s.indexOf(_gState.speed)+1)%s.length; _gState.speed=s[i]; document.getElementById('bgSpeed').textContent=s[i]+'×'; };
   window.globeMetric=function(k){ _gState.metric=k; renderGlobeChips(); globeRender(_gState.year); sClick&&sClick(); };
   window.globeSide=function(k){ _gState.side=k; renderGlobeChips(); globeRender(_gState.year); sClick&&sClick(); };
+  function _renderLegend(){ var lg=document.getElementById('bgLegend'); if(!lg)return;
+    var rows='<div class="lgrow"><i style="background:linear-gradient(90deg,#965c28,#ffc478)"></i>Where people live &mdash; brighter = more people</div>'
+      +'<div class="lgrow"><i style="background:#5aa0ee"></i>Harris journeys</div>'
+      +'<div class="lgrow"><i style="background:#46d39a"></i>Maxfield journeys</div>'
+      +'<div class="lgrow"><i style="background:repeating-linear-gradient(90deg,#b89a6a 0 3px,transparent 3px 6px)"></i>Ancient human paths</div>';
+    if(typeof _archaicOnScreen==='function' && _gState && _archaicOnScreen(_gState.year)) rows+='<div class="lgrow" style="opacity:.8;font-size:10.5px"><i style="background:#6f93c4"></i>Cool blue = other human species, long ago</div>';
+    lg.innerHTML=rows;
+  }
   function renderGlobeChips(){
-    var mh='<span style="font-size:11px;color:#9fb2cf;align-self:center">Glow:</span>'+GMETRICS.map(function(m){return '<button class="bgChip'+(_gState.metric===m.k?' on':'')+'" onclick="globeMetric(\''+m.k+'\')">'+m.l+'</button>';}).join('');
-    var me=document.getElementById('bgMetric'); if(me)me.innerHTML=mh;
-    var le=document.getElementById('bgLines'); if(le)le.innerHTML=GLINES.map(function(l){return '<button class="bgChip lc'+(_gState.side===l.k?' on':'')+'" onclick="globeSide(\''+l.k+'\')"><i style="background:'+l.c+'"></i>'+l.l+'</button>';}).join('');
-    var lg=document.getElementById('bgLegend'); if(lg)lg.innerHTML='<b>'+(_gState.metric==='net'?'Net migration':_gState.metric==='in'?'Arrivals':'Departures')+'</b>'+
-      '<div class="lgrow"><i style="background:#ce8e3c"></i>where people live</div>'+
-      '<div class="lgrow"><i style="background:#7daaff"></i>Neanderthals / Denisovans</div>'+
-      '<div class="lgrow"><i style="background:#f0d9a6"></i>net arrivals</div><div class="lgrow"><i style="background:#4a78c8"></i>net departures</div>'+
-      '<div class="lgrow"><i style="background:#5aa0ee"></i>Harris</div><div class="lgrow"><i style="background:#46d39a"></i>Maxfield</div><div class="lgrow"><i style="background:#e0563a"></i>event</div>';
+    var me=document.getElementById('bgMetric'); if(me)me.innerHTML='';   // the "Glow" net/in/out toggle is gone — population and migration are now separate channels
+    var le=document.getElementById('bgLines'); if(le)le.innerHTML='<span style="font-size:11px;color:#9fb2cf;align-self:center">Whose journey:</span>'+GLINES.map(function(l){return '<button class="bgChip lc'+(_gState.side===l.k?' on':'')+'" onclick="globeSide(\''+l.k+'\')"><i style="background:'+l.c+'"></i>'+l.l+'</button>';}).join('');
+    _renderLegend();
   }
   window.globePerson=function(id){ globeClosePeople(); if(typeof bScalePerson==='function') bScalePerson(id,''); };
   window.globeCountry=function(f){
