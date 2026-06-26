@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v19';  // v19: Time Scale mobile rail redesign "Rail-Ruler" — passive clipped rail (native scroll, dots never cover content), near-year events merge into count-badge clusters
+const CACHE = 'familytree-v20';  // v20: show ALL documents per person (was collapsing multiple same-type docs to one chip — 192 people affected); Richard +1950 census +newspaper, offline cards
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 

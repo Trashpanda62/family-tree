@@ -1845,12 +1845,14 @@ var HISTORY=window.HISTORY||[];
   function buildRail(n, st){
     var IC=window.ICON||{}, items=[];
     ((n.docs&&n.docs.length)?n.docs:[]).forEach(function(x){
-      var base=String(x.type||'').replace(/ \(estimated\)/,''), est=/estimated/.test(x.type||''), url=x.url||'';
+      var base=String(x.type||'').replace(/ \(estimated\)/,''), url=x.url||'';
+      var disp=String(x.label||x.type||'').replace(/ \(estimated\)/,'');   // x.label disambiguates repeated types (e.g. "1940 Census" / "1950 Census")
+      var est=/\(estimated\)/.test(String(x.label||x.type||''));
       var rk=(url.indexOf('/view/')>=0)?url.split('/view/')[1].replace(/\/+$/,''):'', fag=/findagrave/.test(url);
       var ic=IC[base]||IC.Other||'&#128196;';
-      if(rk) items.push({ic:ic,label:base,est:est,sub:'document',act:{t:'doc',rk:rk,label:base}});
-      else if(fag) items.push({ic:ic,label:base,est:est,sub:'Find a Grave',act:{t:'url',url:url}});
-      else items.push({ic:ic,label:base,est:est,locked:true});
+      if(rk) items.push({ic:ic,label:disp,est:est,sub:'document',act:{t:'doc',rk:rk,label:disp}});
+      else if(fag) items.push({ic:ic,label:disp,est:est,sub:'Find a Grave',act:{t:'url',url:url}});
+      else items.push({ic:ic,label:disp,est:est,locked:true});
     });
     ((st&&st.records)||[]).forEach(function(r,ri){
       var ic=/news|paper|article|clipping|gazette|tribune|press/i.test((r.source||'')+(r.title||''))?'&#128240;':(IC.Other||'&#128196;');
