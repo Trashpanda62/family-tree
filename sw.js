@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v17';  // v17: mobile fix — hide the floating mode-switch chrome over the immersive life-page (was covering the top half of the dossier on phones)
+const CACHE = 'familytree-v18';  // v18: mobile dossier redesign "One Clean Scroll" — docs + timeline fold into collapsible panels (hero-first), slim album header w/ ← Bloodlines back-to-selection
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 

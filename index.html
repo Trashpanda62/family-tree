@@ -817,19 +817,33 @@
     #bRibbon{height:46px;} .roadEnd{font-size:9.5px;} .wagonSvg{width:34px;height:23px;} .roadCap{display:none;}
     .rhcT{max-width:140px;overflow:hidden;text-overflow:ellipsis;}
     #bEraLabel{bottom:54px;}
-    #bFocus.bfShow.hasDock{--dockH:266px;}
-    #bFocus.bfShow .hudDock{padding:5px 9px 4px;}
-    #bFocus.bfShow .hudDock .bfTLcallout{max-height:122px;}
-    #bFocus.bfShow .hudDock .bfTLtrack{overflow-x:auto;overflow-y:hidden;}
-    #bFocus.bfShow .hudDock .tlPin{padding:7px;}
-    #bFocus.bfShow .hudDock .tlPin .tlYr{font-size:8px;}
-    #bFocus.bfShow .hudDock .tlPin .tlIc{font-size:13px;}
-    /* docs rail -> top horizontal strip on narrow screens (item 1) */
-    #bFocus.bfShow .hudDocRail{left:0;right:0;top:0;bottom:auto !important;width:auto;padding:46px 10px 8px;background:linear-gradient(180deg,rgba(13,10,6,.96) 62%,rgba(13,10,6,0));}
-    #bFocus.bfShow .hudDocRail .hdList{flex-direction:row;overflow-x:auto;gap:7px;padding-bottom:4px;}
-    #bFocus.bfShow .hudDocBtn{flex:0 0 auto;max-width:210px;}
-    #bFocus.bfShow.hasRail .hudScroll{left:0;top:92px;}
+    /* ===== mobile dossier: ONE clean scroll — docs + timeline fold into collapsible panels, hero first ===== */
+    #bFocus.bfShow{--dockH:0;}
+    #bFocus.bfShow.hasRail .hudScroll,#bFocus.bfShow.hasDock .hudScroll{left:0;right:0;top:0;bottom:0;}
+    #bFocus.bfShow .hudDocRail,#bFocus.bfShow .hudDock{position:static;left:auto;right:auto;top:auto;bottom:auto;width:auto;height:auto;min-height:0;padding:0;background:none;border-top:none;z-index:auto;overflow:visible;}
+    #bFocus.bfShow .hudInner{padding:calc(env(safe-area-inset-top) + 62px) 16px calc(env(safe-area-inset-bottom) + 40px);}
+    .hudPanel{margin-top:14px;background:rgba(28,24,17,.55);border:1px solid rgba(231,198,107,.2);border-radius:12px;overflow:hidden;}
+    .hudPanelH{list-style:none;display:flex;align-items:center;gap:9px;min-height:48px;padding:0 14px;cursor:pointer;user-select:none;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#e7c66b;}
+    .hudPanelH::-webkit-details-marker{display:none;}
+    .hpCount{min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;border-radius:999px;background:rgba(231,198,107,.18);color:#f0e2bf;font-size:11px;}
+    .hpChev{margin-left:auto;transition:transform .2s;}
+    .hudPanel[open] .hpChev{transform:rotate(180deg);}
+    #bDocPanel .hudDocRailH{display:none;}
+    #bFocus.bfShow .hudDocBtn{min-height:44px;padding:11px 12px;max-width:none;}
+    /* timeline inside its panel: callout above the track, bounded, still interactive */
+    #bFocus.bfShow .hudDock .bfTL{display:flex;flex-direction:column;height:auto;}
+    #bFocus.bfShow .hudDock .bfTLcallout{order:1;position:static;width:auto;max-width:none;max-height:none;min-height:64px;margin:0 0 9px;}
+    #bFocus.bfShow .hudDock .bfTLH{order:2;}
+    #bFocus.bfShow .hudDock .bfTLtrack{order:3;height:220px;overflow-x:auto;overflow-y:hidden;}
+    #bFocus.bfShow .hudDock .tlPin{padding:8px;}
+    /* slim album header carrying the back-to-selection (or origin) control + name + close */
+    #bFocus.bfShow .hudTopBar{position:absolute;top:0;left:0;right:0;z-index:9;display:flex;align-items:center;gap:8px;height:calc(52px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 8px 0;background:linear-gradient(180deg,rgba(13,10,6,.97) 60%,rgba(13,10,6,0));}
+    #bFocus.bfShow .hudBackSel{min-height:44px;display:inline-flex;align-items:center;padding:0 13px;border-radius:999px;background:rgba(20,17,12,.62);border:1px solid rgba(220,190,120,.5);color:#f0d9a6;font-weight:600;font-size:12.5px;flex:none;cursor:pointer;font-family:inherit;}
+    #bFocus.bfShow .hudTopNm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;color:#ece5d4;font-weight:600;font-size:14px;}
+    #bFocus.bfShow .bfClose{position:static;flex:none;width:44px;height:44px;background:rgba(20,17,12,.62);}
+    body.chrome-hidden #bBackChip{display:none;}   /* the dossier header carries the back control on phones */
   }
+  @media(min-width:701px){ #bFocus .hudTopBar{display:contents;} #bFocus .hudBackSel,#bFocus .hudTopNm{display:none;} }
 
   /* ===== Royal & Legendary Line (2026-06-22) — the gateway in the trail + the page ===== */
   .royalGateWrap .royalGate{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
@@ -2226,11 +2240,22 @@ var HISTORY=window.HISTORY||[];
     var el=document.getElementById('bTlCallout'); if(!_tl.length||!el) return;
     // start EMPTY (item, 2026-06-18): nothing shows until the user hovers/taps a dot or opens a dropdown
     el.style.borderLeftColor='';
-    el.innerHTML='<div class="tlcoEmpty">Hover or tap a dot on the timeline to see what happened that year.</div>';
+    var mob=window.matchMedia&&window.matchMedia('(max-width:700px)').matches;
+    el.innerHTML='<div class="tlcoEmpty">'+(mob?'Tap a dot to see that year.':'Hover or tap a dot on the timeline to see what happened that year.')+'</div>';
+  }
+  // wrap a built node (docs rail / timeline dock) in a collapsible <details> panel — used ONLY on
+  // mobile, where the dossier folds both into the single scroll instead of pinned side panels.
+  function _wrapPanel(id,label,badge,node,onFirstOpen){
+    var d=document.createElement('details'); d.className='hudPanel'; d.id=id;
+    var s=document.createElement('summary'); s.className='hudPanelH'; s.innerHTML=label+(badge?' '+badge:'')+'<span class="hpChev">&#9662;</span>';
+    d.appendChild(s); d.appendChild(node);
+    if(onFirstOpen) d.addEventListener('toggle',function(){ if(d.open&&!d._seeded){ d._seeded=true; onFirstOpen(); } });
+    return d;
   }
   // jump the info-panel to a person's signature event (e.g. the fire), triggered by its dropdown
   window.bTlFire=function(){
     if(!_tl||!_tl.length) return;
+    var _p=document.getElementById('bTlPanel'); if(_p&&!_p.open){ _p.setAttribute('open',''); _p._seeded=true; }   // mobile: open the collapsed timeline panel before jumping to the beat
     var idx=-1;
     for(var i=0;i<_tl.length;i++){ if(_tl[i]._main && _tl[i]._main.k==='fire'){ idx=i; break; } }
     if(idx<0) for(var j=0;j<_tl.length;j++){ if((_tl[j].evs||[]).some(function(e){return e.k==='fire';})){ idx=j; break; } }
@@ -3664,7 +3689,7 @@ var HISTORY=window.HISTORY||[];
     bPushState(cur.key, n.id);
     var face=n.face?'<img class="hudFace" src="'+E(n.face)+'" onerror="this.style.display=\'none\'">':'<div class="hudFace empty">'+E((n.first||n.label||'?').slice(0,1))+'</div>';
     var b='<div class="hudBg"'+(bg?' style="background-image:url(\''+E(bg)+'\')"':'')+'></div><div class="hudScrim" onclick="hideFocus()"></div>';
-    b+='<button class="bfClose" onclick="hideFocus()" title="Close">&#10005;</button>';
+    b+='<div class="hudTopBar"><button class="hudBackSel" onclick="'+(_fromMode?'bBackToOrigin()':'hideFocus();showBLanding()')+'">'+(_fromMode?(_fromMode==='globe'?'&#8592; Migrations':'&#8592; Time Scale'):'&#8592; Bloodlines')+'</button><span class="hudTopNm">'+E(n.label)+'</span><button class="bfClose" onclick="hideFocus()" title="Close">&#10005;</button></div>';
     b+=docRail(n, st);                              // documents/records -> left-rail menu (item 1)
     b+='<div class="hudScroll"><div class="hudInner">';
     b+='<div class="hudHero">'+face+'<div class="hudId">'+
@@ -3731,6 +3756,13 @@ var HISTORY=window.HISTORY||[];
     el.classList.toggle('hasRail', _railItems.length>0);
     el.innerHTML=b; el.scrollTop=0;
     var sc=el.querySelector('.hudScroll'); if(sc) sc.scrollTop=0;
+    if(window.matchMedia&&window.matchMedia('(max-width:700px)').matches){   // mobile: fold docs + timeline into the one scroll so nothing pins over the hero
+      var _inr=el.querySelector('.hudInner'), _rail=el.querySelector('.hudDocRail'), _dock=el.querySelector('.hudDock');
+      if(_inr){
+        if(_rail) _inr.appendChild(_wrapPanel('bDocPanel','&#128193; Documents','<span class="hpCount">'+_railItems.length+'</span>',_rail,null));
+        if(_dock) _inr.appendChild(_wrapPanel('bTlPanel','&#129534; Their life &amp; times','',_dock,function(){ if(typeof _tlSelect==='function'&&typeof _tlDefaultI==='number'&&_tlDefaultI>=0)_tlSelect(_tlDefaultI); }));
+      }
+    }
     paintListen();
     initTimeline();
     if(n.b!=null) setScene(n.b, n.place, true);   // keep the stage scene soft; the HUD carries its own backdrop
