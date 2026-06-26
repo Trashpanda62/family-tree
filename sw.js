@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v14';  // v14: Time Scale icon ⏲→⏳ (text-presentation glyph rendered invisible on Android)
+const CACHE = 'familytree-v15';  // v15: Migrations tour — dynamic year-glide (fast deep time, slow recent), brisk deep-time narration, no dead-sit; + Time Scale ⏳ icon
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 

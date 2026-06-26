@@ -2855,11 +2855,13 @@ var HISTORY=window.HISTORY||[];
   // ONE reused audio element — created/played first inside the Play tap so iOS "unlocks" it;
   // every later chapter just swaps .src on the SAME element, which mobile then allows.
   function _gAudio(){ if(!_gNarr){ _gNarr=new Audio(); _gNarr.preload='auto'; } return _gNarr; }
-  function globeNarrate(key, onEnd){
+  function globeNarrate(key, onEnd, rate, onMeta){
     if(!_gNarrOn || (typeof muted!=='undefined'&&muted) || !key) return false;
     if(!((window.NARR||{})['mig-'+key])) return false;   // clip exists in the baked NARR island
-    var a=_gAudio(); a.onended=null; a.onerror=null;
+    var a=_gAudio(); a.onended=null; a.onerror=null; a.onloadedmetadata=null;
+    try{ a.playbackRate=rate||1; if('preservesPitch' in a) a.preservesPitch=true; }catch(e){}   // brisk in deep time, natural for the family story — pitch preserved
     if(onEnd){ a.onended=onEnd; a.onerror=onEnd; }
+    if(onMeta){ a.onloadedmetadata=function(){ var d=(a.duration&&isFinite(a.duration))?Math.round(a.duration*1000/(a.playbackRate||1)):0; onMeta(d); }; }   // real wall-time of the clip → drives the year glide
     try{ a.src='narration/mig-'+key+'.mp3'; a.currentTime=0; a.volume=0.92;
       var p=a.play(); if(p&&p.catch) p.catch(function(){ if(onEnd)onEnd(); });
     }catch(e){ if(onEnd)onEnd(); return false; }
@@ -3003,7 +3005,7 @@ var HISTORY=window.HISTORY||[];
   // ---- narrated tour: Play steps chapter-by-chapter; each chapter's narration plays in full
   // while the globe animates across that era, so the pace follows the storytelling (not a fast
   // fixed clock). Falls back to a timed pace when narration is off/muted/absent.
-  var _gTourI=0, _gTourTimer=null, _gAnim=null;
+  var _gTourI=0, _gTourTimer=null, _gAnim=null, _gMetaTimer=null;
   function _gChapIndexFor(y){ var i=0; for(var k=0;k<GCHAPTERS.length;k++){ if(y>=GCHAPTERS[k].y0) i=k; } return i; }
   function _gAnimateYears(from,to,durMs){
     if(_gAnim){ clearInterval(_gAnim); _gAnim=null; }
@@ -3019,16 +3021,26 @@ var HISTORY=window.HISTORY||[];
     if(_gTourI>=GCHAPTERS.length){ globeRender(_gState.max); _gPause(); return; }
     var ch=GCHAPTERS[_gTourI], fromY=Math.max(_gState.year, ch.y0),
         toY=(_gTourI+1<GCHAPTERS.length)?GCHAPTERS[_gTourI+1].y0:_gState.max;
-    var done=false;
-    function adv(){ if(done)return; done=true; if(_gTourTimer){clearTimeout(_gTourTimer);_gTourTimer=null;} if(!_gState||!_gState.playing)return; _gTourI++; _gTourStep(); }
-    // animate the globe across this era; let the narration's length set the chapter's pace
-    var est=(Math.abs(toY-fromY)>20000?22000:15000)/(_gState.speed||1);
-    _gAnimateYears(fromY,toY,est);
-    var voiced=globeNarrate(ch.key, adv);            // advance when the chapter narration ENDS
-    if(!voiced) _gTourTimer=setTimeout(adv, est+1500);   // muted / no audio -> timed pace
+    var done=false, started=false, spd=_gState.speed||1;
+    function adv(){ if(done)return; done=true;
+      if(_gTourTimer){clearTimeout(_gTourTimer);_gTourTimer=null;}
+      if(_gMetaTimer){clearTimeout(_gMetaTimer);_gMetaTimer=null;}
+      if(!_gState||!_gState.playing)return; _gTourI++; _gTourStep(); }
+    // DYNAMIC TIMELINE: the year glides for the WHOLE chapter (over the clip's real wall-time), so it's
+    // always moving — and because deep eras span millennia while recent eras span decades, the year
+    // flies through empty prehistory and slows right down over the dense family centuries. Deep time
+    // also plays brisk; the family-in-America story plays at its natural, deliberate pace.
+    var rate = ch.y0 < -700 ? 1.2 : (ch.y0 < 1600 ? 1.08 : 1.0);
+    function glide(durMs){ if(started||!_gState||!_gState.playing)return; started=true;
+      if(_gMetaTimer){clearTimeout(_gMetaTimer);_gMetaTimer=null;}
+      var g=(durMs>0?durMs:(Math.abs(toY-fromY)>20000?7000:5000))/spd;
+      _gAnimateYears(fromY,toY,g); }
+    var voiced=globeNarrate(ch.key, adv, rate, glide);   // advance when narration ENDS; glide over its real length
+    if(voiced){ _gMetaTimer=setTimeout(function(){ glide(0); }, 800); }   // safety if loadedmetadata never fires
+    else { var est=(Math.abs(toY-fromY)>20000?7000:5000)/spd; _gAnimateYears(fromY,toY,est); _gTourTimer=setTimeout(adv, est+900); }
   }
   function _gPause(){ if(!_gState)return; _gState.playing=false;
-    if(_gTimer){clearInterval(_gTimer);_gTimer=null;} if(_gTourTimer){clearTimeout(_gTourTimer);_gTourTimer=null;} if(_gAnim){clearInterval(_gAnim);_gAnim=null;}
+    if(_gTimer){clearInterval(_gTimer);_gTimer=null;} if(_gTourTimer){clearTimeout(_gTourTimer);_gTourTimer=null;} if(_gAnim){clearInterval(_gAnim);_gAnim=null;} if(_gMetaTimer){clearTimeout(_gMetaTimer);_gMetaTimer=null;}
     var b=document.getElementById('bgPlay'); if(b)b.innerHTML='&#9654;'; _gNarrStop(); }
   window.globeToggleSound=function(){ _gNarrOn=!_gNarrOn; var b=document.getElementById('bgSound'); if(b){ b.innerHTML=_gNarrOn?'&#128266;':'&#128263;'; b.classList.toggle('on',_gNarrOn); } if(!_gNarrOn)_gNarrStop(); };
   window.globeTogglePlay=function(){ if(!_gState)return; if(_gState.playing)_gPause(); else { if(_gState.year>=_gState.max)_gState.year=_gState.min; _gPlay(); } sClick&&sClick(); };
