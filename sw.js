@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v16';  // v16: Migrations map redesign "Lantern & Lines" — fill=population only (brightens w/ pop), arcs/pulses=family migration, Glow toggle deleted, "Whose journey" control, 4-row legend, named active-leg line
+const CACHE = 'familytree-v17';  // v17: mobile fix — hide the floating mode-switch chrome over the immersive life-page (was covering the top half of the dossier on phones)
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 

@@ -215,6 +215,7 @@
     #ctl .btn{padding:6px 8px;}
     #prog{left:8px;right:8px;bottom:8px;min-width:0;font-size:11px;}   /* progress bar pinned to the very bottom */
     #fact{display:none;}                 /* secondary; freed for the controls on phones */
+    body.chrome-hidden #top{display:none;}   /* immersive life-page / royal panel: the floating mode-switch bar was covering the top half of the dossier on phones */
   }
   /* instant boot indicator (hidden once the app initialises) */
   #boot{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:#e9e6dc;color:#6b6456;font-size:15px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;}
@@ -3538,7 +3539,7 @@ var HISTORY=window.HISTORY||[];
   /* Keep a SLIM persistent bar on life pages / royal sheet (brand=Home + mode tabs) so
      there's always orientation + an exit — only collapse the Explore-specific controls.
      (2026-06-23 Phase A: was hiding the entire #top → no way out of a journey.) */
-  function setChrome(hidden){ var t=document.getElementById('top'); if(t){ t.style.visibility=''; t.classList.toggle('slim',!!hidden); } }
+  function setChrome(hidden){ var t=document.getElementById('top'); if(t){ t.style.visibility=''; t.classList.toggle('slim',!!hidden); } document.body.classList.toggle('chrome-hidden',!!hidden); }
   function showFocus(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='block'; el.classList.add('bfShow'); } setChrome(true); }
   window.hideFocus=function(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='none'; el.classList.remove('bfShow'); } if(!(document.getElementById('bRoyal')||{}).classList||!document.getElementById('bRoyal').classList.contains('open')) setChrome(false); stopNarr(); };
 
