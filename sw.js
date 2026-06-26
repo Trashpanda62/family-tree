@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v11';  // v11: mobile-UX audit pass — 44px tap targets, dense-dot lanes, safe-area insets, share-record guard
+const CACHE = 'familytree-v12';  // v12: mobile home menu — fix top-card clipping (flex-center overflow), compact icon-inline cards, safe-area
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 
