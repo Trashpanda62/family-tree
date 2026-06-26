@@ -1043,7 +1043,7 @@
 <div id="toast"></div>
 
 <div id="bloodMode">
-  <button id="bBackChip" onclick="bBackToOrigin()" style="display:none">&#8592; Time Scale</button>
+  <button id="bBackChip" onclick="bBackToOrigin()">&#8592; Time Scale</button>
   <div id="bLanding"></div>
   <div id="bView">
     <div id="bStage"><div id="bBg"></div><canvas id="bFx"></canvas><div id="bFlash"></div><div id="bEraLabel"></div><div id="bTrail"></div></div>
@@ -1246,7 +1246,19 @@
   .sCard.pend{opacity:.72;cursor:default;border-left-color:#6a6a4a !important;}
   .sCard.pend:hover{transform:none;border-color:rgba(220,190,120,.16);}
   .sTag.pending{display:inline-block;margin-left:6px;font-size:9.5px;font-weight:600;color:#d6c7a0;background:rgba(90,80,40,.5);border:1px solid rgba(170,150,90,.5);border-radius:5px;padding:0 5px;vertical-align:1px;}
-  @media(max-width:600px){#bScaleHead{padding-top:96px;} .sBand{grid-template-columns:1fr 80px;} .sRailT{font-size:11px;} .sRailIc{font-size:18px;} .sBandMain{padding:14px 12px 18px;} .sCards{grid-template-columns:1fr;} .sYearBtn{margin-left:0;} .sBandArt{height:98px;} .sBandArtCap h3{font-size:18px;}}
+  @media(max-width:600px){
+    /* PHONE: the fixed header was eating ~42% of the viewport, leaving a cramped scroll
+       window. Trim it hard (drop the long blurb, collapse the line-filter into one
+       horizontally-scrollable row) and remove the redundant sticky side rail — the band's
+       own art banner already carries the tier name and scrolls with the cards. */
+    #bScaleHead{padding:94px 12px 8px;}
+    #bScaleHead h2{font-size:18px;}
+    #bScaleHead .ssub{display:none;}
+    #bScaleTools{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    #bScaleTools::-webkit-scrollbar{display:none;}
+    #bScaleTools .sSideBtn{flex:0 0 auto;}
+    .sBand{grid-template-columns:1fr;} .sBandRail{display:none;}
+    .sRailT{font-size:11px;} .sRailIc{font-size:18px;} .sBandMain{padding:14px 12px 18px;} .sCards{grid-template-columns:1fr;} .sYearBtn{margin-left:0;} .sBandArt{height:98px;} .sBandArtCap h3{font-size:18px;}}
 </style>
 <div id="bScale">
   <div id="bScaleHead">
@@ -1298,9 +1310,10 @@
   @keyframes bgRecPulse{50%{opacity:.5;}}
   #bgToast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:6;background:rgba(6,9,16,.92);border:1px solid rgba(180,200,230,.35);color:#eaf0fa;font-size:13px;padding:8px 14px;border-radius:10px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:80%;text-align:center;}
   #bgToast.show{opacity:1;}
-  #bBackChip{position:fixed;top:54px;left:12px;z-index:18;display:inline-flex;align-items:center;min-height:42px;background:rgba(14,11,7,.9);border:1px solid rgba(220,190,120,.5);color:#f0d9a6;font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:8px 16px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.5);}
+  #bBackChip{position:fixed;top:54px;left:12px;z-index:18;display:none;align-items:center;min-height:42px;background:rgba(14,11,7,.9);border:1px solid rgba(220,190,120,.5);color:#f0d9a6;font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:8px 16px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.5);}
+  #bBackChip.show{display:inline-flex;}   /* shown only on the tree/landing view; when a life-page is open the dossier header carries the back control (body.chrome-hidden rule above) */
   #bBackChip:hover{background:rgba(40,31,20,.96);}
-  @media(max-width:600px){ #bBackChip{top:50px;left:8px;font-size:12.5px;padding:8px 14px;min-height:42px;} }
+  @media(max-width:600px){ #bBackChip{top:100px;left:8px;font-size:12.5px;padding:8px 14px;min-height:42px;} }   /* sit clear of the mode-switch bar (ends ~94px) instead of overlapping it */
   .bgChip:focus-visible,.bgBtn:focus-visible,.bgScrub:focus-visible,#bgSpeed:focus-visible,#bgSound:focus-visible{outline:2px solid #f0d9a6;outline-offset:2px;}
   #bgFallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:40px;font-size:15px;color:#cdd8ec;}
   #bGlobe.nogl #bgFallback{display:flex;}
@@ -2312,7 +2325,7 @@ var HISTORY=window.HISTORY||[];
   var ANC=['stage','prog','fact','ctl','search','surpriseBtn'];
   window.setMode=function(m){
     var blood=(m==='blood'), scale=(m==='scale'), globe=(m==='globe');
-    if(!blood){ _fromMode=null; var _bbc=document.getElementById('bBackChip'); if(_bbc)_bbc.style.display='none'; }   // leaving Bloodlines clears the return-chip
+    if(!blood){ _fromMode=null; var _bbc=document.getElementById('bBackChip'); if(_bbc)_bbc.classList.remove('show'); }   // leaving Bloodlines clears the return-chip
     var hm=document.getElementById('home'); if(hm)hm.classList.remove('show');   // leaving Home
     document.getElementById('bloodMode').style.display=blood?'block':'none';
     ANC.forEach(function(id){var e=document.getElementById(id);if(e)e.style.display=(blood||scale||globe)?'none':'';});
@@ -2385,7 +2398,7 @@ var HISTORY=window.HISTORY||[];
     if(_cls('bFocus','bfShow')){ hideFocus(); return true; }
     if(typeof closeModal==='function' && _vis('modal')){ closeModal(); return true; }
     if(typeof trailStack!=='undefined' && trailStack.length){ bTrailBack(); return true; }   // step back toward today
-    if(_fromMode){ var _fm=_fromMode; _fromMode=null; var _bk=document.getElementById('bBackChip'); if(_bk)_bk.style.display='none'; if(typeof setMode==='function')setMode(_fm); return true; }   // came from Time Scale / Migrations -> back there
+    if(_fromMode){ var _fm=_fromMode; _fromMode=null; var _bk=document.getElementById('bBackChip'); if(_bk)_bk.classList.remove('show'); if(typeof setMode==='function')setMode(_fm); return true; }   // came from Time Scale / Migrations -> back there
     if(!_cls('home','show')){ showHome(); return true; }   // in a mode -> Home
     return false;   // at Home -> let the browser leave
   }
@@ -2771,8 +2784,8 @@ var HISTORY=window.HISTORY||[];
   // CHIP returns there on demand; we DON'T auto-bounce on hideFocus, so the bloodline stays fully
   // explorable (you can follow the line back and read the ancestry leading to the person).
   var _fromMode=null;
-  function _showBackChip(){ var c=document.getElementById('bBackChip'); if(!c)return; if(_fromMode){ c.innerHTML=(_fromMode==='globe'?'&#8592; Migrations':'&#8592; Time Scale'); c.style.display='inline-flex'; } else c.style.display='none'; }
-  window.bBackToOrigin=function(){ var m=_fromMode; _fromMode=null; var c=document.getElementById('bBackChip'); if(c)c.style.display='none'; if(m && typeof setMode==='function') setMode(m); };
+  function _showBackChip(){ var c=document.getElementById('bBackChip'); if(!c)return; if(_fromMode){ c.innerHTML=(_fromMode==='globe'?'&#8592; Migrations':'&#8592; Time Scale'); c.classList.add('show'); } else c.classList.remove('show'); }
+  window.bBackToOrigin=function(){ var m=_fromMode; _fromMode=null; var c=document.getElementById('bBackChip'); if(c)c.classList.remove('show'); if(m && typeof setMode==='function') setMode(m); };
   window.bScalePerson=function(id, lineKey){
     if(typeof sClick==='function')sClick();
     var line=BL.filter(function(b){return b.key===lineKey;})[0];
