@@ -1210,11 +1210,18 @@
   .sTLdot:hover .sTLlbl,.sTLdot:focus .sTLlbl{opacity:1;}
   #bScale.tl #bScaleBody{padding-right:76px;}
   @media(max-width:600px){
-    #sTimeline{width:56px;padding-right:6px;}   /* room for up to 3 staggered lanes in dense clusters */
+    /* PHONE: the rail is a PASSIVE ruler — native swipe scrolls the page, dots sit ON a centered
+       line and are hard-clipped inside the rail so they can never paint over the content cards. */
+    #sTimeline{width:56px;padding-right:6px;overflow:hidden;}
+    #sTLtrack{touch-action:pan-y;cursor:default;margin-left:24px;}    /* native vertical scroll passes through; line centred so dots stay inside */
     .sTLtick{display:none;} .sTLlbl{display:none;}
-    .sTLdot{width:20px;height:20px;}            /* bigger, easier-to-tap dots */
-    .sTLdot::before{width:44px;height:40px;}    /* generous tap hit-area */
-    #sTLnow{width:13px;height:13px;left:-8px;}
+    .sTLdot{width:20px;height:20px;left:0;transform:translate(-50%,-50%);pointer-events:auto;touch-action:pan-y;}
+    .sTLdot::before{width:30px;height:44px;}     /* 44px tap target by HEIGHT — stays within the rail width */
+    .sTLdot:hover,.sTLdot:focus{transform:translate(-50%,-50%) scale(1.4);outline:none;}
+    .sTLdot.cluster{width:24px;height:24px;background:#e7b94a;}
+    .sTLbadge{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:9px;font-weight:700;color:#0e0b07;pointer-events:none;}
+    #sTLnow{width:13px;height:13px;left:0;transform:translate(-50%,-50%);}
+    #sTLfill{left:0;transform:translateX(-50%);}
     #bScale.tl #bScaleBody{padding-right:58px;}
   }
   /* --- region×era sub-sections --- */
@@ -2804,13 +2811,36 @@ var HISTORY=window.HISTORY||[];
     // individually tappable without drifting off its tick.
     var dotList=M.map(function(m){ var midY=(m.y2&&m.y2!==m.y)?Math.round((m.y+m.y2)/2):m.y; return {m:m, top:tlYearToFrac(midY)*100}; });
     dotList.sort(function(a,b){ return a.top-b.top; });
-    var MINGAP=1.8, lastTop=-99, lane=0;
-    dotList.forEach(function(d){ lane=(d.top-lastTop<MINGAP)?Math.min(lane+1,3):0; d.lane=lane; lastTop=d.top; });
-    dotList.forEach(function(d){ var m=d.m, n=m.provenCount+(m.livedCount||0);
-      th+='<button class="sTLdot'+(m.thin?' thin':'')+'" style="top:'+d.top.toFixed(2)+'%;left:'+(-3 - d.lane*12)+'px;z-index:'+(2+d.lane)+'" title="'+EQ(m.name)+'" data-key="'+EQ(m.key)+'"><span class="sTLlbl">'+E(m.name)+' &middot; '+n+'</span></button>';
-    });
+    var _mob=!!(window.matchMedia&&window.matchMedia('(max-width:600px)').matches);
+    if(_mob){
+      // PHONE: dots sit ON the line; near-year markers MERGE into one count-badge cluster (no left
+      // stagger that bled over the content) — see the @media rail rules + openCluster.
+      var MINGAP=3.2, clusters=[], cc=null;
+      dotList.forEach(function(d){ if(cc && d.top-cc.top<MINGAP){ cc.members.push(d.m); } else { cc={top:d.top, members:[d.m]}; clusters.push(cc); } });
+      window._tlClusters={};
+      clusters.forEach(function(c,ci){
+        if(c.members.length===1){ var m=c.members[0];
+          th+='<button class="sTLdot'+(m.thin?' thin':'')+'" style="top:'+c.top.toFixed(2)+'%" title="'+EQ(m.name)+'" data-key="'+EQ(m.key)+'"></button>';
+        } else { var ck='cluster:'+ci; window._tlClusters[ck]=c.members.map(function(mm){return mm.key;});
+          th+='<button class="sTLdot cluster" style="top:'+c.top.toFixed(2)+'%" title="'+EQ(c.members.length+' moments in this span')+'" data-cluster="'+EQ(ck)+'"><span class="sTLbadge">'+c.members.length+'</span></button>';
+        }
+      });
+    } else {
+      var MINGAP=1.8, lastTop=-99, lane=0;
+      dotList.forEach(function(d){ lane=(d.top-lastTop<MINGAP)?Math.min(lane+1,3):0; d.lane=lane; lastTop=d.top; });
+      dotList.forEach(function(d){ var m=d.m, n=m.provenCount+(m.livedCount||0);
+        th+='<button class="sTLdot'+(m.thin?' thin':'')+'" style="top:'+d.top.toFixed(2)+'%;left:'+(-3 - d.lane*12)+'px;z-index:'+(2+d.lane)+'" title="'+EQ(m.name)+'" data-key="'+EQ(m.key)+'"><span class="sTLlbl">'+E(m.name)+' &middot; '+n+'</span></button>';
+      });
+    }
     track.innerHTML=th;
     if(!_tlWired){ wireTimeline(); _tlWired=true; }
+    if(_mob){   // phones: per-dot tap handlers (the rail no longer runs the tap-vs-drag scrub pipeline)
+      [].forEach.call(track.querySelectorAll('.sTLdot'),function(btn){
+        btn.addEventListener('click',function(){ var ck=btn.getAttribute('data-cluster');
+          if(ck){ if(typeof openCluster==='function')openCluster(ck); }
+          else { var k=btn.getAttribute('data-key'); if(k&&typeof openDot==='function')openDot(k); } });
+      });
+    }
     tlSync();
   }
   function tlSync(){
@@ -2823,6 +2853,7 @@ var HISTORY=window.HISTORY||[];
     var body=document.getElementById('bScaleBody'), track=document.getElementById('sTLtrack');
     if(body) body.addEventListener('scroll', tlSync, {passive:true});
     if(!track) return;
+    if(window.matchMedia&&window.matchMedia('(max-width:600px)').matches) return;   // phones: native swipe scrolls; dot taps handled per-dot in buildTimeline
     function toScroll(clientY){
       var r=track.getBoundingClientRect(), f=Math.max(0,Math.min(1,(clientY-r.top)/r.height));
       var max=body.scrollHeight-body.clientHeight; body.scrollTop=f*max;
@@ -2873,6 +2904,18 @@ var HISTORY=window.HISTORY||[];
   };
   window.closeDot=function(){ var h=document.getElementById('sDotPanel'); if(h) h.classList.remove('open'); };
   window.dotGoPerson=function(id,line){ closeDot(); if(typeof bScalePerson==='function') bScalePerson(id,line); };
+  // mobile cluster dot → merge its member markers into one synthetic marker and open the same panel
+  window.openCluster=function(ck){
+    var keys=(window._tlClusters||{})[ck]||[]; if(!keys.length) return;
+    var M=window.TLMARKERS||[]; for(var i=M.length-1;i>=0;i--){ if(M[i].key===ck) M.splice(i,1); }   // drop any stale synth with this key
+    var mem=keys.map(function(k){ for(var j=0;j<M.length;j++) if(M[j].key===k) return M[j]; }).filter(Boolean);
+    if(!mem.length) return;
+    var ys=[]; mem.forEach(function(m){ ys.push(m.y); ys.push(m.y2||m.y); });
+    var lo=Math.min.apply(null,ys), hi=Math.max.apply(null,ys), proven=[], lived=[], pc=0, lc=0;
+    mem.forEach(function(m){ proven=proven.concat(m.proven||[]); lived=lived.concat(m.lived||[]); pc+=m.provenCount||0; lc+=m.livedCount||0; });
+    M.push({key:ck,name:mem.map(function(m){return m.name;}).join(' · '),y:lo,y2:hi,ctx:'Several moments clustered close in time ('+lo+'–'+hi+').',proven:proven,lived:lived,provenCount:pc,livedCount:lc});
+    window.TLMARKERS=M; openDot(ck);
+  };
   window.addEventListener('keydown', function(e){ if(e.key==='Escape' && _cls('sDotPanel','open')){ closeDot(); } });
 
   // ===== Migrations globe (plan c-000549) — globe.gl + window.MIG + TLMARKERS events =====

@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v18';  // v18: mobile dossier redesign "One Clean Scroll" — docs + timeline fold into collapsible panels (hero-first), slim album header w/ ← Bloodlines back-to-selection
+const CACHE = 'familytree-v19';  // v19: Time Scale mobile rail redesign "Rail-Ruler" — passive clipped rail (native scroll, dots never cover content), near-year events merge into count-badge clusters
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 
