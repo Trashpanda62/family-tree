@@ -131,18 +131,68 @@
   .homeAbout{margin-top:16px;background:none;border:none;color:#c9b894;font-size:13px;cursor:pointer;text-decoration:underline;font:inherit;}
   #homeAboutPanel{display:none;max-width:580px;margin:18px auto 0;text-align:left;background:rgba(20,15,9,.82);border:1px solid rgba(220,190,120,.35);border-radius:14px;padding:17px 21px;font-size:13.5px;color:#e3d7bf;line-height:1.65;backdrop-filter:blur(4px);}
   #homeAboutPanel.show{display:block;} #homeAboutPanel b{color:#f0dcab;}
+  /* gold center rule under the wordmark (harmless on desktop, part of the mobile masthead) */
+  .brandRule{width:64px;height:1px;margin:14px auto 0;background:linear-gradient(90deg,transparent,#e0b85a,transparent);opacity:.9;}
+  /* The mobile redesign adds a flagship card + 3 accent rows. On DESKTOP all that extra chrome is
+     neutralized here so the existing 4-cards-in-a-row layout is unchanged; the heavy styling lives
+     only in the @media(max-width:600px) block below. */
+  .hcDivider,.flag .seal,.flag .ribbon{display:none;}
+  .homeCard.flag::before,.homeCard.sec::before,.homeCard.sec::after{display:none;}
+  .flag .frow{display:contents;}      /* ribbon hidden → flagship icon flows like a normal card icon */
+  .sec .hcBody{display:contents;}     /* wrapper dissolves → title+desc flow like a normal card */
   @media(max-width:600px){
     .homeWrap{padding:calc(30px + env(safe-area-inset-top)) 15px calc(30px + env(safe-area-inset-bottom));}
-    .homeCrest{font-size:33px;} .homeBrand{font-size:34px;}
-    .homeTag{font-size:13.5px;margin:9px auto 18px;}
-    .homeCards{flex-direction:column;gap:12px;}
-    /* compact card: icon sits inline next to the title, description + CTA span full width below */
-    .homeCard{display:grid;grid-template-columns:auto 1fr;column-gap:13px;align-items:center;padding:15px 16px;}
-    .hcIcon{grid-column:1;grid-row:1;font-size:27px;align-self:center;}
-    .hcTitle{grid-column:2;grid-row:1;font-size:18px;margin:0;align-self:center;}
-    .hcDesc{grid-column:1/3;grid-row:2;font-size:13px;margin-top:7px;}
-    .hcGo{grid-column:1/3;grid-row:3;margin-top:9px;}
-    .homeStat{margin-top:20px;}
+    .homeCrest{font-size:33px;} .homeBrand{font-size:38px;}
+    .brandRule{margin-top:11px;}
+    .homeTag{font-family:Georgia,serif;font-style:italic;font-size:13.5px;margin:11px auto 13px;max-width:300px;}
+    .homeStat{margin:0 0 20px;font-size:12px;}
+    .homeCards{display:flex;flex-direction:column;gap:10px;text-align:left;}
+    .homeAbout{min-height:44px;}
+
+    /* ---------- flagship: "Trace a Bloodline" ---------- */
+    .homeCard.flag{position:relative;display:block;width:100%;margin-bottom:4px;padding:20px 18px 18px 26px;overflow:hidden;
+      border:1px solid rgba(224,184,90,.58);border-radius:20px;
+      background:radial-gradient(135% 110% at 0% 0%,rgba(224,184,90,.16),transparent 48%),linear-gradient(180deg,rgba(58,42,22,.66),rgba(40,29,16,.80));
+      box-shadow:0 14px 36px rgba(0,0,0,.46),inset 0 1px 0 rgba(243,230,198,.10);}
+    .homeCard.flag:active{transform:scale(.985);}
+    .homeCard.flag::before{content:"";display:block;position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 4px 4px 0;
+      background:linear-gradient(180deg,#f0dcab,#e0b85a 45%,#b0152d);box-shadow:0 0 14px -1px rgba(224,184,90,.7);}   /* gold→blood "bloodline" spine */
+    .flag .seal{display:inline-block;position:absolute;top:0;right:14px;z-index:3;font-family:Georgia,serif;font-style:italic;font-size:10px;letter-spacing:.10em;
+      color:#2a1a0a;background:linear-gradient(180deg,#f0dcab,#e0b85a);padding:4px 11px 5px;border-radius:0 0 8px 8px;box-shadow:0 4px 10px rgba(0,0,0,.4);}
+    .flag .frow{display:flex;align-items:center;gap:11px;margin-bottom:10px;}
+    .flag .ribbon{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:#0d0905;
+      background:linear-gradient(180deg,#f3e6c6,#e0b85a);padding:4px 10px;border-radius:999px;}
+    .flag .hcIcon{font-size:29px;margin-left:auto;filter:drop-shadow(0 2px 5px rgba(0,0,0,.6));}
+    .flag .hcTitle{font-size:24px;margin:0;color:#f7e8bf;text-shadow:0 2px 12px rgba(0,0,0,.55);}
+    .flag .hcDesc{font-size:13px;color:#e3d8c0;line-height:1.55;margin:8px 0 15px;}
+    .flag .hcGo{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;margin:0;border-radius:13px;padding:13px 16px;
+      background:linear-gradient(180deg,#e9c570,#dca747);color:#241400;font-weight:700;font-size:15px;box-shadow:0 4px 14px rgba(224,184,90,.3);}
+
+    /* ---------- labeled divider ---------- */
+    .hcDivider{display:flex;align-items:center;gap:11px;margin:8px 2px 6px;}
+    .hcDivider::before,.hcDivider::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(220,190,120,.35),transparent);}
+    .hcDivider span{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#b09c78;}
+
+    /* ---------- secondary rows ---------- */
+    .homeCard.sec{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;column-gap:13px;width:100%;min-height:64px;
+      padding:13px 14px 13px 18px;overflow:hidden;background:rgba(28,22,15,.60);border:1px solid rgba(220,190,120,.26);border-radius:15px;}
+    .homeCard.sec:active{transform:scale(.985);background:rgba(40,31,20,.74);}
+    .homeCard.sec::before{content:"";display:block;position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;
+      background:var(--accent,#cda85a);box-shadow:0 0 10px -1px var(--accent,#cda85a);}                          /* per-mode accent spine */
+    .homeCard.sec::after{content:"";display:block;position:absolute;inset:0;pointer-events:none;
+      background:radial-gradient(120% 80% at 8% 0%,var(--tint,rgba(224,184,90,.16)) 0%,transparent 60%);}        /* warm tint wash */
+    .sec .hcIcon{position:relative;z-index:1;grid-column:1;font-size:22px;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      margin:0;background:var(--chip,rgba(220,190,120,.12));border:1px solid var(--chipln,rgba(220,190,120,.22));}
+    .sec .hcBody{display:block;position:relative;z-index:1;grid-column:2;min-width:0;}
+    .sec .hcTitle{font-size:17px;margin:0;}
+    .sec .hcDesc{font-size:12px;color:#cabfa3;line-height:1.4;margin:2px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .sec .hcGo{position:relative;z-index:1;grid-column:3;display:flex;align-items:center;justify-content:center;width:26px;height:26px;margin:0;font-size:0;color:var(--accent,#cda85a);}
+    .sec .hcGo::after{content:"\203A";font-size:21px;}    /* swap the desktop CTA text for a chevron on phones */
+
+    /* per-mode family-color coding (Migrations = Maxfield green; the rest = Harris gold) */
+    .m-anc{--accent:#c9a253;--chip:rgba(201,162,83,.14);--chipln:rgba(201,162,83,.30);--tint:rgba(224,184,90,.16);}
+    .m-scale{--accent:#b98f4a;--chip:rgba(185,143,74,.14);--chipln:rgba(185,143,74,.30);--tint:rgba(143,178,150,.14);}
+    .m-globe{--accent:#2f8a5a;--chip:rgba(47,138,90,.16);--chipln:rgba(47,138,90,.34);--tint:rgba(47,138,90,.18);}
   }
   /* live search results dropdown (Explore) */
   #searchWrap{position:relative;flex:1;min-width:130px;max-width:300px;pointer-events:auto;}
@@ -937,23 +987,27 @@
 <div id="home"><div class="homeWrap">
   <div class="homeCrest">&#127795;</div>
   <div class="homeBrand">Bloodlines</div>
-  <div class="homeTag">Five centuries of one family, gathered in one place. See everyone at once &mdash; or pick a grandparent and trace a single bloodline back through the generations to its Source.</div>
+  <div class="brandRule"></div>
+  <div class="homeTag">Five centuries of one family, gathered in one place.</div>
   <div class="homeCards">
-    <button class="homeCard" onclick="goMode('anc')">
-      <div class="hcIcon">&#128269;</div><div class="hcTitle">Explore the Tree</div>
-      <div class="hcDesc">See everyone at once. Pan, zoom and search the whole family &mdash; tap anyone to read their records.</div>
-      <div class="hcGo">Open the tree &#8594;</div></button>
-    <button class="homeCard" onclick="goMode('blood')">
-      <div class="hcIcon">&#129656;</div><div class="hcTitle">Trace a Bloodline</div>
+    <button class="homeCard flag" onclick="goMode('blood')">
+      <span class="seal">Begin here</span>
+      <span class="frow"><span class="ribbon">The signature journey</span><span class="hcIcon">&#129656;</span></span>
+      <div class="hcTitle">Trace a Bloodline</div>
       <div class="hcDesc">Pick a grandparent and journey back in time, generation by generation, with each ancestor&rsquo;s life story along the way.</div>
-      <div class="hcGo">Start a journey &#8594;</div></button>
-    <button class="homeCard" onclick="goMode('scale')">
-      <div class="hcIcon">&#9202;</div><div class="hcTitle">The Time Scale</div>
-      <div class="hcDesc">Every ancestor in one tall column &mdash; documented kin, then history, then myth &amp; legend, down to our shared African roots.</div>
+      <div class="hcGo">Start a journey <span>&#8594;</span></div></button>
+    <div class="hcDivider"><span>or explore another way</span></div>
+    <button class="homeCard sec m-anc" onclick="goMode('anc')">
+      <div class="hcIcon">&#128269;</div>
+      <div class="hcBody"><div class="hcTitle">Explore the Tree</div><div class="hcDesc">See everyone at once &middot; tap anyone for their records.</div></div>
+      <div class="hcGo">Open the tree &#8594;</div></button>
+    <button class="homeCard sec m-scale" onclick="goMode('scale')">
+      <div class="hcIcon">&#9202;</div>
+      <div class="hcBody"><div class="hcTitle">The Time Scale</div><div class="hcDesc">Documented kin down to our shared African roots.</div></div>
       <div class="hcGo">Descend the layers &#8594;</div></button>
-    <button class="homeCard" onclick="goMode('globe')">
-      <div class="hcIcon">&#127757;</div><div class="hcTitle">Migrations</div>
-      <div class="hcDesc">Watch the family cross the world on a living globe &mdash; arcs sweep from the old country to the new as the centuries roll, countries glow, and history happens around them.</div>
+    <button class="homeCard sec m-globe" onclick="goMode('globe')">
+      <div class="hcIcon">&#127757;</div>
+      <div class="hcBody"><div class="hcTitle">Migrations</div><div class="hcDesc">Watch the family cross the world on a living globe.</div></div>
       <div class="hcGo">Spin the globe &#8594;</div></button>
   </div>
   <div class="homeStat" id="homeStat"></div>

@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v12';  // v12: mobile home menu — fix top-card clipping (flex-center overflow), compact icon-inline cards, safe-area
+const CACHE = 'familytree-v13';  // v13: mobile home menu redesign — cinematic masthead + flagship bloodline card + color-coded accent rows
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 
