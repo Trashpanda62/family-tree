@@ -958,6 +958,7 @@
 <div id="toast"></div>
 
 <div id="bloodMode">
+  <button id="bBackChip" onclick="bBackToOrigin()" style="display:none">&#8592; Time Scale</button>
   <div id="bLanding"></div>
   <div id="bView">
     <div id="bStage"><div id="bBg"></div><canvas id="bFx"></canvas><div id="bFlash"></div><div id="bEraLabel"></div><div id="bTrail"></div></div>
@@ -1197,6 +1198,9 @@
   @keyframes bgRecPulse{50%{opacity:.5;}}
   #bgToast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:6;background:rgba(6,9,16,.92);border:1px solid rgba(180,200,230,.35);color:#eaf0fa;font-size:13px;padding:8px 14px;border-radius:10px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:80%;text-align:center;}
   #bgToast.show{opacity:1;}
+  #bBackChip{position:fixed;top:54px;left:12px;z-index:16;background:rgba(14,11,7,.9);border:1px solid rgba(220,190,120,.5);color:#f0d9a6;font:inherit;font-size:13px;font-weight:600;border-radius:999px;padding:7px 14px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.5);}
+  #bBackChip:hover{background:rgba(40,31,20,.96);}
+  @media(max-width:600px){ #bBackChip{top:50px;left:8px;font-size:12px;padding:6px 12px;} }
   .bgChip:focus-visible,.bgBtn:focus-visible,.bgScrub:focus-visible,#bgSpeed:focus-visible,#bgSound:focus-visible{outline:2px solid #f0d9a6;outline-offset:2px;}
   #bgFallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:40px;font-size:15px;color:#cdd8ec;}
   #bGlobe.nogl #bgFallback{display:flex;}
@@ -2187,6 +2191,7 @@ var HISTORY=window.HISTORY||[];
   var ANC=['stage','prog','fact','ctl','search','surpriseBtn'];
   window.setMode=function(m){
     var blood=(m==='blood'), scale=(m==='scale'), globe=(m==='globe');
+    if(!blood){ _fromMode=null; var _bbc=document.getElementById('bBackChip'); if(_bbc)_bbc.style.display='none'; }   // leaving Bloodlines clears the return-chip
     var hm=document.getElementById('home'); if(hm)hm.classList.remove('show');   // leaving Home
     document.getElementById('bloodMode').style.display=blood?'block':'none';
     ANC.forEach(function(id){var e=document.getElementById(id);if(e)e.style.display=(blood||scale||globe)?'none':'';});
@@ -2259,6 +2264,7 @@ var HISTORY=window.HISTORY||[];
     if(_cls('bFocus','bfShow')){ hideFocus(); return true; }
     if(typeof closeModal==='function' && _vis('modal')){ closeModal(); return true; }
     if(typeof trailStack!=='undefined' && trailStack.length){ bTrailBack(); return true; }   // step back toward today
+    if(_fromMode){ var _fm=_fromMode; _fromMode=null; var _bk=document.getElementById('bBackChip'); if(_bk)_bk.style.display='none'; if(typeof setMode==='function')setMode(_fm); return true; }   // came from Time Scale / Migrations -> back there
     if(!_cls('home','show')){ showHome(); return true; }   // in a mode -> Home
     return false;   // at Home -> let the browser leave
   }
@@ -2640,17 +2646,22 @@ var HISTORY=window.HISTORY||[];
   // Clicking a Time Scale card opens the FULL Bloodlines life-page (story, records, timeline,
   // narration — the rich HUD). We tag the trip so closing/back returns to the Time Scale
   // instead of the Bloodlines selection screen (see hideFocus).
-  var _scaleReturn=false;
+  // 'scale' | 'globe' | null — where a Time Scale / Migrations person-tap came from. A "back"
+  // CHIP returns there on demand; we DON'T auto-bounce on hideFocus, so the bloodline stays fully
+  // explorable (you can follow the line back and read the ancestry leading to the person).
+  var _fromMode=null;
+  function _showBackChip(){ var c=document.getElementById('bBackChip'); if(!c)return; if(_fromMode){ c.innerHTML=(_fromMode==='globe'?'&#8592; Migrations':'&#8592; Time Scale'); c.style.display='block'; } else c.style.display='none'; }
+  window.bBackToOrigin=function(){ var m=_fromMode; _fromMode=null; var c=document.getElementById('bBackChip'); if(c)c.style.display='none'; if(m && typeof setMode==='function') setMode(m); };
   window.bScalePerson=function(id, lineKey){
     if(typeof sClick==='function')sClick();
     var line=BL.filter(function(b){return b.key===lineKey;})[0];
     if(!line){ for(var i=0;i<BL.length;i++){ if(BL[i].nodes.some(function(x){return x.id===id;})){ line=BL[i]; break; } } }
     if(!line) return;
-    _scaleReturn=false;               // cleared while opening (openLine fires hideFocus internally)
-    setMode('blood');                 // full Bloodlines page (+ ambiance)
+    _fromMode = _cls('bGlobe','open')?'globe':(_cls('bScale','open')?'scale':_fromMode);   // remember origin BEFORE switching modes
+    setMode('blood');                 // full Bloodlines page — fully explorable, no auto-bounce
     openLine(line.key);
     if(typeof bRevealAll==='function') bRevealAll();
-    setTimeout(function(){ _scaleReturn=true; if(typeof bFocusId==='function') bFocusId(id); }, 200);
+    setTimeout(function(){ if(typeof bFocusId==='function') bFocusId(id); _showBackChip(); }, 200);
   };
   window.bScaleClosePerson=function(){ var el=document.getElementById('sPerson'); if(el) el.classList.remove('open'); };
 
@@ -2941,7 +2952,7 @@ var HISTORY=window.HISTORY||[];
       '<div class="lgrow"><i style="background:#f0d9a6"></i>net arrivals</div><div class="lgrow"><i style="background:#4a78c8"></i>net departures</div>'+
       '<div class="lgrow"><i style="background:#5aa0ee"></i>Harris</div><div class="lgrow"><i style="background:#46d39a"></i>Maxfield</div><div class="lgrow"><i style="background:#e0563a"></i>event</div>';
   }
-  window.globePerson=function(id){ globeClosePeople(); _globeReturn=true; if(typeof bScalePerson==='function') bScalePerson(id,''); };
+  window.globePerson=function(id){ globeClosePeople(); if(typeof bScalePerson==='function') bScalePerson(id,''); };
   window.globeCountry=function(f){
     var iso=_iso(f), nm=f.properties.NAME||iso, MIG=window.MIG, year=_gState.year, arr=[], left=[], s={};
     MIG.legs.forEach(function(l){ if(l.year>year)return; if(l.toIso===iso&&!s['a'+l.id]){s['a'+l.id]=1;arr.push(l);} if(l.fromIso===iso&&!s['l'+l.id]){s['l'+l.id]=1;left.push(l);} });
@@ -3394,9 +3405,7 @@ var HISTORY=window.HISTORY||[];
      (2026-06-23 Phase A: was hiding the entire #top → no way out of a journey.) */
   function setChrome(hidden){ var t=document.getElementById('top'); if(t){ t.style.visibility=''; t.classList.toggle('slim',!!hidden); } }
   function showFocus(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='block'; el.classList.add('bfShow'); } setChrome(true); }
-  window.hideFocus=function(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='none'; el.classList.remove('bfShow'); } if(!(document.getElementById('bRoyal')||{}).classList||!document.getElementById('bRoyal').classList.contains('open')) setChrome(false); stopNarr();
-    if(_globeReturn){ _globeReturn=false; _scaleReturn=false; if(typeof setMode==='function') setMode('globe'); return; }
-    if(_scaleReturn){ _scaleReturn=false; if(typeof setMode==='function') setMode('scale'); } };
+  window.hideFocus=function(){ var el=document.getElementById('bFocus'); if(el){ el.style.display='none'; el.classList.remove('bfShow'); } if(!(document.getElementById('bRoyal')||{}).classList||!document.getElementById('bRoyal').classList.contains('open')) setChrome(false); stopNarr(); };
 
   /* ---- the trail ribbon: a road along the bottom; a covered wagon rolls from
      'today' toward the Source as you travel back, milestone dot per generation ---- */
