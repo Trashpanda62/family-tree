@@ -1124,7 +1124,14 @@
   .sTLlbl{position:absolute;right:22px;top:50%;transform:translateY(-50%);background:rgba(14,11,7,.95);border:1px solid rgba(220,190,120,.4);color:#efe6d6;font-size:11px;padding:3px 8px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;}
   .sTLdot:hover .sTLlbl,.sTLdot:focus .sTLlbl{opacity:1;}
   #bScale.tl #bScaleBody{padding-right:76px;}
-  @media(max-width:600px){ #sTimeline{width:30px;padding-right:5px;} .sTLtick{display:none;} .sTLlbl{display:none;} #bScale.tl #bScaleBody{padding-right:33px;} }
+  @media(max-width:600px){
+    #sTimeline{width:48px;padding-right:6px;}
+    .sTLtick{display:none;} .sTLlbl{display:none;}
+    .sTLdot{width:20px;height:20px;}            /* bigger, easier-to-tap dots */
+    .sTLdot::before{width:46px;height:36px;}    /* generous tap hit-area */
+    #sTLnow{width:13px;height:13px;left:-8px;}
+    #bScale.tl #bScaleBody{padding-right:50px;}
+  }
   /* --- region×era sub-sections --- */
   .sSub{margin:16px 0 4px;}
   .sSubHd{display:flex;align-items:baseline;gap:9px;margin:0 0 9px;padding-bottom:5px;border-bottom:1px solid rgba(220,190,120,.18);}
@@ -2695,7 +2702,7 @@ var HISTORY=window.HISTORY||[];
     var MINGAP=1.4, lastTop=-99, lane=0;
     dotList.forEach(function(d){ lane=(d.top-lastTop<MINGAP)?Math.min(lane+1,2):0; d.lane=lane; lastTop=d.top; });
     dotList.forEach(function(d){ var m=d.m, n=m.provenCount+(m.livedCount||0);
-      th+='<button class="sTLdot'+(m.thin?' thin':'')+'" style="top:'+d.top.toFixed(2)+'%;left:'+(-3 - d.lane*11)+'px" title="'+EQ(m.name)+'" onclick="openDot(\''+EQ(m.key)+'\')"><span class="sTLlbl">'+E(m.name)+' &middot; '+n+'</span></button>';
+      th+='<button class="sTLdot'+(m.thin?' thin':'')+'" style="top:'+d.top.toFixed(2)+'%;left:'+(-3 - d.lane*11)+'px" title="'+EQ(m.name)+'" data-key="'+EQ(m.key)+'"><span class="sTLlbl">'+E(m.name)+' &middot; '+n+'</span></button>';
     });
     track.innerHTML=th;
     if(!_tlWired){ wireTimeline(); _tlWired=true; }
@@ -2711,16 +2718,25 @@ var HISTORY=window.HISTORY||[];
     var body=document.getElementById('bScaleBody'), track=document.getElementById('sTLtrack');
     if(body) body.addEventListener('scroll', tlSync, {passive:true});
     if(!track) return;
-    var dragging=false;
     function toScroll(clientY){
       var r=track.getBoundingClientRect(), f=Math.max(0,Math.min(1,(clientY-r.top)/r.height));
       var max=body.scrollHeight-body.clientHeight; body.scrollTop=f*max;
     }
-    track.addEventListener('pointerdown', function(e){ if(e.target.closest('.sTLdot'))return; dragging=true; body.style.scrollBehavior='auto'; try{track.setPointerCapture(e.pointerId);}catch(_){} toScroll(e.clientY); e.preventDefault(); });
-    track.addEventListener('pointermove', function(e){ if(dragging) toScroll(e.clientY); });
-    function endDrag(){ dragging=false; body.style.scrollBehavior=''; }
-    track.addEventListener('pointerup', endDrag);
-    track.addEventListener('pointercancel', endDrag);
+    // Tap-vs-drag on the WHOLE rail (dots included): a small move = scrub the page; a clean tap on
+    // a dot opens that event; a clean tap on empty rail seeks there. This is what makes the rail
+    // both scrubbable AND its dots tappable on mobile (previously the dots' hit-areas blanketed the
+    // rail and pressing one bailed out of the drag, so neither scroll nor tap worked).
+    var down=false, moved=false, startY=0, dotEl=null;
+    track.addEventListener('pointerdown', function(e){ down=true; moved=false; startY=e.clientY; dotEl=(e.target&&e.target.closest)?e.target.closest('.sTLdot'):null; try{track.setPointerCapture(e.pointerId);}catch(_){} });
+    track.addEventListener('pointermove', function(e){ if(!down)return;
+      if(!moved){ if(Math.abs(e.clientY-startY)>7){ moved=true; body.style.scrollBehavior='auto'; } else return; }
+      e.preventDefault(); toScroll(e.clientY); });
+    function up(e){ if(!down)return; down=false; body.style.scrollBehavior='';
+      if(!moved){ if(dotEl){ var k=dotEl.getAttribute('data-key'); if(k&&typeof openDot==='function') openDot(k); }
+                  else { toScroll(e.clientY); } }
+      moved=false; dotEl=null; }
+    track.addEventListener('pointerup', up);
+    track.addEventListener('pointercancel', function(){ down=false; moved=false; dotEl=null; body.style.scrollBehavior=''; });
   }
   // ----- dot people panel: proven (with evidence) + lived-through (muted) -----
   function dotCard(c){

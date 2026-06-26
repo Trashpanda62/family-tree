@@ -1,5 +1,5 @@
 /* Bloodlines PWA service worker — cache-first for assets, network-first for the app shell */
-const CACHE = 'familytree-v9';  // v9: explore-bloodline-from-event fix (no auto-bounce; back chip)
+const CACHE = 'familytree-v10';  // v10: mobile timeline — whole-rail tap-vs-drag scrub + bigger tappable dots
 const SHELL = ['./'];
 const ASSET_GLOBS = [/^bg\//, /^audio\//, /^narration\//, /^docs-img\//, /^vendor\//];
 
