@@ -1284,6 +1284,11 @@
   #bgChapter{display:block;margin-top:6px;max-width:88%;margin-left:auto;margin-right:auto;}
   .bgEv{display:inline-block;margin:3px;padding:3px 10px;font-size:11.5px;border:1px solid #d4a017;border-radius:999px;background:rgba(6,9,16,.72);color:#eaf0fa;text-shadow:none;font-family:inherit;}
   .bgEv.clk{cursor:pointer;pointer-events:auto;}
+  .bgEvDot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px;}
+  #bgKey{display:none;margin-top:7px;}
+  .bgKi{display:inline-flex;align-items:center;gap:4px;margin:2px 6px;font-size:11px;color:#dfe8f5;text-shadow:0 1px 6px rgba(0,0,0,.92);}
+  .bgKi i{width:10px;height:10px;border-radius:3px;display:inline-block;flex:0 0 auto;}
+  @media(min-width:601px){#bgKey{display:none !important;}}   /* desktop uses the corner legend instead */
   #bgCaption{position:absolute;left:50%;transform:translateX(-50%);bottom:128px;width:min(680px,90%);text-align:center;font-size:15px;line-height:1.55;color:#eef4ff;text-shadow:0 2px 12px rgba(0,0,0,.95);z-index:3;pointer-events:none;opacity:0;transition:opacity .5s;}
   #bgCaption.show{opacity:1;}
   #bgLegend{position:absolute;top:120px;right:14px;z-index:3;background:rgba(6,9,16,.6);border:1px solid rgba(150,180,220,.2);border-radius:10px;padding:9px 11px;font-size:11px;line-height:1.7;color:#cdd8ec;backdrop-filter:blur(4px);max-width:170px;}
@@ -1294,7 +1299,7 @@
   #bgCtlRow{display:flex;align-items:center;gap:11px;}
   .bgBtn{flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:1px solid rgba(220,190,120,.5);background:rgba(40,33,20,.8);color:#f0d9a6;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .bgBtn:active{transform:scale(.94);}
-  .bgScrub{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:rgba(180,200,230,.25);outline:none;}
+  .bgScrub{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:rgba(180,200,230,.25);outline:none;}
   .bgScrub::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#f0d9a6;border:2px solid #05060a;cursor:pointer;box-shadow:0 0 0 2px #caa24a;}
   .bgScrub::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#f0d9a6;border:2px solid #05060a;cursor:pointer;}
   .bgChips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
@@ -1326,8 +1331,9 @@
   .bgpSub{font-size:12.5px;color:#bcd0ec;}
   @media(max-width:600px){
     #bgYear{font-size:34px;} #bgLegend{display:none;} #bgCaption{bottom:158px;font-size:13.5px;}
+    #bgCtl{padding-left:11px;padding-right:11px;} #bgCtlRow{gap:8px;}   /* tighten so all five controls fit — Share was clipping off the right edge */
     .bgBtn{width:42px;height:42px;}
-    #bgSpeed,#bgSound,#bgShare{min-height:42px;padding:8px 14px;display:inline-flex;align-items:center;}   /* 44-ish touch targets */
+    #bgSpeed,#bgSound,#bgShare{min-height:42px;padding:8px 12px;display:inline-flex;align-items:center;}   /* 44-ish touch targets */
     .bgScrub{height:10px;}
     .bgScrub::-webkit-slider-thumb{width:28px;height:28px;}
     .bgScrub::-moz-range-thumb{width:28px;height:28px;}
@@ -1336,7 +1342,7 @@
 </style>
 <div id="bGlobe">
   <div id="bgViz"></div>
-  <div id="bgTop"><span id="bgYear">&mdash;</span><span id="bgStats"></span><span id="bgActive"></span><span id="bgChapter"></span></div>
+  <div id="bgTop"><span id="bgYear">&mdash;</span><span id="bgStats"></span><span id="bgActive"></span><span id="bgChapter"></span><span id="bgKey"></span></div>
   <div id="bgCaption"></div>
   <div id="bgLegend"></div>
   <div id="bgCtl">
@@ -3047,9 +3053,13 @@ var HISTORY=window.HISTORY||[];
   function _countryColor(f){ var iso=_iso(f), year=_gState.year, d=_densF(year);
     if(_presentIso(iso,year)){ var r=Math.round(150+105*d), g=Math.round(92+104*d), b=Math.round(40+80*d), a=(0.30+0.62*d).toFixed(2);
       return 'rgba('+r+','+g+','+b+','+a+')'; }
-    if(_archaicCol(iso,year)) return 'rgba(111,147,196,0.42)';   // other human species — flat cool slate, recedes
+    var _ac=_archaicCol(iso,year); if(_ac) return _ac;   // other human species — each kind its OWN colour (Neanderthal blue / Denisovan purple), matching the chips + legend
     return 'rgba(44,58,84,0.22)'; }
   function _archaicCol(iso,year){ var A=(window.MIG.deep&&window.MIG.deep.archaic)||[]; for(var i=0;i<A.length;i++){ var a=A[i]; if(year>=a.from&&year<=a.to&&a.iso.indexOf(iso)>=0) return a.color; } return null; }
+  // colour for an archaic-era CHIP/legend row, matched to the species named in it (so the chip's dot = its region on the map)
+  function _archaicNameCol(name){ var A=(window.MIG.deep&&window.MIG.deep.archaic)||[]; name=name||'';
+    for(var i=0;i<A.length;i++){ var base=(A[i].name||'').replace(/s$/,''); if(base && name.indexOf(base)>=0) return A[i].color; }
+    return GDKCOL.archaic; }
   function _countryAlt(f){ var iso=_iso(f), year=_gState.year; if(_presentIso(iso,year)) return 0.02+0.03*_densF(year); return _archaicCol(iso,year)?0.012:0.004; }
   function _countryLabel(f){ var x=_isoFlux(_iso(f),_gState.year); if(!x.i&&!x.o) return ''; return '<div style="background:rgba(6,9,16,.85);padding:5px 8px;border-radius:6px;color:#eaf0fa"><b>'+E(f.properties.NAME||_iso(f))+'</b><br>arrived '+x.i+' &middot; left '+x.o+'</div>'; }
   function _activeEvents(year){   // [{name,key,kind,deep}] genealogical + deep events live at this year
@@ -3102,9 +3112,11 @@ var HISTORY=window.HISTORY||[];
     var st=document.getElementById('bgStats'); if(st) st.innerHTML='&#127757; ~'+fmtPop(popAt(year))+' people on Earth &middot; '+migs+' family migrations traced';
     // clickable event chips (genealogical events open the cohort panel)
     var ev=_activeEvents(year), chEl=document.getElementById('bgChapter');
-    if(chEl){ chEl.innerHTML=ev.slice(0,3).map(function(e){ var c=(GKCOL[e.kind]||GDKCOL[e.kind]||'#d4a017');
-      return e.deep?('<span class="bgEv" style="border-color:'+c+'">'+E(e.name)+'</span>')
-                   :('<button class="bgEv clk" style="border-color:'+c+'" onclick="globeEvent(\''+EQ(e.key)+'\')">'+E(e.name)+' &#8250;</button>'); }).join(''); }
+    if(chEl){ chEl.innerHTML=ev.slice(0,3).map(function(e){ var arch=(e.kind==='archaic'); var c=arch?_archaicNameCol(e.name):(GKCOL[e.kind]||GDKCOL[e.kind]||'#d4a017');
+      var dot=arch?('<i class="bgEvDot" style="background:'+c+'"></i>'):'';
+      return e.deep?('<span class="bgEv" style="border-color:'+c+'">'+dot+E(e.name)+'</span>')
+                   :('<button class="bgEv clk" style="border-color:'+c+'" onclick="globeEvent(\''+EQ(e.key)+'\')">'+dot+E(e.name)+' &#8250;</button>'); }).join(''); }
+    if(typeof _renderKey==='function')_renderKey();   // refresh the mobile colour key (which human kinds are on screen)
     var sb=document.getElementById('bgScrub'); if(sb){ sb.value=Math.round(yearToFrac(year)*1000); }
   }
   window.globeEvent=function(key){ if(typeof openDot==='function') openDot(key); };
@@ -3159,8 +3171,22 @@ var HISTORY=window.HISTORY||[];
       +'<div class="lgrow"><i style="background:#5aa0ee"></i>Harris journeys</div>'
       +'<div class="lgrow"><i style="background:#46d39a"></i>Maxfield journeys</div>'
       +'<div class="lgrow"><i style="background:repeating-linear-gradient(90deg,#b89a6a 0 3px,transparent 3px 6px)"></i>Ancient human paths</div>';
-    if(typeof _archaicOnScreen==='function' && _gState && _archaicOnScreen(_gState.year)) rows+='<div class="lgrow" style="opacity:.8;font-size:10.5px"><i style="background:#6f93c4"></i>Cool blue = other human species, long ago</div>';
+    // each archaic human kind on screen gets its OWN row in its OWN colour (Neanderthal vs Denisovan)
+    var A=(window.MIG.deep&&window.MIG.deep.archaic)||[];
+    if(_gState){ A.forEach(function(a){ if(_gState.year>=a.from&&_gState.year<=a.to) rows+='<div class="lgrow"><i style="background:'+a.color+'"></i>'+E(a.name)+' &mdash; another human kind</div>'; }); }
     lg.innerHTML=rows;
+    if(typeof _renderKey==='function')_renderKey();
+  }
+  // MOBILE colour key (the corner legend is hidden on phones): a compact, centred strip under the
+  // chapter chips, shown during deep time so the map colours are never ambiguous — each archaic
+  // kind in its own colour PLUS the warm "us / where we live" fill that colours Africa.
+  function _renderKey(){ var k=document.getElementById('bgKey'); if(!k)return;
+    var A=(window.MIG.deep&&window.MIG.deep.archaic)||[], on=[];
+    if(_gState){ A.forEach(function(a){ if(_gState.year>=a.from&&_gState.year<=a.to) on.push(a); }); }
+    if(!on.length){ k.style.display='none'; k.innerHTML=''; return; }
+    var parts=on.map(function(a){ return '<span class="bgKi"><i style="background:'+a.color+'"></i>'+E(a.name)+'</span>'; });
+    parts.push('<span class="bgKi"><i style="background:rgba(150,92,40,.92)"></i>us &mdash; where we live</span>');
+    k.innerHTML=parts.join(''); k.style.display='block';
   }
   function renderGlobeChips(){
     var me=document.getElementById('bgMetric'); if(me)me.innerHTML='';   // the "Glow" net/in/out toggle is gone — population and migration are now separate channels
