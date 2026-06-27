@@ -2943,15 +2943,32 @@ var HISTORY=window.HISTORY||[];
   var _globe=null, _gjson=null, _gState=null, _gTimer=null, _gResizeWired=false;
   var _RM=(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)||false;
   var _gNarr=null, _gChapKey=null, _gNarrOn=true, _globeReturn=false, _lastPoly=0;
+  var _gSubs=null, _gSubKey=null, _gSubI=-1;   // sentence-level subtitles, time-synced to the voice
+  // split a chapter's narration into sentences, each tagged with the fraction of the clip at which it starts
+  function _splitSubs(text){ if(!text) return null;
+    var parts=text.match(/[^.!?]+[.!?]+["”']?(?:\s+|$)/g); if(!parts||!parts.length) parts=[text];
+    parts=parts.map(function(s){return s.trim();}).filter(Boolean);
+    var total=parts.reduce(function(n,s){return n+s.length;},0)||1, acc=0;
+    return parts.map(function(s){ var f0=acc/total; acc+=s.length; return {t:s,f0:f0}; });
+  }
+  function _gShowSub(t){ var c=document.getElementById('bgCaption'); if(!c)return; if(c.textContent!==t)c.textContent=t; c.classList.add('show'); }
+  function _gClearSubs(){ _gSubs=null; _gSubKey=null; _gSubI=-1; if(_gNarr)_gNarr.ontimeupdate=null; }
   // ONE reused audio element — created/played first inside the Play tap so iOS "unlocks" it;
   // every later chapter just swaps .src on the SAME element, which mobile then allows.
   function _gAudio(){ if(!_gNarr){ _gNarr=new Audio(); _gNarr.preload='auto'; } return _gNarr; }
   function globeNarrate(key, onEnd, rate, onMeta){
     if(!_gNarrOn || (typeof muted!=='undefined'&&muted) || !key) return false;
     if(!((window.NARR||{})['mig-'+key])) return false;   // clip exists in the baked NARR island
-    var a=_gAudio(); a.onended=null; a.onerror=null; a.onloadedmetadata=null;
+    var a=_gAudio(); a.onended=null; a.onerror=null; a.onloadedmetadata=null; a.ontimeupdate=null;
     try{ a.playbackRate=rate||1; if('preservesPitch' in a) a.preservesPitch=true; }catch(e){}   // brisk in deep time, natural for the family story — pitch preserved
-    if(onEnd){ a.onended=onEnd; a.onerror=onEnd; }
+    // SUBTITLES: show the narrator's words, sentence by sentence, in time with the voice
+    _gSubKey=key; _gSubI=-1; _gSubs=_splitSubs((window.MIG_NARR||MIG_NARR||{})[key]||'');
+    if(_gSubs && _gSubs.length){ _gShowSub(_gSubs[0].t);
+      a.ontimeupdate=function(){ if(!a.duration||!isFinite(a.duration)||!_gSubs)return; var f=a.currentTime/a.duration, idx=0;
+        for(var i=0;i<_gSubs.length;i++){ if(f>=_gSubs[i].f0) idx=i; }
+        if(idx!==_gSubI){ _gSubI=idx; _gShowSub(_gSubs[idx].t); } };
+    }
+    if(onEnd){ a.onended=function(){ _gClearSubs(); onEnd(); }; a.onerror=function(){ _gClearSubs(); onEnd(); }; }
     if(onMeta){ a.onloadedmetadata=function(){ var d=(a.duration&&isFinite(a.duration))?Math.round(a.duration*1000/(a.playbackRate||1)):0; onMeta(d); }; }   // real wall-time of the clip → drives the year glide
     try{ a.src='narration/mig-'+key+'.mp3'; a.currentTime=0; a.volume=0.92;
       var p=a.play(); if(p&&p.catch) p.catch(function(){ if(onEnd)onEnd(); });
@@ -2978,6 +2995,26 @@ var HISTORY=window.HISTORY||[];
     {y0:1760,key:'republic',t:'Revolution, then a young republic — the family fans out across a growing America.'},
     {y0:1850,key:'modern',t:'The German, Irish and Austro-Hungarian waves arrive; the modern family takes shape.'},
   ];
+  // The EXACT words the narrator speaks per chapter (subtitles must match the audio). This MIRRORS
+  // MIG_CHAPTERS in scripts/geneal_audio.py — the same text generates narration/mig-<key>.mp3. Edit
+  // BOTH together (geneal_audio.py is the source of the voice; keep this verbatim-equal to it).
+  var MIG_NARR={
+    ooa:"Here, in the Great Rift Valley of East Africa, it all begins. Picture them: just a few thousand souls, standing at the very dawn of our kind. From this one small band, every person who would ever leave Africa is descended. And now, some seventy thousand years ago, they take their first steps into the unknown, beginning the longest journey our species has ever made.",
+    neanderthal:"But we are not the first. For hundreds of thousands of years, Europe and the Near East have belonged to another kind of human entirely: the Neanderthals. Stronger than us, and superbly adapted to the bitter cold. And far to the east, in the forests of Asia, live their mysterious cousins, the Denisovans. And here, as our wandering bands meet them at last, something extraordinary happens. We mingle. To this very day, every person of European descent carries a whisper of Neanderthal blood. And that, remarkably, includes this very family.",
+    iceeurope:"Now, follow them north, into a world of ice. Forty-five thousand years ago, the first of our kind reach Europe, a frozen land where mammoth and reindeer roam the open plains. These are the Cro-Magnons. And there, by firelight, deep in the caves of France and Spain, they leave us the first great works of art, and become the ancient bedrock of the European family.",
+    lgm:"And then, the cold deepens. Twenty-two thousand years ago, the ice reaches its greatest extent, and much of Europe becomes a frozen desert, a place no one can survive. Watch, now, as our ancestors fall back, south, into the last warm refuges of Spain, of Italy, of the Balkans, and there they wait out the long winter of the Ice Age.",
+    melt:"But the ice cannot hold forever. As the world warms, the great glaciers retreat, and life floods back into a greening Europe. See them follow, north into Scandinavia, across the land bridge into Britain. Among these wanderers are the people of Cheddar Man, whose bones, ten thousand years old, are the oldest complete skeleton ever found on British soil.",
+    farmers:"And here, everything changes. Around nine thousand years ago, out of the hills of Anatolia, comes a revolution: farming. With it travel wheat and barley, sheep and cattle, and the patient people who tend them. Villages rise. The first monuments on Earth are raised at Gobekli Tepe. And slowly, the ancient world of the hunter gives way to the world of the harvest.",
+    bronze:"Then, from the east, the thunder of hooves. Five thousand years ago, out of the vast grasslands of the steppe, ride herders on horseback, and they sweep clear across Europe. They bring the wheel, the horse, and new tongues that echo in our languages even now. And in this great mixing, much of who we are today is forged.",
+    ironage:"Now, at last, we can begin to name them. In the final centuries before our era, the great peoples take shape: the Celts, spreading across the west; the Germanic tribes of the deep forests and the north; and the bold seafarers who will one day be the Norse. These are the very lands, and the very peoples, from which our own family will rise.",
+    recorded:"And here, the mist begins to clear. As Rome fades and the Middle Ages dawn, our own ancestors step, at last, into the light of record. For the first time, we can speak their names aloud. And from this moment, we can follow them, hand to hand, parent to child, all the way down to you.",
+    norman:"The year is ten sixty-six. Across the narrow sea comes William of Normandy, and with him, the knights from whom so many of our lines descend. And for three centuries now, watch the family move through the great halls and the royal courts of England, and of France.",
+    tudor:"The centuries turn. The Middle Ages give way to the age of the Tudors, an age of plague and discovery, of faith remade. And still, the family holds fast to the Old World: to the green villages of England, the glens of Scotland, the farms of France and the German lands, waiting, all unknowing, at the very edge of a new world.",
+    mayflower:"And then, they cross. The year is sixteen twenty. A small ship, the Mayflower, carries the first of them west, across a cold and trackless ocean. And in the years that follow, a great migration brings whole families to the shores of New England. For the first time in seventy thousand years, our ancestors leave the Old World behind.",
+    newfrance:"To the north, along the mighty Saint Lawrence, another story unfolds: New France. Here, our French ancestors carve farms and villages out of the endless forest. And to the south, the English colonies push ever westward. Two halves of one family, reaching slowly toward one another, across a vast and unknown continent.",
+    republic:"Revolution. And from it, a young and restless republic. Our ancestors fight its battles, break its frontier, and spill out across a growing America, over the mountains, into the very heart of the land, carrying their names and their stories ever onward.",
+    modern:"And so, we come to the last great waves. From Germany, from Ireland, from the lands of the Austro-Hungarian empire, families cross the ocean to join those already here. And through hard times, and through world wars, the many streams of our ancestry meet at last, and the family you know is, finally, complete."
+  };
   var GDKCOL={ice:'#9fd3ff',origin:'#ffcf6b',culture:'#e8c878',migration:'#5aa0ee',disaster:'#e0563a',war:'#e0563a',archaic:'#7daaff'};
   // piecewise time <-> scrub-fraction: compress the 70,000-year prehistory and the deep
   // documented past, but give the dense genealogical era (1500+) the most room.
@@ -3100,7 +3137,13 @@ var HISTORY=window.HISTORY||[];
       _globe.ringsData(_eventRings(year).concat(_arrivalRings(year))); }
     var yEl=document.getElementById('bgYear'); if(yEl) yEl.textContent=fmtYear(year);
     var ch=chapterFor(year), ck=ch?ch.key:null, cap=document.getElementById('bgCaption');
-    if(cap && ch && ck!==_gChapKey){ cap.classList.remove('show'); cap.textContent=ch.t; void cap.offsetWidth; cap.classList.add('show'); if(typeof _renderLegend==='function')_renderLegend(); }   // re-trigger the fade per chapter; refresh the archaic legend footnote
+    if(cap && ch && ck!==_gChapKey){
+      // when this chapter is voiced, its sentence-synced subtitles own the caption — don't flash the
+      // short summary over them; only show the summary when silent (sound off, or scrubbing by hand)
+      var _voiced=_gState.playing && _gNarrOn && (typeof muted==='undefined'||!muted) && !!((window.NARR||{})['mig-'+ck]);
+      if(!_voiced){ cap.classList.remove('show'); cap.textContent=ch.t; void cap.offsetWidth; cap.classList.add('show'); }
+      if(typeof _renderLegend==='function')_renderLegend();
+    }   // re-trigger the fade per chapter; refresh the archaic legend footnote
     _gChapKey=ck;   // narration is driven by the chapter tour (_gTourStep), not per-frame
     // the named "happening now" family leg — the phone-legible hero line under the year
     var aEl=document.getElementById('bgActive');
